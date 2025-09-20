@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package fleetflow.v1;
+option go_package = "github.com/fleetflow/backend/proto/gen";
+
+import "google/protobuf/timestamp.proto";
+
+// Common enums and messages used across all services
+
+enum VehicleStatus {
+  VEHICLE_STATUS_UNSPECIFIED = 0;
+  VEHICLE_STATUS_ACTIVE = 1;
+  VEHICLE_STATUS_MAINTENANCE = 2;
+  VEHICLE_STATUS_PARKED = 3;
+  VEHICLE_STATUS_INACTIVE = 4;
+}
+
+enum DriverStatus {
+  DRIVER_STATUS_UNSPECIFIED = 0;
+  DRIVER_STATUS_AVAILABLE = 1;
+  DRIVER_STATUS_ON_TRIP = 2;
+  DRIVER_STATUS_ON_BREAK = 3;
+  DRIVER_STATUS_OFFLINE = 4;
+  DRIVER_STATUS_MAINTENANCE = 5;
+}
+
+enum TripStatus {
+  TRIP_STATUS_UNSPECIFIED = 0;
+  TRIP_STATUS_SCHEDULED = 1;
+  TRIP_STATUS_ASSIGNED = 2;
+  TRIP_STATUS_IN_PROGRESS = 3;
+  TRIP_STATUS_PAUSED = 4;
+  TRIP_STATUS_COMPLETED = 5;
+  TRIP_STATUS_CANCELLED = 6;
+  TRIP_STATUS_DELAYED = 7;
+}
+
+enum AlertSeverity {
+  ALERT_SEVERITY_UNSPECIFIED = 0;
+  ALERT_SEVERITY_LOW = 1;
+  ALERT_SEVERITY_MEDIUM = 2;
+  ALERT_SEVERITY_HIGH = 3;
+  ALERT_SEVERITY_CRITICAL = 4;
+}
+
+enum UserRole {
+  USER_ROLE_UNSPECIFIED = 0;
+  USER_ROLE_ADMIN = 1;
+  USER_ROLE_DRIVER = 2;
+}
+
+// Location message for GPS coordinates
+message Location {
+  double latitude = 1;
+  double longitude = 2;
+  double accuracy = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}
+
+// Pagination for list requests
+message Pagination {
+  int32 page = 1;
+  int32 limit = 2;
+  int32 total = 3;
+  int32 total_pages = 4;
+}
+
+// Common filter parameters
+message FilterParams {
+  string search = 1;
+  string status = 2;
+  bool is_active = 3;
+  string sort_by = 4;
+  bool sort_desc = 5;
+  google.protobuf.Timestamp start_date = 6;
+  google.protobuf.Timestamp end_date = 7;
+}
+
+// Standard error response
+message ErrorResponse {
+  string code = 1;
+  string message = 2;
+  map<string, string> details = 3;
+}
+
+// Success response for operations
+message SuccessResponse {
+  string message = 1;
+  bool success = 2;
+}

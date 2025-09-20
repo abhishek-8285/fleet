@@ -1,0 +1,495 @@
+syntax = "proto3";
+
+package fleetflow.v1;
+option go_package = "github.com/fleetflow/backend/proto/gen";
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+
+// Analytics and Reporting Service
+service AnalyticsService {
+  // Dashboard analytics
+  rpc GetDashboardStats(GetDashboardStatsRequest) returns (DashboardStats);
+  rpc GetFleetPerformance(GetFleetPerformanceRequest) returns (FleetPerformance);
+  rpc GetDriverPerformance(GetDriverPerformanceRequest) returns (DriverPerformanceReport);
+  rpc GetVehicleUtilization(GetVehicleUtilizationRequest) returns (VehicleUtilizationReport);
+  rpc GetFuelEfficiency(GetFuelEfficiencyRequest) returns (FuelEfficiencyReport);
+  rpc GetRevenueAnalytics(GetRevenueAnalyticsRequest) returns (RevenueAnalytics);
+  rpc GetComplianceReport(GetComplianceReportRequest) returns (ComplianceReport);
+  
+  // System management
+  rpc GetSystemSettings(GetSystemSettingsRequest) returns (SystemSettings);
+  rpc UpdateSystemSettings(UpdateSystemSettingsRequest) returns (SystemSettings);
+  
+  // Audit and security
+  rpc GetAuditLogs(GetAuditLogsRequest) returns (GetAuditLogsResponse);
+  rpc GetSecurityEvents(GetSecurityEventsRequest) returns (GetSecurityEventsResponse);
+  
+  // Real-time analytics streaming
+  rpc StreamDashboardUpdates(StreamDashboardRequest) returns (stream DashboardUpdate);
+  rpc StreamPerformanceMetrics(StreamPerformanceRequest) returns (stream PerformanceMetric);
+  rpc StreamAlerts(StreamAlertsRequest) returns (stream AlertNotification);
+}
+
+// Messages
+message DashboardStats {
+  // Fleet overview
+  uint32 total_vehicles = 1;
+  uint32 active_vehicles = 2;
+  uint32 parked_vehicles = 3;
+  uint32 maintenance_vehicles = 4;
+  uint32 total_drivers = 5;
+  uint32 available_drivers = 6;
+  uint32 on_trip_drivers = 7;
+  
+  // Today's stats
+  uint32 active_trips = 8;
+  uint32 completed_trips_today = 9;
+  double today_revenue = 10;
+  double today_fuel_cost = 11;
+  double today_profit = 12;
+  double today_distance = 13;
+  
+  // Performance metrics
+  double fleet_efficiency = 14;
+  double on_time_delivery_rate = 15;
+  double customer_satisfaction = 16;
+  double fuel_theft_savings = 17;
+  
+  // Alerts summary
+  uint32 critical_alerts = 18;
+  uint32 fuel_theft_alerts = 19;
+  uint32 compliance_warnings = 20;
+  uint32 maintenance_due = 21;
+  
+  // Trends (compared to previous period)
+  double revenue_trend = 22; // Percentage change
+  double efficiency_trend = 23;
+  double cost_trend = 24;
+  
+  google.protobuf.Timestamp last_updated = 25;
+}
+
+message GetDashboardStatsRequest {
+  string period = 1; // TODAY, WEEK, MONTH
+  bool include_trends = 2;
+}
+
+message FleetPerformance {
+  string period = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+  
+  // Overall metrics
+  uint32 total_trips = 4;
+  uint32 completed_trips = 5;
+  uint32 cancelled_trips = 6;
+  double total_distance = 7;
+  double total_revenue = 8;
+  double total_fuel_cost = 9;
+  double total_maintenance_cost = 10;
+  double net_profit = 11;
+  
+  // Performance indicators
+  double completion_rate = 12;
+  double on_time_rate = 13;
+  double average_trip_duration = 14;
+  double average_trip_distance = 15;
+  double revenue_per_km = 16;
+  double cost_per_km = 17;
+  
+  // Efficiency metrics
+  double fleet_utilization = 18;
+  double driver_utilization = 19;
+  double fuel_efficiency = 20;
+  
+  // Top performers
+  repeated TopPerformer top_drivers = 21;
+  repeated TopPerformer top_vehicles = 22;
+  
+  // Daily breakdown
+  repeated DailyPerformance daily_breakdown = 23;
+}
+
+message GetFleetPerformanceRequest {
+  string period = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+  repeated uint32 vehicle_ids = 4;
+  repeated uint32 driver_ids = 5;
+}
+
+message TopPerformer {
+  uint32 id = 1;
+  string name = 2; // Driver name or vehicle plate
+  double metric_value = 3;
+  string metric_type = 4; // EFFICIENCY, REVENUE, RATING, etc.
+  uint32 trips_count = 5;
+}
+
+message DailyPerformance {
+  google.protobuf.Timestamp date = 1;
+  uint32 trips_count = 2;
+  double distance = 3;
+  double revenue = 4;
+  double fuel_cost = 5;
+  double efficiency = 6;
+  uint32 active_vehicles = 7;
+}
+
+// Driver Performance Report
+message DriverPerformanceReport {
+  string period = 1;
+  repeated DriverPerformanceMetric drivers = 2;
+  DriverPerformanceMetric fleet_average = 3;
+  google.protobuf.Timestamp generated_at = 4;
+}
+
+message GetDriverPerformanceRequest {
+  string period = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+  repeated uint32 driver_ids = 4;
+  string sort_by = 5; // RATING, EFFICIENCY, REVENUE
+}
+
+message DriverPerformanceMetric {
+  uint32 driver_id = 1;
+  string driver_name = 2;
+  double rating = 3;
+  uint32 total_trips = 4;
+  uint32 completed_trips = 5;
+  double completion_rate = 6;
+  double on_time_rate = 7;
+  double fuel_efficiency = 8;
+  double revenue_generated = 9;
+  double customer_rating = 10;
+  double safety_score = 11;
+  double distance_driven = 12;
+  uint32 incidents_count = 13;
+  string performance_grade = 14; // A, B, C, D, F
+  double improvement_percentage = 15;
+}
+
+// Vehicle Utilization Report
+message VehicleUtilizationReport {
+  string period = 1;
+  repeated VehicleUtilizationMetric vehicles = 2;
+  VehicleUtilizationMetric fleet_average = 3;
+  google.protobuf.Timestamp generated_at = 4;
+}
+
+message GetVehicleUtilizationRequest {
+  string period = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+  repeated uint32 vehicle_ids = 4;
+  string sort_by = 5; // UTILIZATION, EFFICIENCY, REVENUE
+}
+
+message VehicleUtilizationMetric {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  double utilization_rate = 3; // Percentage of time in use
+  uint32 total_trips = 4;
+  double total_distance = 5;
+  double fuel_efficiency = 6;
+  double revenue_generated = 7;
+  double maintenance_cost = 8;
+  double profit_margin = 9;
+  uint32 idle_hours = 10;
+  uint32 maintenance_hours = 11;
+  string performance_grade = 12;
+  double cost_per_km = 13;
+  double revenue_per_km = 14;
+}
+
+// Fuel Efficiency Report
+message FuelEfficiencyReport {
+  string period = 1;
+  double fleet_average_efficiency = 2;
+  double target_efficiency = 3;
+  double efficiency_variance = 4;
+  double total_fuel_cost = 5;
+  double potential_savings = 6;
+  
+  // Vehicle breakdown
+  repeated VehicleFuelEfficiency vehicles = 7;
+  
+  // Driver breakdown
+  repeated DriverFuelEfficiency drivers = 8;
+  
+  // Trends
+  repeated DailyFuelEfficiency daily_trends = 9;
+  
+  google.protobuf.Timestamp generated_at = 10;
+}
+
+message GetFuelEfficiencyRequest {
+  string period = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+}
+
+message VehicleFuelEfficiency {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  double efficiency = 3; // km/liter
+  double target_efficiency = 4;
+  double variance_percentage = 5;
+  double fuel_cost = 6;
+  uint32 trips_count = 7;
+  double distance = 8;
+  string efficiency_grade = 9;
+}
+
+message DriverFuelEfficiency {
+  uint32 driver_id = 1;
+  string driver_name = 2;
+  double efficiency = 3;
+  double target_efficiency = 4;
+  double variance_percentage = 5;
+  uint32 trips_count = 6;
+  string efficiency_grade = 7;
+}
+
+message DailyFuelEfficiency {
+  google.protobuf.Timestamp date = 1;
+  double average_efficiency = 2;
+  double fuel_cost = 3;
+  uint32 vehicles_active = 4;
+}
+
+// Revenue Analytics
+message RevenueAnalytics {
+  string period = 1;
+  double total_revenue = 2;
+  double total_costs = 3;
+  double net_profit = 4;
+  double profit_margin = 5;
+  
+  // Cost breakdown
+  double fuel_costs = 6;
+  double maintenance_costs = 7;
+  double driver_costs = 8;
+  double overhead_costs = 9;
+  
+  // Revenue sources
+  repeated RevenueSource revenue_sources = 10;
+  
+  // Trends
+  repeated DailyRevenue daily_trends = 11;
+  
+  // Projections
+  double projected_monthly_revenue = 12;
+  double projected_monthly_profit = 13;
+  
+  google.protobuf.Timestamp generated_at = 14;
+}
+
+message GetRevenueAnalyticsRequest {
+  string period = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+}
+
+message RevenueSource {
+  string source_type = 1; // DELIVERY, TRANSPORT, LOGISTICS
+  double revenue = 2;
+  uint32 trips_count = 3;
+  double average_per_trip = 4;
+  double percentage_of_total = 5;
+}
+
+message DailyRevenue {
+  google.protobuf.Timestamp date = 1;
+  double revenue = 2;
+  double costs = 3;
+  double profit = 4;
+  uint32 trips_count = 5;
+}
+
+// Compliance Report
+message ComplianceReport {
+  // Overall compliance score
+  double overall_score = 1;
+  
+  // Driver compliance
+  uint32 total_drivers = 2;
+  uint32 compliant_drivers = 3;
+  uint32 license_expiring = 4;
+  uint32 medical_cert_expiring = 5;
+  repeated DriverCompliance driver_compliance = 6;
+  
+  // Vehicle compliance
+  uint32 total_vehicles = 7;
+  uint32 compliant_vehicles = 8;
+  uint32 registration_expiring = 9;
+  uint32 insurance_expiring = 10;
+  uint32 maintenance_due = 11;
+  repeated VehicleCompliance vehicle_compliance = 12;
+  
+  // Critical issues
+  repeated ComplianceIssue critical_issues = 13;
+  
+  google.protobuf.Timestamp generated_at = 14;
+}
+
+message GetComplianceReportRequest {
+  bool include_details = 1;
+  uint32 days_ahead = 2; // Check expiry within N days
+}
+
+message DriverCompliance {
+  uint32 driver_id = 1;
+  string driver_name = 2;
+  double compliance_score = 3;
+  string license_status = 4;
+  int32 license_days_to_expiry = 5;
+  string medical_cert_status = 6;
+  int32 medical_cert_days_to_expiry = 7;
+  repeated string issues = 8;
+}
+
+message VehicleCompliance {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  double compliance_score = 3;
+  string registration_status = 4;
+  int32 registration_days_to_expiry = 5;
+  string insurance_status = 6;
+  int32 insurance_days_to_expiry = 7;
+  bool maintenance_due = 8;
+  repeated string issues = 9;
+}
+
+message ComplianceIssue {
+  string issue_type = 1; // LICENSE_EXPIRED, INSURANCE_EXPIRED, etc.
+  AlertSeverity severity = 2;
+  string description = 3;
+  uint32 affected_count = 4;
+  google.protobuf.Timestamp deadline = 5;
+  repeated uint32 affected_ids = 6; // Driver or vehicle IDs
+}
+
+// System Settings
+message SystemSettings {
+  map<string, string> settings = 1;
+  google.protobuf.Timestamp last_updated = 2;
+  uint32 updated_by = 3;
+}
+
+message GetSystemSettingsRequest {
+  repeated string setting_keys = 1; // Empty means all settings
+}
+
+message UpdateSystemSettingsRequest {
+  map<string, string> settings = 1;
+}
+
+// Audit Logs
+message AuditLog {
+  uint32 id = 1;
+  string action = 2;
+  string severity = 3;
+  string description = 4;
+  string table_name = 5;
+  uint32 record_id = 6;
+  string old_values = 7; // JSON
+  string new_values = 8; // JSON
+  string ip_address = 9;
+  string user_agent = 10;
+  google.protobuf.Timestamp created_at = 11;
+  uint32 user_id = 12;
+  uint32 driver_id = 13;
+  uint32 vehicle_id = 14;
+  uint32 trip_id = 15;
+}
+
+message GetAuditLogsRequest {
+  Pagination pagination = 1;
+  FilterParams filters = 2;
+  string action_filter = 3;
+  string severity_filter = 4;
+  uint32 user_id = 5;
+}
+
+message GetAuditLogsResponse {
+  repeated AuditLog logs = 1;
+  Pagination pagination = 2;
+}
+
+// Security Events
+message SecurityEvent {
+  uint32 id = 1;
+  string event_type = 2;
+  string status = 3;
+  string severity = 4;
+  string description = 5;
+  string ip_address = 6;
+  string user_agent = 7;
+  string location = 8;
+  double risk_score = 9;
+  bool is_blocked = 10;
+  google.protobuf.Timestamp created_at = 11;
+  uint32 user_id = 12;
+}
+
+message GetSecurityEventsRequest {
+  Pagination pagination = 1;
+  FilterParams filters = 2;
+  string event_type = 3;
+  bool unresolved_only = 4;
+}
+
+message GetSecurityEventsResponse {
+  repeated SecurityEvent events = 1;
+  Pagination pagination = 2;
+}
+
+// Real-time streaming
+message StreamDashboardRequest {
+  uint32 update_interval_seconds = 1; // Default 30 seconds
+}
+
+message DashboardUpdate {
+  DashboardStats stats = 1;
+  repeated string changed_metrics = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+message StreamPerformanceRequest {
+  string metric_type = 1; // FUEL_EFFICIENCY, REVENUE, UTILIZATION
+  repeated uint32 entity_ids = 2; // Vehicle or driver IDs
+}
+
+message PerformanceMetric {
+  string metric_type = 1;
+  uint32 entity_id = 2;
+  string entity_name = 3;
+  double current_value = 4;
+  double target_value = 5;
+  double variance = 6;
+  string trend = 7; // IMPROVING, DECLINING, STABLE
+  google.protobuf.Timestamp timestamp = 8;
+}
+
+message StreamAlertsRequest {
+  AlertSeverity min_severity = 1;
+  repeated string alert_types = 2; // FUEL_THEFT, BREAKDOWN, COMPLIANCE, etc.
+}
+
+message AlertNotification {
+  string alert_id = 1;
+  string alert_type = 2;
+  AlertSeverity severity = 3;
+  string title = 4;
+  string description = 5;
+  uint32 vehicle_id = 6;
+  uint32 driver_id = 7;
+  Location location = 8;
+  map<string, string> metadata = 9;
+  google.protobuf.Timestamp timestamp = 10;
+  bool requires_action = 11;
+  string recommended_action = 12;
+}

@@ -1,0 +1,372 @@
+package test
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/fleetflow/backend/internal/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+// TestCompleteFleetOperationFlow tests the entire fleet operation from start to finish
+func TestCompleteFleetOperationFlow(t *testing.T) {
+	tf, err := NewTestFramework()
+	require.NoError(t, err)
+	defer tf.CleanDatabase()
+
+	var adminToken, driverToken string
+	var tripID, driverID, vehicleID uint
+
+	// Phase 1: Setup users, drivers, and vehicles
+	t.Run("Phase 1: Setup", func(t *testing.T) {
+		// Create admin user
+		admin, err := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		require.NoError(t, err)
+		adminToken, err = tf.GenerateJWTToken(admin)
+		require.NoError(t, err)
+
+		// Create driver
+		driver, err := tf.CreateTestDriver("Integration Driver", TestDriverPhone, TestDriverLicense)
+		require.NoError(t, err)
+		driverID = driver.ID
+
+		// Create driver user account
+		driverUser, err := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		require.NoError(t, err)
+		driverUser.DriverID = &driver.ID
+		tf.DB.Save(driverUser)
+		driverToken, err = tf.GenerateJWTToken(driverUser)
+		require.NoError(t, err)
+
+		// Create vehicle
+		vehicle, err := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		require.NoError(t, err)
+		vehicleID = vehicle.ID
+	})
+
+	// Phase 2: Trip creation and assignment
+	t.Run("Phase 2: Trip Creation", func(t *testing.T) {
+		// Admin creates trip
+		createTripCase := APITestCase{
+			Name:   "Integration - Create Trip",
+			Method: "POST",
+			URL:    "/api/v1/trips",
+			Headers: map[string]string{
+				"Authorization": "Bearer " + adminToken,
+			},
+			RequestBody: map[string]interface{}{
+				"from_location":      "Mumbai Warehouse",
+				"to_location":        "Delhi Hub",
+				"customer_phone":     "+919888888888",
+				"customer_name":      "Integration Customer",
+				"cargo_type":         "Electronics",
+				"cargo_weight":       1500,
+				"estimated_distance": 1400,
+			},
+			ExpectedStatus: 201,
+		}
+
+		tf.RunAPITest(t, createTripCase)
+
+		// Get the created trip ID
+		var trip models.Trip
+		err := tf.DB.Where("from_location = ?", "Mumbai Warehouse").First(&trip).Error
+		require.NoError(t, err)
+		tripID = trip.ID
+		assert.Equal(t, "CREATED", trip.Status)
+	})
+
+	// Phase 3: Driver and vehicle assignment
+	t.Run("Phase 3: Assignment", func(t *testing.T) {
+		assignCase := APITestCase{
+			Name:   "Integration - Assign Trip",
+			Method: "POST",
+			URL:    fmt.Sprintf("/api/v1/trips/%d/assign", tripID),
+			Headers: map[string]string{
+				"Authorization": "Bearer " + adminToken,
+			},
+			RequestBody: map[string]interface{}{
+				"driver_id":  driverID,
+				"vehicle_id": vehicleID,
+			},
+			ExpectedStatus: 200,
+		}
+
+		tf.RunAPITest(t, assignCase)
+
+		// Verify assignment
+		var trip models.Trip
+		tf.DB.First(&trip, tripID)
+		assert.Equal(t, "ASSIGNED", trip.Status)
+		assert.Equal(t, driverID, *trip.DriverID)
+	})
+
+	// Phase 4: Trip execution
+	t.Run("Phase 4: Trip Start", func(t *testing.T) {
+		startCase := APITestCase{
+			Name:   "Integration - Start Trip",
+			Method: "POST",
+			URL:    fmt.Sprintf("/api/v1/trips/%d/start", tripID),
+			Headers: map[string]string{
+				"Authorization": "Bearer " + driverToken,
+			},
+			RequestBody: map[string]interface{}{
+				"location": map[string]float64{
+					"lat": 19.0760, // Mumbai coordinates
+					"lng": 72.8777,
+				},
+				"odometer": 125000,
+			},
+			ExpectedStatus: 200,
+		}
+
+		tf.RunAPITest(t, startCase)
+
+		// Verify trip started
+		var trip models.Trip
+		tf.DB.First(&trip, tripID)
+		assert.Equal(t, models.TripStatusInProgress, trip.Status)
+		assert.NotNil(t, trip.ActualPickupTime)
+	})
+
+	// Phase 5: Location updates during trip
+	t.Run("Phase 5: Location Updates", func(t *testing.T) {
+		// Simulate location pings during journey
+		locations := []map[string]float64{
+			{"lat": 19.5000, "lng": 73.0000}, // Leaving Mumbai
+			{"lat": 20.0000, "lng": 73.5000}, // En route
+			{"lat": 25.0000, "lng": 75.0000}, // Midway point
+			{"lat": 28.0000, "lng": 77.0000}, // Approaching Delhi
+		}
+
+		for i, loc := range locations {
+			locationCase := APITestCase{
+				Name:   fmt.Sprintf("Integration - Location Update %d", i+1),
+				Method: "POST",
+				URL:    "/api/v1/location/ping",
+				Headers: map[string]string{
+					"Authorization": "Bearer " + driverToken,
+				},
+				RequestBody: map[string]interface{}{
+					"vehicle_id": vehicleID,
+					"latitude":   loc["lat"],
+					"longitude":  loc["lng"],
+					"speed":      65.0,
+					"heading":    90,
+				},
+				ExpectedStatus: 200,
+			}
+
+			tf.RunAPITest(t, locationCase)
+		}
+
+		// Verify location history
+		var locations_count int64
+		tf.DB.Model(&models.LocationPing{}).Where("vehicle_id = ?", vehicleID).Count(&locations_count)
+		assert.Equal(t, int64(4), locations_count, "Should have 4 location records")
+	})
+
+	// Phase 6: Fuel stop and logging
+	t.Run("Phase 6: Fuel Stop", func(t *testing.T) {
+		// First pause trip for fuel
+		pauseCase := APITestCase{
+			Name:   "Integration - Pause for Fuel",
+			Method: "POST",
+			URL:    fmt.Sprintf("/api/v1/trips/%d/pause", tripID),
+			Headers: map[string]string{
+				"Authorization": "Bearer " + driverToken,
+			},
+			RequestBody: map[string]interface{}{
+				"reason": "FUEL_STOP",
+				"location": map[string]float64{
+					"lat": 25.0000,
+					"lng": 75.0000,
+				},
+			},
+			ExpectedStatus: 200,
+		}
+
+		tf.RunAPITest(t, pauseCase)
+
+		// Log fuel purchase
+		fuelCase := APITestCase{
+			Name:   "Integration - Log Fuel",
+			Method: "POST",
+			URL:    "/api/v1/fuel/events",
+			Headers: map[string]string{
+				"Authorization": "Bearer " + driverToken,
+			},
+			RequestBody: map[string]interface{}{
+				"vehicle_id":       vehicleID,
+				"fuel_amount":      55.0,
+				"cost_per_liter":   76.50,
+				"total_cost":       4207.50,
+				"fuel_station":     "HP Petrol Pump - Highway",
+				"odometer_reading": 125350,
+			},
+			ExpectedStatus: 201,
+		}
+
+		tf.RunAPITest(t, fuelCase)
+
+		// Resume trip
+		resumeCase := APITestCase{
+			Name:   "Integration - Resume Trip",
+			Method: "POST",
+			URL:    fmt.Sprintf("/api/v1/trips/%d/resume", tripID),
+			Headers: map[string]string{
+				"Authorization": "Bearer " + driverToken,
+			},
+			RequestBody: map[string]interface{}{
+				"location": map[string]float64{
+					"lat": 25.0000,
+					"lng": 75.0000,
+				},
+			},
+			ExpectedStatus: 200,
+		}
+
+		tf.RunAPITest(t, resumeCase)
+	})
+
+	// Phase 7: Trip completion
+	t.Run("Phase 7: Trip Completion", func(t *testing.T) {
+		completeCase := APITestCase{
+			Name:   "Integration - Complete Trip",
+			Method: "POST",
+			URL:    fmt.Sprintf("/api/v1/trips/%d/complete", tripID),
+			Headers: map[string]string{
+				"Authorization": "Bearer " + driverToken,
+			},
+			RequestBody: map[string]interface{}{
+				"location": map[string]float64{
+					"lat": 28.6139, // Delhi coordinates
+					"lng": 77.2090,
+				},
+				"odometer":        125750,
+				"delivery_notes":  "Delivered to main gate security",
+				"pod_signature":   "base64-encoded-signature",
+				"customer_rating": 5,
+			},
+			ExpectedStatus: 200,
+		}
+
+		tf.RunAPITest(t, completeCase)
+
+		// Verify completion
+		var trip models.Trip
+		tf.DB.First(&trip, tripID)
+		assert.Equal(t, models.TripStatusCompleted, trip.Status)
+		assert.NotNil(t, trip.ActualArrival)
+	})
+
+	// Phase 8: Post-completion analytics
+	t.Run("Phase 8: Analytics", func(t *testing.T) {
+		// Test driver performance update
+		perfCase := APITestCase{
+			Name:   "Integration - Driver Performance",
+			Method: "GET",
+			URL:    fmt.Sprintf("/api/v1/drivers/%d/performance", driverID),
+			Headers: map[string]string{
+				"Authorization": "Bearer " + adminToken,
+			},
+			ExpectedStatus: 200,
+		}
+
+		tf.RunAPITest(t, perfCase)
+
+		// Test fuel analytics
+		fuelAnalyticsCase := APITestCase{
+			Name:   "Integration - Fuel Analytics",
+			Method: "GET",
+			URL:    fmt.Sprintf("/api/v1/fuel/analytics/%d", vehicleID),
+			Headers: map[string]string{
+				"Authorization": "Bearer " + adminToken,
+			},
+			ExpectedStatus: 200,
+		}
+
+		tf.RunAPITest(t, fuelAnalyticsCase)
+	})
+}
+
+// TestErrorRecoveryScenarios tests how the system handles various error conditions
+func TestErrorRecoveryScenarios(t *testing.T) {
+	tf, err := NewTestFramework()
+	require.NoError(t, err)
+	defer tf.CleanDatabase()
+
+	testCases := []struct {
+		name     string
+		testFunc func(*testing.T, *TestFramework)
+	}{
+		{"Invalid JWT Token", testInvalidJWTToken},
+		{"Missing Authorization", testMissingAuthorization},
+		{"Insufficient Permissions", testInsufficientPermissions},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tf.CleanDatabase()
+			tc.testFunc(t, tf)
+		})
+	}
+}
+
+func testInvalidJWTToken(t *testing.T, tf *TestFramework) {
+	testCase := APITestCase{
+		Name:   "Error Recovery - Invalid JWT",
+		Method: "GET",
+		URL:    "/api/v1/driver/stats",
+		Headers: map[string]string{
+			"Authorization": "Bearer invalid.jwt.token",
+		},
+		ExpectedStatus: 401,
+		ExpectedBody: map[string]interface{}{
+			"error": "Invalid or expired token",
+		},
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+func testMissingAuthorization(t *testing.T, tf *TestFramework) {
+	testCase := APITestCase{
+		Name:           "Error Recovery - Missing Auth",
+		Method:         "GET",
+		URL:            "/api/v1/driver/stats",
+		ExpectedStatus: 401,
+		ExpectedBody: map[string]interface{}{
+			"error": "Authorization header required",
+		},
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+func testInsufficientPermissions(t *testing.T, tf *TestFramework) {
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		token, _ := tf.GenerateJWTToken(driver)
+		driverToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Error Recovery - Insufficient Permissions",
+		Method: "GET",
+		URL:    "/api/v1/admin/settings", // Admin-only endpoint
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		ExpectedStatus: 403,
+		ExpectedBody: map[string]interface{}{
+			"error": "Insufficient permissions",
+		},
+		Setup: setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}

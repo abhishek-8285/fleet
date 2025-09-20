@@ -1,0 +1,203 @@
+package test
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/fleetflow/backend/internal/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestFuelAPI(t *testing.T) {
+	tf, err := NewTestFramework()
+	require.NoError(t, err)
+	defer tf.CleanDatabase()
+
+	testCases := []struct {
+		name     string
+		testFunc func(*testing.T, *TestFramework)
+	}{
+		{"Create Fuel Event - Valid", testCreateFuelEventValid},
+		{"Create Fuel Event - Invalid Amount", testCreateFuelEventInvalid},
+		{"Create Fuel Event - Unauthorized", testCreateFuelEventUnauthorized},
+		{"Get Fuel Events - Admin", testGetFuelEventsAdmin},
+		{"Verify Fuel Event - Admin", testVerifyFuelEventAdmin},
+		{"Reject Fuel Event - Fraud", testRejectFuelEventFraud},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tf.CleanDatabase()
+			tc.testFunc(t, tf)
+		})
+	}
+}
+
+func testCreateFuelEventValid(t *testing.T, tf *TestFramework) {
+	var driverToken string
+	var vehicleID uint
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Fuel Driver", TestDriverPhone, TestDriverLicense)
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		vehicleID = vehicle.ID
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		user.DriverID = &driver.ID
+		tf.DB.Save(user)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Create Fuel Event - Valid",
+		Method: "POST",
+		URL:    "/api/v1/fuel/events",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		RequestBody: map[string]interface{}{
+			"vehicle_id":      vehicleID,
+			"liters":          50.5,
+			"price_per_liter": 75.50,
+			"amount_inr":      3812.75,
+			"location": map[string]float64{
+				"lat": 19.0760,
+				"lng": 72.8777,
+			},
+			"odometer_km":   125.0,
+			"fuel_station":  "HP Petrol Pump",
+			"receipt_image": "base64-encoded-receipt",
+		},
+		ExpectedStatus: 201,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+
+	// Verify fuel event creation
+	var fuelEvent models.FuelEvent
+	err := tf.DB.Where("vehicle_id = ?", vehicleID).First(&fuelEvent).Error
+	assert.NoError(t, err)
+	assert.Equal(t, 50.5, fuelEvent.Liters)
+	assert.Equal(t, models.FuelEventStatusPending, fuelEvent.Status) // Should be pending verification
+}
+
+func testCreateFuelEventInvalid(t *testing.T, tf *TestFramework) {
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Invalid Fuel Driver", TestDriverPhone, TestDriverLicense)
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		user.DriverID = &driver.ID
+		tf.DB.Save(user)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Create Fuel Event - Invalid Amount",
+		Method: "POST",
+		URL:    "/api/v1/fuel/events",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		RequestBody: map[string]interface{}{
+			"vehicle_id": 999, // Non-existent vehicle
+			"liters":     -10, // Negative amount
+			"amount_inr": 0,   // Zero cost
+		},
+		ExpectedStatus: 400,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+func testVerifyFuelEventAdmin(t *testing.T, tf *TestFramework) {
+	var fuelEventID uint
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+
+		driver, _ := tf.CreateTestDriver("Verify Driver", TestDriverPhone, TestDriverLicense)
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+
+		// Create fuel event to verify
+		fuelEvent := &models.FuelEvent{
+			VehicleID:     vehicle.ID,
+			DriverID:      &driver.ID,
+			Liters:        45.0,
+			PricePerLiter: 75.0,
+			AmountINR:     3375.0,
+			Status:        models.FuelEventStatusPending,
+			Location:      "Test Station",
+		}
+		tf.DB.Create(fuelEvent)
+		fuelEventID = fuelEvent.ID
+	}
+
+	testCase := APITestCase{
+		Name:   "Verify Fuel Event - Admin",
+		Method: "POST",
+		URL:    fmt.Sprintf("/api/v1/fuel/events/%d/verify", fuelEventID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"verified":        true,
+			"verified_amount": 45.0,
+			"notes":           "Receipt verified, amount correct",
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+func testRejectFuelEventFraud(t *testing.T, tf *TestFramework) {
+	var fuelEventID uint
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+
+		driver, _ := tf.CreateTestDriver("Fraud Driver", TestDriverPhone, TestDriverLicense)
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+
+		// Create suspicious fuel event
+		fuelEvent := &models.FuelEvent{
+			VehicleID:     vehicle.ID,
+			DriverID:      &driver.ID,
+			Liters:        150.0, // Suspiciously large amount
+			PricePerLiter: 200.0, // Suspiciously high price
+			AmountINR:     30000.0,
+			Status:        models.FuelEventStatusPending,
+		}
+		tf.DB.Create(fuelEvent)
+		fuelEventID = fuelEvent.ID
+	}
+
+	testCase := APITestCase{
+		Name:   "Reject Fuel Event - Fraud",
+		Method: "POST",
+		URL:    fmt.Sprintf("/api/v1/fuel/events/%d/reject", fuelEventID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"reason":  "Fraudulent receipt - amount exceeds vehicle tank capacity",
+			"penalty": 1000.0, // Penalty amount
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}

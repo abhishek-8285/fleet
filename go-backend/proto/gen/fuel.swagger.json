@@ -1,0 +1,950 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "fuel.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "FuelService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {},
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1AlertSeverity": {
+      "type": "string",
+      "enum": [
+        "ALERT_SEVERITY_UNSPECIFIED",
+        "ALERT_SEVERITY_LOW",
+        "ALERT_SEVERITY_MEDIUM",
+        "ALERT_SEVERITY_HIGH",
+        "ALERT_SEVERITY_CRITICAL"
+      ],
+      "default": "ALERT_SEVERITY_UNSPECIFIED"
+    },
+    "v1DailyFuelSummary": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "totalFuel": {
+          "type": "number",
+          "format": "double"
+        },
+        "totalCost": {
+          "type": "number",
+          "format": "double"
+        },
+        "averageEfficiency": {
+          "type": "number",
+          "format": "double"
+        },
+        "eventsCount": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "v1FilterParams": {
+      "type": "object",
+      "properties": {
+        "search": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "sortBy": {
+          "type": "string"
+        },
+        "sortDesc": {
+          "type": "boolean"
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "Common filter parameters"
+    },
+    "v1FuelAlert": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "alertType": {
+          "$ref": "#/definitions/v1FuelAlertType"
+        },
+        "severity": {
+          "$ref": "#/definitions/v1AlertSeverity"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "detectedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Alert details"
+        },
+        "expectedValue": {
+          "type": "number",
+          "format": "double"
+        },
+        "actualValue": {
+          "type": "number",
+          "format": "double"
+        },
+        "variance": {
+          "type": "number",
+          "format": "double"
+        },
+        "thresholdValue": {
+          "type": "number",
+          "format": "double"
+        },
+        "location": {
+          "$ref": "#/definitions/v1Location",
+          "title": "Location"
+        },
+        "isResolved": {
+          "type": "boolean",
+          "title": "Resolution"
+        },
+        "resolvedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "resolvedBy": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "resolutionNotes": {
+          "type": "string"
+        },
+        "isNotified": {
+          "type": "boolean",
+          "title": "Notifications"
+        },
+        "notificationSent": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "escalationLevel": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "lastEscalatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Timestamps"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "vehicleId": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Associations"
+        },
+        "driverId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "tripId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "fuelEventId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "vehiclePlate": {
+          "type": "string"
+        },
+        "driverName": {
+          "type": "string"
+        }
+      },
+      "title": "Fuel Alerts"
+    },
+    "v1FuelAlertType": {
+      "type": "string",
+      "enum": [
+        "FUEL_ALERT_TYPE_UNSPECIFIED",
+        "FUEL_ALERT_TYPE_THEFT_SUSPECTED",
+        "FUEL_ALERT_TYPE_UNAUTHORIZED_STOP",
+        "FUEL_ALERT_TYPE_EXCESS_CONSUMPTION",
+        "FUEL_ALERT_TYPE_GEOFENCE_VIOLATION",
+        "FUEL_ALERT_TYPE_EFFICIENCY_DROP",
+        "FUEL_ALERT_TYPE_REFUEL_FREQUENCY"
+      ],
+      "default": "FUEL_ALERT_TYPE_UNSPECIFIED",
+      "title": "Fuel alert types"
+    },
+    "v1FuelAnalytics": {
+      "type": "object",
+      "properties": {
+        "period": {
+          "type": "string",
+          "title": "DAILY, WEEKLY, MONTHLY"
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "totalFuelConsumed": {
+          "type": "number",
+          "format": "double",
+          "title": "Fleet-wide metrics"
+        },
+        "totalFuelCost": {
+          "type": "number",
+          "format": "double"
+        },
+        "averageFuelEfficiency": {
+          "type": "number",
+          "format": "double"
+        },
+        "costPerKilometer": {
+          "type": "number",
+          "format": "double"
+        },
+        "numberOfRefuels": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "suspiciousEvents": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "theftSavings": {
+          "type": "number",
+          "format": "double"
+        },
+        "topEfficientVehicles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1VehicleFuelSummary"
+          },
+          "title": "Top performers"
+        },
+        "worstPerformingVehicles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1VehicleFuelSummary"
+          }
+        },
+        "dailyTrends": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1DailyFuelSummary"
+          },
+          "title": "Trends"
+        }
+      },
+      "title": "Fuel Analytics"
+    },
+    "v1FuelAnomaly": {
+      "type": "object",
+      "properties": {
+        "vehicleId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "licensePlate": {
+          "type": "string"
+        },
+        "anomalyType": {
+          "type": "string",
+          "title": "CONSUMPTION_SPIKE, EFFICIENCY_DROP, REFUEL_FREQUENCY"
+        },
+        "anomalyScore": {
+          "type": "number",
+          "format": "double"
+        },
+        "description": {
+          "type": "string"
+        },
+        "currentValue": {
+          "type": "number",
+          "format": "double",
+          "title": "Current vs expected"
+        },
+        "expectedValue": {
+          "type": "number",
+          "format": "double"
+        },
+        "deviationPercentage": {
+          "type": "number",
+          "format": "double"
+        },
+        "location": {
+          "$ref": "#/definitions/v1Location",
+          "title": "Context"
+        },
+        "detectedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tripId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "driverId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "lastWeekAverage": {
+          "type": "number",
+          "format": "double",
+          "title": "Historical comparison"
+        },
+        "lastMonthAverage": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "v1FuelEfficiencyUpdate": {
+      "type": "object",
+      "properties": {
+        "vehicleId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "licensePlate": {
+          "type": "string"
+        },
+        "currentEfficiency": {
+          "type": "number",
+          "format": "double",
+          "description": "km/liter",
+          "title": "Current efficiency"
+        },
+        "distanceTraveled": {
+          "type": "number",
+          "format": "double"
+        },
+        "fuelConsumed": {
+          "type": "number",
+          "format": "double"
+        },
+        "targetEfficiency": {
+          "type": "number",
+          "format": "double",
+          "title": "Comparison"
+        },
+        "efficiencyVariance": {
+          "type": "number",
+          "format": "double"
+        },
+        "performanceGrade": {
+          "type": "string",
+          "title": "EXCELLENT, GOOD, AVERAGE, POOR"
+        },
+        "dailyAverage": {
+          "type": "number",
+          "format": "double",
+          "title": "Trends"
+        },
+        "weeklyAverage": {
+          "type": "number",
+          "format": "double"
+        },
+        "trendDirection": {
+          "type": "number",
+          "format": "double",
+          "title": "Positive = improving, Negative = declining"
+        },
+        "periodStart": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Context"
+        },
+        "periodEnd": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tripsCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "driverId": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "v1FuelEvent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "liters": {
+          "type": "number",
+          "format": "double"
+        },
+        "amountInr": {
+          "type": "number",
+          "format": "double"
+        },
+        "pricePerLiter": {
+          "type": "number",
+          "format": "double"
+        },
+        "odometerKm": {
+          "type": "number",
+          "format": "double"
+        },
+        "fuelType": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1FuelEventStatus"
+        },
+        "location": {
+          "type": "string",
+          "title": "Location"
+        },
+        "latitude": {
+          "type": "number",
+          "format": "double"
+        },
+        "longitude": {
+          "type": "number",
+          "format": "double"
+        },
+        "stationName": {
+          "type": "string",
+          "title": "Station info"
+        },
+        "stationBrand": {
+          "type": "string"
+        },
+        "stationId": {
+          "type": "string"
+        },
+        "receiptNumber": {
+          "type": "string",
+          "title": "Receipt info"
+        },
+        "receiptPhotoUrl": {
+          "type": "string"
+        },
+        "verifiedBy": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Verification"
+        },
+        "verifiedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "verificationNotes": {
+          "type": "string"
+        },
+        "isAuthorized": {
+          "type": "boolean",
+          "title": "Fraud detection"
+        },
+        "fraudScore": {
+          "type": "number",
+          "format": "double"
+        },
+        "fraudReason": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Timestamps"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "driverId": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Associations"
+        },
+        "vehicleId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "tripId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "driverName": {
+          "type": "string"
+        },
+        "vehiclePlate": {
+          "type": "string"
+        }
+      },
+      "title": "Messages"
+    },
+    "v1FuelEventProcessingResult": {
+      "type": "object",
+      "properties": {
+        "fuelEventId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "status": {
+          "$ref": "#/definitions/v1FuelEventStatus"
+        },
+        "fraudScore": {
+          "type": "number",
+          "format": "double"
+        },
+        "fraudReason": {
+          "type": "string"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requiresManualReview": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1FuelEventResult": {
+      "type": "object",
+      "properties": {
+        "batchId": {
+          "type": "string"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1FuelEventProcessingResult"
+          }
+        },
+        "processedCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "suspiciousCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "verifiedCount": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "v1FuelEventStatus": {
+      "type": "string",
+      "enum": [
+        "FUEL_EVENT_STATUS_UNSPECIFIED",
+        "FUEL_EVENT_STATUS_PENDING",
+        "FUEL_EVENT_STATUS_VERIFIED",
+        "FUEL_EVENT_STATUS_SUSPICIOUS",
+        "FUEL_EVENT_STATUS_REJECTED"
+      ],
+      "default": "FUEL_EVENT_STATUS_UNSPECIFIED",
+      "title": "Fuel event status"
+    },
+    "v1FuelStation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "brand": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "pincode": {
+          "type": "string"
+        },
+        "location": {
+          "$ref": "#/definitions/v1Location"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "Fuel Stations"
+    },
+    "v1FuelTheftAlert": {
+      "type": "object",
+      "properties": {
+        "vehicleId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "licensePlate": {
+          "type": "string"
+        },
+        "driverId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "driverName": {
+          "type": "string"
+        },
+        "alertType": {
+          "$ref": "#/definitions/v1FuelAlertType"
+        },
+        "severity": {
+          "$ref": "#/definitions/v1AlertSeverity"
+        },
+        "description": {
+          "type": "string"
+        },
+        "expectedFuel": {
+          "type": "number",
+          "format": "double",
+          "title": "Theft details"
+        },
+        "actualFuel": {
+          "type": "number",
+          "format": "double"
+        },
+        "variancePercentage": {
+          "type": "number",
+          "format": "double"
+        },
+        "estimatedTheftLiters": {
+          "type": "number",
+          "format": "double"
+        },
+        "estimatedLossInr": {
+          "type": "number",
+          "format": "double"
+        },
+        "location": {
+          "$ref": "#/definitions/v1Location",
+          "title": "Location and timing"
+        },
+        "detectedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastRefuel": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tripId": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Context"
+        },
+        "isUnauthorizedStop": {
+          "type": "boolean"
+        },
+        "distanceFromRoute": {
+          "type": "number",
+          "format": "double"
+        },
+        "evidenceUrls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Photos, receipts, etc.",
+          "title": "Evidence"
+        },
+        "confidenceScore": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "v1GetFuelAlertsResponse": {
+      "type": "object",
+      "properties": {
+        "alerts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1FuelAlert"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1GetFuelEventsResponse": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1FuelEvent"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1Pagination"
+        }
+      }
+    },
+    "v1GetNearbyFuelStationsResponse": {
+      "type": "object",
+      "properties": {
+        "stations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1NearbyFuelStation"
+          }
+        }
+      }
+    },
+    "v1Location": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "format": "double"
+        },
+        "longitude": {
+          "type": "number",
+          "format": "double"
+        },
+        "accuracy": {
+          "type": "number",
+          "format": "double"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "Location message for GPS coordinates"
+    },
+    "v1NearbyFuelStation": {
+      "type": "object",
+      "properties": {
+        "station": {
+          "$ref": "#/definitions/v1FuelStation"
+        },
+        "distanceKm": {
+          "type": "number",
+          "format": "double"
+        },
+        "estimatedTravelTime": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "v1Pagination": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "total": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalPages": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "Pagination for list requests"
+    },
+    "v1SuccessResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "success": {
+          "type": "boolean"
+        }
+      },
+      "title": "Success response for operations"
+    },
+    "v1VehicleFuelAnalytics": {
+      "type": "object",
+      "properties": {
+        "vehicleId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "licensePlate": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "totalFuelConsumed": {
+          "type": "number",
+          "format": "double"
+        },
+        "totalDistance": {
+          "type": "number",
+          "format": "double"
+        },
+        "averageFuelEfficiency": {
+          "type": "number",
+          "format": "double"
+        },
+        "expectedFuelConsumption": {
+          "type": "number",
+          "format": "double"
+        },
+        "actualFuelConsumption": {
+          "type": "number",
+          "format": "double"
+        },
+        "fuelVariance": {
+          "type": "number",
+          "format": "double"
+        },
+        "totalFuelCost": {
+          "type": "number",
+          "format": "double"
+        },
+        "costPerKilometer": {
+          "type": "number",
+          "format": "double"
+        },
+        "numberOfRefuels": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "suspiciousEvents": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "theftSavings": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "v1VehicleFuelSummary": {
+      "type": "object",
+      "properties": {
+        "vehicleId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "licensePlate": {
+          "type": "string"
+        },
+        "fuelEfficiency": {
+          "type": "number",
+          "format": "double"
+        },
+        "totalCost": {
+          "type": "number",
+          "format": "double"
+        },
+        "suspiciousEvents": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    }
+  }
+}

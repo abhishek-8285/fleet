@@ -1,0 +1,323 @@
+syntax = "proto3";
+
+package fleetflow.v1;
+option go_package = "github.com/fleetflow/backend/proto/gen";
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+
+// Location Tracking Service (Real-time GPS streaming)
+service LocationService {
+  // Record single location ping
+  rpc RecordLocationPing(LocationPingRequest) returns (SuccessResponse);
+  
+  // Get vehicle location
+  rpc GetVehicleLocation(GetVehicleLocationRequest) returns (VehicleLocationResponse);
+  
+  // Get location history
+  rpc GetLocationHistory(GetLocationHistoryRequest) returns (GetLocationHistoryResponse);
+  
+  // Get driver location
+  rpc GetDriverLocation(GetDriverLocationRequest) returns (DriverLocationResponse);
+  
+  // Geofence management
+  rpc GetGeofences(GetGeofencesRequest) returns (GetGeofencesResponse);
+  rpc CreateGeofence(CreateGeofenceRequest) returns (Geofence);
+  rpc UpdateGeofence(UpdateGeofenceRequest) returns (Geofence);
+  rpc DeleteGeofence(DeleteGeofenceRequest) returns (SuccessResponse);
+  
+  // ==== REAL-TIME STREAMING SERVICES (THE POWER OF gRPC) ====
+  
+  // Bidirectional streaming for real-time GPS tracking
+  rpc StreamGPSTracking(stream GPSUpdate) returns (stream GPSBroadcast);
+  
+  // Server streaming for live fleet monitoring
+  rpc WatchFleetLive(WatchFleetRequest) returns (stream FleetLocationUpdate);
+  
+  // Stream geofence violations in real-time
+  rpc StreamGeofenceAlerts(GeofenceAlertRequest) returns (stream GeofenceAlert);
+  
+  // Stream route deviations
+  rpc StreamRouteDeviations(RouteDeviationRequest) returns (stream RouteDeviation);
+  
+  // Stream all location events (comprehensive monitoring)
+  rpc StreamLocationEvents(LocationEventRequest) returns (stream LocationEvent);
+}
+
+// Geofence types
+enum GeofenceType {
+  GEOFENCE_TYPE_UNSPECIFIED = 0;
+  GEOFENCE_TYPE_CIRCLE = 1;
+  GEOFENCE_TYPE_POLYGON = 2;
+  GEOFENCE_TYPE_FUEL_STATION = 3;
+  GEOFENCE_TYPE_CUSTOMER_LOCATION = 4;
+  GEOFENCE_TYPE_DEPOT = 5;
+  GEOFENCE_TYPE_RESTRICTED_AREA = 6;
+}
+
+enum GeofenceEventType {
+  GEOFENCE_EVENT_UNSPECIFIED = 0;
+  GEOFENCE_EVENT_ENTER = 1;
+  GEOFENCE_EVENT_EXIT = 2;
+  GEOFENCE_EVENT_DWELL = 3; // Staying too long
+}
+
+// Messages
+message LocationPing {
+  uint32 id = 1;
+  double latitude = 2;
+  double longitude = 3;
+  double accuracy = 4;
+  double speed = 5;
+  double heading = 6;
+  double altitude = 7;
+  google.protobuf.Timestamp timestamp = 8;
+  uint32 driver_id = 9;
+  uint32 vehicle_id = 10;
+  uint32 trip_id = 11;
+  string source = 12; // MOBILE, GPS_DEVICE, MANUAL
+  uint32 battery_level = 13;
+  string network_type = 14; // 2G, 3G, 4G, WIFI
+}
+
+message LocationPingRequest {
+  double latitude = 1;
+  double longitude = 2;
+  double accuracy = 3;
+  double speed = 4;
+  double heading = 5;
+  double altitude = 6;
+  uint32 driver_id = 7;
+  uint32 vehicle_id = 8;
+  uint32 trip_id = 9;
+  string source = 10;
+  uint32 battery_level = 11;
+  string network_type = 12;
+}
+
+message GetVehicleLocationRequest {
+  uint32 vehicle_id = 1;
+}
+
+message VehicleLocationResponse {
+  LocationPing latest_ping = 1;
+  VehicleStatus status = 2;
+  uint32 current_driver_id = 3;
+  string driver_name = 4;
+  uint32 current_trip_id = 5;
+  google.protobuf.Timestamp last_update = 6;
+}
+
+message GetLocationHistoryRequest {
+  uint32 vehicle_id = 1;
+  google.protobuf.Timestamp start_time = 2;
+  google.protobuf.Timestamp end_time = 3;
+  uint32 limit = 4;
+}
+
+message GetLocationHistoryResponse {
+  repeated LocationPing pings = 1;
+  uint32 total_count = 2;
+}
+
+message GetDriverLocationRequest {
+  uint32 driver_id = 1;
+}
+
+message DriverLocationResponse {
+  LocationPing latest_ping = 1;
+  DriverStatus status = 2;
+  uint32 current_vehicle_id = 3;
+  string vehicle_plate = 4;
+  uint32 current_trip_id = 5;
+  google.protobuf.Timestamp last_update = 6;
+}
+
+// Geofence management
+message Geofence {
+  uint32 id = 1;
+  string name = 2;
+  string description = 3;
+  GeofenceType type = 4;
+  
+  // For circular geofences
+  double center_latitude = 5;
+  double center_longitude = 6;
+  double radius = 7; // meters
+  
+  // For polygon geofences
+  repeated Location polygon_points = 8;
+  
+  bool is_active = 9;
+  bool alert_on_enter = 10;
+  bool alert_on_exit = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+message GetGeofencesRequest {
+  Pagination pagination = 1;
+  GeofenceType type_filter = 2;
+  bool active_only = 3;
+}
+
+message GetGeofencesResponse {
+  repeated Geofence geofences = 1;
+  Pagination pagination = 2;
+}
+
+message CreateGeofenceRequest {
+  string name = 1;
+  string description = 2;
+  GeofenceType type = 3;
+  double center_latitude = 4;
+  double center_longitude = 5;
+  double radius = 6;
+  repeated Location polygon_points = 7;
+  bool alert_on_enter = 8;
+  bool alert_on_exit = 9;
+}
+
+message UpdateGeofenceRequest {
+  uint32 id = 1;
+  string name = 2;
+  string description = 3;
+  bool is_active = 4;
+  bool alert_on_enter = 5;
+  bool alert_on_exit = 6;
+}
+
+message DeleteGeofenceRequest {
+  uint32 id = 1;
+}
+
+// ==== REAL-TIME STREAMING MESSAGES ====
+
+// GPS Streaming (Bidirectional)
+message GPSUpdate {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  double latitude = 3;
+  double longitude = 4;
+  double speed = 5;
+  double heading = 6;
+  double accuracy = 7;
+  google.protobuf.Timestamp timestamp = 8;
+  uint32 driver_id = 9;
+  uint32 trip_id = 10;
+  uint32 battery_level = 11;
+  string network_type = 12;
+}
+
+message GPSBroadcast {
+  repeated FleetLocationUpdate vehicles = 1;
+  repeated GeofenceAlert geofence_alerts = 2;
+  repeated RouteDeviation route_deviations = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}
+
+// Fleet Live Monitoring
+message WatchFleetRequest {
+  repeated uint32 vehicle_ids = 1; // Empty means all vehicles
+  bool include_offline = 2;
+  uint32 update_interval_seconds = 3; // Default 10 seconds
+}
+
+message FleetLocationUpdate {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  Location location = 3;
+  VehicleStatus status = 4;
+  double speed = 5;
+  double heading = 6;
+  uint32 current_driver_id = 7;
+  string driver_name = 8;
+  DriverStatus driver_status = 9;
+  uint32 current_trip_id = 10;
+  TripStatus trip_status = 11;
+  double fuel_level = 12;
+  google.protobuf.Timestamp last_update = 13;
+}
+
+// Geofence Alerts Streaming
+message GeofenceAlertRequest {
+  repeated uint32 vehicle_ids = 1; // Empty means all vehicles
+  repeated uint32 geofence_ids = 2; // Empty means all geofences
+  AlertSeverity min_severity = 3;
+}
+
+message GeofenceAlert {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  uint32 geofence_id = 3;
+  string geofence_name = 4;
+  GeofenceEventType event_type = 5;
+  Location location = 6;
+  AlertSeverity severity = 7;
+  string description = 8;
+  google.protobuf.Timestamp timestamp = 9;
+  uint32 driver_id = 10;
+  string driver_name = 11;
+  uint32 trip_id = 12;
+}
+
+// Route Deviation Streaming
+message RouteDeviationRequest {
+  repeated uint32 trip_ids = 1; // Empty means all active trips
+  double max_deviation_meters = 2; // Default 500 meters
+}
+
+message RouteDeviation {
+  uint32 trip_id = 1;
+  string tracking_id = 2;
+  uint32 vehicle_id = 3;
+  string license_plate = 4;
+  uint32 driver_id = 5;
+  string driver_name = 6;
+  double deviation_distance = 7; // meters
+  uint32 deviation_duration = 8; // minutes
+  Location deviation_start = 9;
+  Location current_location = 10;
+  string reason = 11; // FUEL_STOP, TRAFFIC, EMERGENCY, UNKNOWN
+  AlertSeverity severity = 12;
+  google.protobuf.Timestamp start_time = 13;
+  google.protobuf.Timestamp timestamp = 14;
+}
+
+// Comprehensive Location Events
+message LocationEventRequest {
+  repeated uint32 vehicle_ids = 1;
+  repeated string event_types = 2; // GPS_UPDATE, GEOFENCE, ROUTE_DEVIATION, SPEED_VIOLATION
+  AlertSeverity min_severity = 3;
+}
+
+message LocationEvent {
+  string event_id = 1;
+  string event_type = 2; // GPS_UPDATE, GEOFENCE_VIOLATION, ROUTE_DEVIATION, SPEED_VIOLATION, PANIC_BUTTON
+  uint32 vehicle_id = 3;
+  string license_plate = 4;
+  uint32 driver_id = 5;
+  string driver_name = 6;
+  Location location = 7;
+  AlertSeverity severity = 8;
+  string description = 9;
+  map<string, string> metadata = 10;
+  google.protobuf.Timestamp timestamp = 11;
+  
+  // Event-specific data
+  GeofenceAlert geofence_data = 12;
+  RouteDeviation route_deviation_data = 13;
+  SpeedViolation speed_violation_data = 14;
+}
+
+message SpeedViolation {
+  uint32 vehicle_id = 1;
+  uint32 driver_id = 2;
+  double current_speed = 3;
+  double speed_limit = 4;
+  double violation_amount = 5;
+  Location location = 6;
+  uint32 duration_seconds = 7;
+  google.protobuf.Timestamp start_time = 8;
+  google.protobuf.Timestamp timestamp = 9;
+}

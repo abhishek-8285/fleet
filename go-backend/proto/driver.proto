@@ -1,0 +1,203 @@
+syntax = "proto3";
+
+package fleetflow.v1;
+option go_package = "github.com/fleetflow/backend/proto/gen";
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+import "analytics.proto";
+
+// Driver Management Service
+service DriverService {
+  // Get all drivers
+  rpc GetDrivers(GetDriversRequest) returns (GetDriversResponse);
+  
+  // Create new driver
+  rpc CreateDriver(CreateDriverRequest) returns (Driver);
+  
+  // Get driver by ID
+  rpc GetDriver(GetDriverRequest) returns (Driver);
+  
+  // Update driver
+  rpc UpdateDriver(UpdateDriverRequest) returns (Driver);
+  
+  // Delete driver
+  rpc DeleteDriver(DeleteDriverRequest) returns (SuccessResponse);
+  
+  // Update driver status
+  rpc UpdateDriverStatus(UpdateDriverStatusRequest) returns (SuccessResponse);
+  
+  // Get driver performance
+  rpc GetDriverPerformance(GetDriverPerformanceRequest) returns (DriverPerformanceMetric);
+  
+  // Get driver compliance
+  rpc GetDriverCompliance(GetDriverComplianceRequest) returns (DriverCompliance);
+  
+  // Get available drivers for assignment
+  rpc GetAvailableDrivers(GetAvailableDriversRequest) returns (GetAvailableDriversResponse);
+  
+  // Get driver statistics
+  rpc GetDriverStats(GetDriverStatsRequest) returns (DriverStats);
+  
+  // Stream driver status changes (real-time)
+  rpc StreamDriverStatus(StreamDriverStatusRequest) returns (stream DriverStatusUpdate);
+  
+  // Stream driver locations (real-time)
+  rpc StreamDriverLocations(StreamDriverLocationsRequest) returns (stream DriverLocationUpdate);
+}
+
+// Messages
+message Driver {
+  uint32 id = 1;
+  string name = 2;
+  string phone = 3;
+  string license_number = 4;
+  google.protobuf.Timestamp license_expiry = 5;
+  google.protobuf.Timestamp medical_cert_expiry = 6;
+  DriverStatus status = 7;
+  double rating = 8;
+  uint32 total_trips = 9;
+  bool is_active = 10;
+  google.protobuf.Timestamp hired_at = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+  
+  // Profile information
+  string address = 14;
+  google.protobuf.Timestamp date_of_birth = 15;
+  string emergency_name = 16;
+  string emergency_phone = 17;
+  
+  // Performance metrics
+  double fuel_efficiency = 18;
+  uint32 on_time_deliveries = 19;
+  double customer_rating_sum = 20;
+  uint32 customer_rating_count = 21;
+  
+  // Current assignment
+  uint32 current_trip_id = 22;
+  uint32 current_vehicle_id = 23;
+  
+  // Current location
+  Location current_location = 24;
+}
+
+message CreateDriverRequest {
+  string name = 1;
+  string phone = 2;
+  string license_number = 3;
+  google.protobuf.Timestamp license_expiry = 4;
+  google.protobuf.Timestamp medical_cert_expiry = 5;
+  string address = 6;
+  google.protobuf.Timestamp date_of_birth = 7;
+  string emergency_name = 8;
+  string emergency_phone = 9;
+  google.protobuf.Timestamp hired_at = 10;
+}
+
+message GetDriversRequest {
+  Pagination pagination = 1;
+  FilterParams filters = 2;
+  bool include_inactive = 3;
+  bool license_expiring = 4;
+}
+
+message GetDriversResponse {
+  repeated Driver drivers = 1;
+  Pagination pagination = 2;
+}
+
+message GetDriverRequest {
+  uint32 id = 1;
+}
+
+message UpdateDriverRequest {
+  uint32 id = 1;
+  string name = 2;
+  string license_number = 3;
+  google.protobuf.Timestamp license_expiry = 4;
+  google.protobuf.Timestamp medical_cert_expiry = 5;
+  DriverStatus status = 6;
+  string address = 7;
+  google.protobuf.Timestamp date_of_birth = 8;
+  string emergency_name = 9;
+  string emergency_phone = 10;
+  bool is_active = 11;
+}
+
+message DeleteDriverRequest {
+  uint32 id = 1;
+}
+
+message UpdateDriverStatusRequest {
+  uint32 id = 1;
+  DriverStatus status = 2;
+  string reason = 3;
+}
+
+message GetDriverComplianceRequest {
+  uint32 id = 1;
+}
+
+message GetAvailableDriversRequest {
+  Location pickup_location = 1;
+  double max_distance_km = 2;
+}
+
+message GetAvailableDriversResponse {
+  repeated AvailableDriver drivers = 1;
+}
+
+message AvailableDriver {
+  Driver driver = 1;
+  double distance_km = 2;
+  uint32 estimated_eta_minutes = 3;
+  bool can_be_assigned = 4;
+  string reason_if_not = 5;
+}
+
+message GetDriverStatsRequest {
+  // Empty - gets overall stats
+}
+
+message DriverStats {
+  uint32 total_drivers = 1;
+  uint32 active_drivers = 2;
+  uint32 available_drivers = 3;
+  uint32 on_trip_drivers = 4;
+  uint32 on_break_drivers = 5;
+  uint32 offline_drivers = 6;
+  uint32 license_expiring_soon = 7;
+  uint32 medical_cert_expiring = 8;
+  double average_rating = 9;
+  uint32 top_performer_id = 10;
+  string top_performer_name = 11;
+  double top_performer_rating = 12;
+}
+
+// Streaming messages
+message StreamDriverStatusRequest {
+  repeated uint32 driver_ids = 1; // Empty means all drivers
+}
+
+message DriverStatusUpdate {
+  uint32 driver_id = 1;
+  string name = 2;
+  DriverStatus old_status = 3;
+  DriverStatus new_status = 4;
+  string reason = 5;
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+message StreamDriverLocationsRequest {
+  repeated uint32 driver_ids = 1; // Empty means all drivers
+}
+
+message DriverLocationUpdate {
+  uint32 driver_id = 1;
+  string name = 2;
+  Location location = 3;
+  DriverStatus status = 4;
+  uint32 current_trip_id = 5;
+  uint32 current_vehicle_id = 6;
+}

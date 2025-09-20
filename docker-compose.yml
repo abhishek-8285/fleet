@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: fleetflow
+      POSTGRES_USER: fleet
+      POSTGRES_PASSWORD: fleet
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+
+  go-backend:
+    build: ./go-backend
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgres://fleet:fleet@postgres:5432/fleetflow?sslmode=disable
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: fleetflow-dev-secret-key-change-in-production
+      JWT_EXPIRATION: 24h
+      REFRESH_TOKEN_EXPIRY: 168h
+      ENVIRONMENT: development
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres-data:
+  redis-data:
+

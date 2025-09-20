@@ -1,0 +1,51 @@
+=== LOGIN SCREEN PROMPT ===
+
+Design a mobile login screen for "FleetFlow" Indian truck driver app. Large FleetFlow logo, phone number input with +91 prefix, big "Send OTP" button (60px height), language toggle (English/Hindi), clean background with subtle truck imagery. High contrast for outdoor visibility, large touch targets for drivers with gloves. Create 4 variants: modern gradient, professional card-based, truck-themed industrial, minimal white/blue.
+
+=== DRIVER DASHBOARD PROMPT ===
+
+Design mobile home dashboard for truck drivers. Header with driver name/photo, prominent today's earnings display (₹ amount), current trip status card, quick stats (rating, trips, fuel efficiency), vehicle info card (truck number, fuel level), weather widget, emergency button, bottom navigation. Show "Good Morning Rajesh! Today's Earnings: ₹2,450" example. Create 4 variants: card-based shadows, list-style with icons, customizable widgets, minimal essential-only.
+
+=== TRIP LIST SCREEN PROMPT ===
+
+Design trip management screen with tabs "Today's Trips | Upcoming | Completed". Trip cards showing route (Mumbai → Delhi), customer name, times, payment amount, status indicators (blue assigned, orange progress, green complete). Swipe actions for accept/view/call. Filter bar at top, emergency FAB. Create variants: compact list, large detailed cards, timeline chronological, map-integrated view.
+
+=== TRIP DETAILS PROMPT ===
+
+Design detailed trip screen showing complete trip info. Header with route/status, customer section (name, phone, address), cargo details (type, weight, instructions), progress timeline with pickup→transit→delivery, action buttons (Start Trip, Call Customer, Navigate). Show "Mumbai → Delhi | 1,420km | ₹5,500" example. Variants: sectioned dividers, card-based grouping, tabbed categories, single-scroll hierarchy.
+
+=== NAVIGATION SCREEN PROMPT ===
+
+Design in-trip navigation screen for truck drivers. Full-screen map with route, top overlay showing trip progress (65% complete) and ETA, navigation instruction bar "In 500m turn right", bottom controls (End Trip, Call Customer, Emergency), speed indicator, fuel gauge. Variants: minimalist overlay, information-rich, voice-first with audio controls, night-mode optimized.
+
+=== DOCUMENT CAPTURE PROMPT ===
+
+Design document capture screen for truck drivers. Full camera viewfinder, document type selector (Fuel Receipt, Delivery Proof, Inspection), large capture button center-bottom, gallery access, review area with zoom/annotation, submit options. Include OCR preview and validation. Variants: camera-first minimal, form-integrated, guided workflow, gallery-style batch.
+
+=== SIGNATURE COLLECTION PROMPT ===
+
+Design customer signature screen for delivery proof. Large signature pad (70% screen), customer name "Please sign, Mr. Sharma", delivery summary above, Clear/Submit buttons, dotted signature guide, delivery details timestamp. Variants: full-screen pad minimal, form-based component, split-screen with details, modal overlay confirmation.
+
+=== FUEL TRACKING PROMPT ===
+
+Design fuel expense tracking with station selection, fuel amount input (liters), price per liter, auto-calculated total, receipt photo capture, odometer reading, payment method selection. Show calculation: "45.5L × ₹85.50 = ₹3,890.25". Variants: step-wizard with progress, single-form sections, calculator-style large numbers, photo-first with OCR extraction.
+
+=== PERFORMANCE ANALYTICS PROMPT ===
+
+Design driver analytics showing earnings trends, efficiency metrics, customer ratings. Time selector (Today/Week/Month), earnings chart, KPI cards "Total: ₹45,200 | Rating: 4.8⭐ | Efficiency: 12.5km/L | On-time: 95%". Include bar charts for daily earnings, line charts for fuel efficiency. Variants: card-heavy minimal charts, chart-focused analytics, list-style numerical, interactive drill-down dashboard.
+
+=== EMERGENCY SUPPORT PROMPT ===
+
+Design emergency screen with large red header, quick action buttons (Medical Emergency, Accident, Breakdown, Security), automatic location sharing, emergency contacts (Police, Medical, Company), incident reporting with photos. Buttons: "Medical Emergency" red calls 108, "Breakdown" yellow calls roadside assistance. Variants: button-grid large actions, list-style detailed, swipe-based quick selection, voice-activated audio prompts.
+
+=== FLEET MANAGER MOBILE PROMPT ===
+
+Design mobile fleet dashboard for managers. Fleet status "45/50 Active | 8 Available", active trips "23 Progress | 5 Delayed", revenue "₹1,25,450 (+15%)", critical alerts "2 Breakdowns | 1 Emergency", live map with vehicles, quick actions (Assign Trip, Emergency Response). Variants: widget customizable, list expandable, map-centric overlay, split-screen summary.
+
+=== CUSTOMER TRACKING PROMPT ===
+
+Design customer shipment tracking with tracking ID display, live map with package location, progress timeline (Picked Up ✓ → In Transit → Delivery), driver info (photo, name, phone, truck), ETA with confidence, action buttons (Call Driver, Share, Report Issue). Show "Driver: Rajesh Kumar | MH12AB1234 | 4.8⭐". Variants: timeline-centric detailed, map-centric overlay, card-based sections, minimal essential tracking.
+
+=== SETTINGS SCREEN PROMPT ===
+
+Design comprehensive settings with grouped categories: Account (profile, password), Notifications (push, SMS, WhatsApp), GPS (accuracy, tracking, privacy), App Preferences (language, theme, units), Vehicle (default truck info), Security (biometric, data sharing). Include language toggle English/Hindi with flags, notification switches with descriptions. Variants: iOS grouped list, Android Material cards, Indian cultural elements, minimalist essentials.

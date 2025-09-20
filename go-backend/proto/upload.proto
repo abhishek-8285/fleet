@@ -1,0 +1,285 @@
+syntax = "proto3";
+
+package fleetflow.v1;
+option go_package = "github.com/fleetflow/backend/proto/gen";
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+
+// Upload and File Management Service
+service UploadService {
+  // File uploads
+  rpc UploadFuelReceipt(stream UploadFuelReceiptRequest) returns (UploadResponse);
+  rpc UploadPOD(stream UploadPODRequest) returns (UploadResponse);
+  rpc UploadDocument(stream UploadDocumentRequest) returns (UploadResponse);
+  
+  // Get uploads
+  rpc GetUpload(GetUploadRequest) returns (Upload);
+  rpc GetUploads(GetUploadsRequest) returns (GetUploadsResponse);
+  
+  // Upload management
+  rpc DeleteUpload(DeleteUploadRequest) returns (SuccessResponse);
+  rpc VerifyUpload(VerifyUploadRequest) returns (SuccessResponse);
+  
+  // File processing status
+  rpc GetProcessingStatus(GetProcessingStatusRequest) returns (ProcessingStatus);
+  
+  // Stream upload progress (real-time)
+  rpc StreamUploadProgress(StreamUploadProgressRequest) returns (stream UploadProgress);
+  
+  // Stream OCR results (real-time)
+  rpc StreamOCRResults(StreamOCRResultsRequest) returns (stream OCRResult);
+}
+
+// Upload types
+enum UploadType {
+  UPLOAD_TYPE_UNSPECIFIED = 0;
+  UPLOAD_TYPE_FUEL_RECEIPT = 1;
+  UPLOAD_TYPE_POD = 2;
+  UPLOAD_TYPE_SIGNATURE = 3;
+  UPLOAD_TYPE_VEHICLE_PHOTO = 4;
+  UPLOAD_TYPE_DRIVER_DOCUMENT = 5;
+  UPLOAD_TYPE_COMPLIANCE = 6;
+  UPLOAD_TYPE_INCIDENT = 7;
+  UPLOAD_TYPE_OTHER = 8;
+}
+
+// Upload status
+enum UploadStatus {
+  UPLOAD_STATUS_UNSPECIFIED = 0;
+  UPLOAD_STATUS_PENDING = 1;
+  UPLOAD_STATUS_PROCESSING = 2;
+  UPLOAD_STATUS_PROCESSED = 3;
+  UPLOAD_STATUS_FAILED = 4;
+  UPLOAD_STATUS_REJECTED = 5;
+}
+
+// Messages
+message Upload {
+  uint32 id = 1;
+  string file_name = 2;
+  string original_name = 3;
+  string content_type = 4;
+  int64 file_size = 5;
+  string file_path = 6;
+  string public_url = 7;
+  UploadType upload_type = 8;
+  UploadStatus status = 9;
+  
+  // File metadata
+  string file_hash = 10;
+  string thumbnail_url = 11;
+  
+  // Processing info
+  google.protobuf.Timestamp processed_at = 12;
+  string processing_logs = 13;
+  string error_message = 14;
+  
+  // OCR/Analysis results
+  string extracted_text = 15;
+  string analysis_result = 16; // JSON blob
+  double confidence = 17;
+  
+  // Verification
+  bool is_verified = 18;
+  uint32 verified_by = 19;
+  google.protobuf.Timestamp verified_at = 20;
+  string verification_notes = 21;
+  
+  // Metadata
+  string description = 22;
+  repeated string tags = 23;
+  
+  // Timestamps
+  google.protobuf.Timestamp created_at = 24;
+  google.protobuf.Timestamp updated_at = 25;
+  
+  // Associations
+  uint32 trip_id = 26;
+  uint32 vehicle_id = 27;
+  uint32 driver_id = 28;
+  uint32 fuel_event_id = 29;
+  uint32 uploaded_by = 30;
+}
+
+// Upload requests (streaming for large files)
+message UploadFuelReceiptRequest {
+  oneof data {
+    UploadMetadata metadata = 1;
+    bytes chunk_data = 2;
+  }
+}
+
+message UploadPODRequest {
+  oneof data {
+    PODMetadata metadata = 1;
+    bytes chunk_data = 2;
+  }
+}
+
+message UploadDocumentRequest {
+  oneof data {
+    DocumentMetadata metadata = 1;
+    bytes chunk_data = 2;
+  }
+}
+
+message UploadMetadata {
+  string file_name = 1;
+  string content_type = 2;
+  int64 file_size = 3;
+  UploadType upload_type = 4;
+  string description = 5;
+  uint32 vehicle_id = 6;
+  uint32 driver_id = 7;
+  uint32 fuel_event_id = 8;
+  Location location = 9;
+}
+
+message PODMetadata {
+  string file_name = 1;
+  string content_type = 2;
+  int64 file_size = 3;
+  uint32 trip_id = 4;
+  string customer_name = 5;
+  string delivery_notes = 6;
+  Location delivery_location = 7;
+  google.protobuf.Timestamp delivered_at = 8;
+}
+
+message DocumentMetadata {
+  string file_name = 1;
+  string content_type = 2;
+  int64 file_size = 3;
+  UploadType upload_type = 4;
+  string document_type = 5; // LICENSE, INSURANCE, REGISTRATION, etc.
+  google.protobuf.Timestamp expiry_date = 6;
+  uint32 driver_id = 7;
+  uint32 vehicle_id = 8;
+}
+
+message UploadResponse {
+  Upload upload = 1;
+  string upload_url = 2;
+  bool success = 3;
+  string message = 4;
+}
+
+message GetUploadRequest {
+  uint32 id = 1;
+}
+
+message GetUploadsRequest {
+  Pagination pagination = 1;
+  FilterParams filters = 2;
+  UploadType type_filter = 3;
+  UploadStatus status_filter = 4;
+  uint32 vehicle_id = 5;
+  uint32 driver_id = 6;
+  uint32 trip_id = 7;
+  bool unverified_only = 8;
+}
+
+message GetUploadsResponse {
+  repeated Upload uploads = 1;
+  Pagination pagination = 2;
+}
+
+message DeleteUploadRequest {
+  uint32 id = 1;
+}
+
+message VerifyUploadRequest {
+  uint32 id = 1;
+  string verification_notes = 2;
+}
+
+message GetProcessingStatusRequest {
+  uint32 upload_id = 1;
+}
+
+message ProcessingStatus {
+  uint32 upload_id = 1;
+  UploadStatus status = 2;
+  double progress_percentage = 3;
+  string current_step = 4;
+  string estimated_completion = 5;
+  repeated string processing_steps = 6;
+  string error_message = 7;
+}
+
+// Streaming messages
+message StreamUploadProgressRequest {
+  repeated uint32 upload_ids = 1;
+}
+
+message UploadProgress {
+  uint32 upload_id = 1;
+  string file_name = 2;
+  UploadStatus status = 3;
+  double progress_percentage = 4;
+  string current_step = 5;
+  int64 bytes_processed = 6;
+  int64 total_bytes = 7;
+  google.protobuf.Timestamp timestamp = 8;
+  string error_message = 9;
+}
+
+message StreamOCRResultsRequest {
+  repeated UploadType upload_types = 1; // Filter by upload types
+}
+
+message OCRResult {
+  uint32 upload_id = 1;
+  string file_name = 2;
+  UploadType upload_type = 3;
+  string extracted_text = 4;
+  double confidence = 5;
+  
+  // Structured data extraction
+  FuelReceiptData fuel_receipt_data = 6;
+  PODData pod_data = 7;
+  DocumentData document_data = 8;
+  
+  google.protobuf.Timestamp processed_at = 9;
+  repeated string warnings = 10;
+  bool requires_manual_review = 11;
+}
+
+// Structured data from OCR
+message FuelReceiptData {
+  string station_name = 1;
+  string station_brand = 2;
+  string receipt_number = 3;
+  string date = 4;
+  string time = 5;
+  string fuel_type = 6;
+  double quantity = 7;
+  double price_per_liter = 8;
+  double total_amount = 9;
+  string payment_method = 10;
+  string vehicle_number = 11;
+  double confidence = 12;
+}
+
+message PODData {
+  string customer_name = 1;
+  string signature_extracted = 2; // Base64 signature if detected
+  repeated string delivery_photos = 3;
+  string delivery_notes = 4;
+  google.protobuf.Timestamp delivered_at = 5;
+  string receiver_name = 6;
+  string receiver_phone = 7;
+  Location gps_location = 8;
+}
+
+message DocumentData {
+  string document_type = 1;
+  string document_number = 2;
+  string holder_name = 3;
+  google.protobuf.Timestamp issue_date = 4;
+  google.protobuf.Timestamp expiry_date = 5;
+  string issuing_authority = 6;
+  map<string, string> extracted_fields = 7;
+  double confidence = 8;
+}

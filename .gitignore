@@ -1,0 +1,30 @@
+# General
+.DS_Store
+*.log
+*.env
+
+# Node
+node_modules/
+dist/
+.parcel-cache/
+.next/
+.expo/
+expo/.expo/
+
+# Java/Maven
+target/
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Docker
+*.jar
+*.war
+*.ear
+docker-data/
+

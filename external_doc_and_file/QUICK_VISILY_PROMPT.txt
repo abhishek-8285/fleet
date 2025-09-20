@@ -1,0 +1,49 @@
+Design a comprehensive fleet management system called "FleetFlow" for the Indian logistics market. Create modern, intuitive interfaces for:
+
+🎯 THREE PLATFORMS:
+1. WEB DASHBOARD (Fleet Managers/Admins) - Multi-panel command center with live fleet map, real-time analytics, driver management, vehicle tracking, trip oversight, and financial reporting
+2. MOBILE APP (Drivers) - Touch-optimized interface with GPS navigation, trip status updates, document capture, customer communication, earnings tracking, and safety features  
+3. CUSTOMER PORTAL (Shipment Tracking) - Clean, simple interface for tracking deliveries, booking shipments, communicating with drivers, and viewing delivery history
+
+👥 USER ROLES:
+- ADMINS: Need information-rich dashboards, analytics, fleet oversight, resource management
+- DRIVERS: Need safety-focused, large-button mobile interface for use while driving  
+- CUSTOMERS: Need simple, trustworthy tracking and booking experience
+
+🚛 KEY FEATURES TO DESIGN:
+- Real-time vehicle tracking on interactive maps
+- Trip lifecycle management (creation, assignment, tracking, completion)
+- Driver performance analytics and ratings
+- Vehicle maintenance scheduling and fuel management
+- Document capture and proof of delivery workflows
+- Customer communication and notification systems
+- Financial dashboards with profit/loss and GST compliance
+- Emergency support and safety features
+
+🇮🇳 INDIAN MARKET REQUIREMENTS:
+- Multi-language interface support (Hindi, English, regional languages)
+- Indian address formats with pin codes and landmarks
+- INR currency formatting (₹1,23,456 style)
+- Mobile-first design optimized for limited bandwidth
+- High contrast modes for bright outdoor conditions
+- Cultural design elements appropriate for Indian business users
+- Support for various device types and screen sizes common in India
+
+🎨 DESIGN STYLE:
+- Professional blue (#2563eb) primary color for trust
+- Success green (#16a34a) for completed operations
+- Warning amber (#d97706) and danger red (#dc2626) for alerts  
+- Modern, clean card-based layouts with subtle shadows
+- Large touch targets (minimum 44px) for mobile interfaces
+- Consistent iconography with clear visual hierarchy
+- Responsive design that works on desktop, tablet, and mobile
+
+📱 SPECIFIC REQUIREMENTS:
+- Web Dashboard: Multi-column layout with live map centerpiece, sidebar navigation, real-time widgets
+- Mobile App: Bottom tab navigation, swipe gestures, camera integration, GPS prominence, offline indicators
+- Customer Portal: Progress tracking timeline, simple booking wizard, driver contact interface
+
+🎯 SUCCESS GOALS:
+Create designs where a truck driver with basic smartphone skills can efficiently manage trips, a fleet manager can oversee 500+ vehicles intuitively, and customers can confidently track their shipments - all optimized for Indian market conditions and infrastructure.
+
+The system should feel professional enough for enterprise use while being simple enough for drivers with varying technical backgrounds. Design for efficiency, safety, and growth in India's rapidly expanding logistics sector.

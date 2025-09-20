@@ -1,0 +1,3321 @@
+basePath: /api/v1
+definitions:
+  dto.APIError:
+    properties:
+      code:
+        example: 400
+        type: integer
+      details:
+        additionalProperties:
+          type: string
+        type: object
+      error:
+        example: validation_failed
+        type: string
+      message:
+        example: Invalid input data
+        type: string
+    type: object
+  dto.CreateDriverRequest:
+    properties:
+      address:
+        example: 123 Main Street, New Delhi
+        type: string
+      date_of_birth:
+        example: "1985-01-15T00:00:00Z"
+        type: string
+      emergency_name:
+        example: प्रिया शर्मा
+        type: string
+      emergency_phone:
+        example: "+919876543211"
+        type: string
+      hired_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      license_expiry:
+        example: "2025-12-31T00:00:00Z"
+        type: string
+      license_number:
+        example: DL1420110012345
+        maxLength: 20
+        minLength: 5
+        type: string
+      medical_cert_expiry:
+        example: "2024-06-30T00:00:00Z"
+        type: string
+      name:
+        example: राहुल शर्मा
+        maxLength: 100
+        minLength: 2
+        type: string
+      phone:
+        example: "+919876543210"
+        type: string
+    required:
+    - license_number
+    - name
+    - phone
+    type: object
+  dto.DriverComplianceInfo:
+    properties:
+      license_expiry_days:
+        example: 365
+        type: integer
+      license_status:
+        example: VALID
+        type: string
+      medical_cert_expiry_days:
+        example: 30
+        type: integer
+      medical_cert_status:
+        example: EXPIRING
+        type: string
+      overall_compliance_score:
+        example: 85.5
+        type: number
+    type: object
+  dto.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        example: eyJhbGciOiJIUzI1NiIs...
+        type: string
+    required:
+    - refresh_token
+    type: object
+  dto.SendOTPRequest:
+    properties:
+      phone:
+        example: "+919876543210"
+        type: string
+    required:
+    - phone
+    type: object
+  dto.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        example: Operation completed successfully
+        type: string
+    type: object
+  dto.VerifyOTPRequest:
+    properties:
+      otp:
+        example: "123456"
+        type: string
+      phone:
+        example: "+919876543210"
+        type: string
+    required:
+    - otp
+    - phone
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@fleetflow.in
+    name: FleetFlow Support
+    url: http://www.fleetflow.in/support
+  description: Fleet Management System API for India
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: FleetFlow API
+  version: "1.0"
+paths:
+  /admin/audit-logs:
+    get:
+      description: Get system audit logs (admin only)
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Start date (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: End date (RFC3339)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Audit Logs
+      tags:
+      - admin
+  /admin/security-events:
+    get:
+      description: Get security events and incidents (admin only)
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by severity
+        in: query
+        name: severity
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Security Events
+      tags:
+      - admin
+  /admin/settings:
+    get:
+      description: Get system configuration settings (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get System Settings
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Update system configuration settings (admin only)
+      parameters:
+      - description: Settings data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update System Settings
+      tags:
+      - admin
+  /admin/users:
+    get:
+      description: Get paginated list of all users (admin only)
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      - description: Filter by role
+        in: query
+        name: role
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Users
+      tags:
+      - admin
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account (admin only)
+      parameters:
+      - description: User data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Create User
+      tags:
+      - admin
+  /admin/users/{id}:
+    delete:
+      description: Deactivate user account (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Delete User
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Update user information (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User updates
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update User
+      tags:
+      - admin
+  /admin/users/{id}/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Trigger password reset for user (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Reset request
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Reset User Password
+      tags:
+      - admin
+  /analytics/compliance:
+    get:
+      description: Get compliance and regulatory metrics (admin only)
+      parameters:
+      - default: '"month"'
+        description: Time period
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Compliance Report
+      tags:
+      - analytics
+  /analytics/dashboard:
+    get:
+      description: Get analytics for dashboard overview (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Dashboard Stats
+      tags:
+      - analytics
+  /analytics/driver-performance:
+    get:
+      description: Get driver performance metrics (admin only)
+      parameters:
+      - default: '"month"'
+        description: Time period
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Driver Performance
+      tags:
+      - analytics
+  /analytics/fleet-performance:
+    get:
+      description: Get fleet performance metrics (admin only)
+      parameters:
+      - default: '"month"'
+        description: Time period
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Fleet Performance
+      tags:
+      - analytics
+  /analytics/fuel-efficiency:
+    get:
+      description: Get fuel efficiency metrics (admin only)
+      parameters:
+      - default: '"month"'
+        description: Time period
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Fuel Efficiency
+      tags:
+      - analytics
+  /analytics/revenue:
+    get:
+      description: Get revenue and financial metrics (admin only)
+      parameters:
+      - default: '"month"'
+        description: Time period
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Revenue Analytics
+      tags:
+      - analytics
+  /analytics/vehicle-utilization:
+    get:
+      description: Get vehicle utilization metrics (admin only)
+      parameters:
+      - default: '"month"'
+        description: Time period
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Vehicle Utilization
+      tags:
+      - analytics
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout user and revoke tokens
+      parameters:
+      - description: Logout request
+        in: body
+        name: request
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Logout
+      tags:
+      - auth
+  /auth/otp/send:
+    post:
+      consumes:
+      - application/json
+      description: Send OTP to the provided phone number for authentication
+      parameters:
+      - description: Phone number
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SendOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      summary: Send OTP
+      tags:
+      - auth
+  /auth/otp/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify OTP and get access token for authentication
+      parameters:
+      - description: Phone and OTP
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VerifyOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      summary: Verify OTP
+      tags:
+      - auth
+  /auth/profile:
+    get:
+      description: Get current user profile information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Profile
+      tags:
+      - auth
+    put:
+      consumes:
+      - application/json
+      description: Update current user profile information
+      parameters:
+      - description: Profile updates
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update Profile
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Get new access token using refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      summary: Refresh Token
+      tags:
+      - auth
+  /driver/stats:
+    get:
+      description: Get statistics for the currently logged-in driver
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Current Driver Stats
+      tags:
+      - drivers
+  /drivers:
+    get:
+      description: Get paginated list of drivers with filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Drivers
+      tags:
+      - drivers
+    post:
+      consumes:
+      - application/json
+      description: Create a new driver
+      parameters:
+      - description: Driver data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateDriverRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Create Driver
+      tags:
+      - drivers
+  /drivers/{id}:
+    delete:
+      description: Soft delete a driver
+      parameters:
+      - description: Driver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Delete Driver
+      tags:
+      - drivers
+    get:
+      description: Get driver details by ID
+      parameters:
+      - description: Driver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Driver
+      tags:
+      - drivers
+    put:
+      consumes:
+      - application/json
+      description: Update driver information
+      parameters:
+      - description: Driver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Driver updates
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update Driver
+      tags:
+      - drivers
+  /drivers/{id}/compliance:
+    get:
+      description: Get driver compliance status
+      parameters:
+      - description: Driver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DriverComplianceInfo'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Driver Compliance
+      tags:
+      - drivers
+  /drivers/{id}/performance:
+    get:
+      description: Get driver performance metrics
+      parameters:
+      - description: Driver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: '"MONTHLY"'
+        description: Period (DAILY, WEEKLY, MONTHLY)
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Driver Performance
+      tags:
+      - drivers
+  /drivers/{id}/status:
+    put:
+      consumes:
+      - application/json
+      description: Update driver status (AVAILABLE, ON_TRIP, ON_BREAK, OFFLINE)
+      parameters:
+      - description: Driver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Status update
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update Driver Status
+      tags:
+      - drivers
+  /fuel/alerts:
+    get:
+      description: Get list of fuel theft and consumption alerts
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Fuel Alerts
+      tags:
+      - fuel
+  /fuel/alerts/{id}:
+    get:
+      description: Get fuel alert details by ID
+      parameters:
+      - description: Fuel Alert ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Fuel Alert
+      tags:
+      - fuel
+  /fuel/alerts/{id}/resolve:
+    post:
+      consumes:
+      - application/json
+      description: Resolve a fuel alert (admin only)
+      parameters:
+      - description: Fuel Alert ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Resolve Fuel Alert
+      tags:
+      - fuel
+  /fuel/analytics:
+    get:
+      description: Get fuel consumption and efficiency analytics
+      parameters:
+      - default: '"month"'
+        description: Time period
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Fuel Analytics
+      tags:
+      - fuel
+  /fuel/analytics/{vehicle_id}:
+    get:
+      description: Get fuel analytics for a specific vehicle
+      parameters:
+      - description: Vehicle ID
+        in: path
+        name: vehicle_id
+        required: true
+        type: integer
+      - default: '"month"'
+        description: Time period
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Vehicle Fuel Analytics
+      tags:
+      - fuel
+  /fuel/events:
+    get:
+      description: Get paginated list of fuel events with filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by vehicle ID
+        in: query
+        name: vehicle_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Fuel Events
+      tags:
+      - fuel
+    post:
+      consumes:
+      - application/json
+      description: Create a new fuel purchase event
+      parameters:
+      - description: Fuel event data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Create Fuel Event
+      tags:
+      - fuel
+  /fuel/events/{id}:
+    get:
+      description: Get fuel event details by ID
+      parameters:
+      - description: Fuel Event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Fuel Event
+      tags:
+      - fuel
+    put:
+      consumes:
+      - application/json
+      description: Update fuel event information
+      parameters:
+      - description: Fuel Event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fuel event data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update Fuel Event
+      tags:
+      - fuel
+  /fuel/events/{id}/reject:
+    post:
+      consumes:
+      - application/json
+      description: Reject a fuel event (admin only)
+      parameters:
+      - description: Fuel Event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Rejection reason
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Reject Fuel Event
+      tags:
+      - fuel
+  /fuel/events/{id}/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify a fuel event (admin only)
+      parameters:
+      - description: Fuel Event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Verify Fuel Event
+      tags:
+      - fuel
+  /fuel/stations:
+    get:
+      description: Get fuel stations near a location
+      parameters:
+      - description: Latitude
+        format: float64
+        in: query
+        name: lat
+        required: true
+        type: number
+      - description: Longitude
+        format: float64
+        in: query
+        name: lng
+        required: true
+        type: number
+      - default: 10
+        description: Search radius in km
+        in: query
+        name: radius
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Nearby Fuel Stations
+      tags:
+      - fuel
+    post:
+      consumes:
+      - application/json
+      description: Create a new fuel station (admin only)
+      parameters:
+      - description: Fuel station data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Create Fuel Station
+      tags:
+      - fuel
+  /location/driver/{id}:
+    get:
+      description: Get current GPS location of a driver
+      parameters:
+      - description: Driver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Driver Location
+      tags:
+      - location
+  /location/geofences:
+    get:
+      description: Get list of geofences with filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Geofences
+      tags:
+      - location
+    post:
+      consumes:
+      - application/json
+      description: Create a new geofence area (admin only)
+      parameters:
+      - description: Geofence data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Create Geofence
+      tags:
+      - location
+  /location/geofences/{id}:
+    delete:
+      description: Delete a geofence (admin only)
+      parameters:
+      - description: Geofence ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Delete Geofence
+      tags:
+      - location
+    put:
+      consumes:
+      - application/json
+      description: Update geofence information (admin only)
+      parameters:
+      - description: Geofence ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Geofence data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update Geofence
+      tags:
+      - location
+  /location/ping:
+    post:
+      consumes:
+      - application/json
+      description: Record GPS location from driver mobile app with automatic MQTT
+        publishing
+      parameters:
+      - description: Location data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Record Location Ping
+      tags:
+      - location
+  /location/vehicle/{id}:
+    get:
+      description: Get current GPS location of a vehicle
+      parameters:
+      - description: Vehicle ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Vehicle Location
+      tags:
+      - location
+  /location/vehicle/{id}/history:
+    get:
+      description: Get location history for a vehicle
+      parameters:
+      - description: Vehicle ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Start date (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: End date (RFC3339)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Location History
+      tags:
+      - location
+  /mqtt/driver/{driver_id}/message:
+    post:
+      consumes:
+      - application/json
+      description: Send real-time message to driver's mobile app via MQTT
+      parameters:
+      - description: Driver ID
+        in: path
+        name: driver_id
+        required: true
+        type: integer
+      - description: Message data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Send Message to Driver
+      tags:
+      - mqtt
+  /mqtt/fleet/alert:
+    post:
+      consumes:
+      - application/json
+      description: Publish emergency or important alerts to entire fleet
+      parameters:
+      - description: Alert data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Publish Fleet Alert
+      tags:
+      - mqtt
+  /mqtt/fleet/broadcast:
+    post:
+      consumes:
+      - application/json
+      description: Send broadcast message to all drivers and admins via MQTT
+      parameters:
+      - description: Broadcast data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Broadcast Fleet Message
+      tags:
+      - mqtt
+  /mqtt/status:
+    get:
+      description: Get MQTT broker connection status and configuration
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get MQTT Status
+      tags:
+      - mqtt
+  /mqtt/trip/{trip_id}/update:
+    post:
+      consumes:
+      - application/json
+      description: Publish trip progress to MQTT for customer tracking
+      parameters:
+      - description: Trip ID
+        in: path
+        name: trip_id
+        required: true
+        type: integer
+      - description: Trip progress data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Publish Trip Update
+      tags:
+      - mqtt
+  /mqtt/vehicle/{vehicle_id}/location:
+    post:
+      consumes:
+      - application/json
+      description: Publish real-time vehicle location to MQTT for mobile apps
+      parameters:
+      - description: Vehicle ID
+        in: path
+        name: vehicle_id
+        required: true
+        type: integer
+      - description: Location data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Publish Location Update
+      tags:
+      - mqtt
+  /reports/drivers:
+    get:
+      description: Export drivers data to CSV
+      parameters:
+      - default: '"csv"'
+        description: Export format
+        in: query
+        name: format
+        type: string
+      produces:
+      - text/csv
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Export Drivers
+      tags:
+      - drivers
+  /reports/fuel:
+    get:
+      description: Export fuel events data to CSV format
+      parameters:
+      - default: '"csv"'
+        description: Export format
+        in: query
+        name: format
+        type: string
+      produces:
+      - text/csv
+      responses:
+        "200":
+          description: CSV file
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Export Fuel Events
+      tags:
+      - reports
+  /reports/trips:
+    get:
+      description: Export trips data to CSV format
+      parameters:
+      - default: '"csv"'
+        description: Export format
+        in: query
+        name: format
+        type: string
+      produces:
+      - text/csv
+      responses:
+        "200":
+          description: CSV file
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Export Trips
+      tags:
+      - reports
+  /tracking/{tracking_id}:
+    get:
+      description: Get trip status for customer tracking (public endpoint)
+      parameters:
+      - description: Tracking ID
+        in: path
+        name: tracking_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      summary: Get Public Trip Status
+      tags:
+      - tracking
+  /trips:
+    get:
+      description: Get paginated list of trips with filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Trips
+      tags:
+      - trips
+    post:
+      consumes:
+      - application/json
+      description: Create a new delivery trip
+      parameters:
+      - description: Trip data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Create Trip
+      tags:
+      - trips
+  /trips/{id}:
+    delete:
+      description: Soft delete a trip
+      parameters:
+      - description: Trip ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Delete Trip
+      tags:
+      - trips
+    get:
+      description: Get trip details by ID
+      parameters:
+      - description: Trip ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Trip
+      tags:
+      - trips
+    put:
+      consumes:
+      - application/json
+      description: Update trip information
+      parameters:
+      - description: Trip ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Trip data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update Trip
+      tags:
+      - trips
+  /trips/{id}/assign:
+    post:
+      consumes:
+      - application/json
+      description: Assign a driver to a trip
+      parameters:
+      - description: Trip ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Assignment data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Assign Trip
+      tags:
+      - trips
+  /trips/{id}/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Cancel a trip
+      parameters:
+      - description: Trip ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Cancellation data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cancel Trip
+      tags:
+      - trips
+  /trips/{id}/complete:
+    post:
+      consumes:
+      - application/json
+      description: Complete a trip with delivery confirmation
+      parameters:
+      - description: Trip ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Completion data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Complete Trip
+      tags:
+      - trips
+  /trips/{id}/eta:
+    put:
+      consumes:
+      - application/json
+      description: Update estimated time of arrival for a trip
+      parameters:
+      - description: Trip ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ETA data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update Trip ETA
+      tags:
+      - trips
+  /trips/{id}/location:
+    get:
+      description: Get current location of a trip
+      parameters:
+      - description: Trip ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Trip Location
+      tags:
+      - trips
+  /trips/{id}/pause:
+    post:
+      consumes:
+      - application/json
+      description: Pause an ongoing trip
+      parameters:
+      - description: Trip ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Pause Trip
+      tags:
+      - trips
+  /trips/{id}/resume:
+    post:
+      consumes:
+      - application/json
+      description: Resume a paused trip
+      parameters:
+      - description: Trip ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Resume Trip
+      tags:
+      - trips
+  /trips/{id}/route:
+    get:
+      description: Get route details for a trip
+      parameters:
+      - description: Trip ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Trip Route
+      tags:
+      - trips
+  /trips/{id}/start:
+    post:
+      consumes:
+      - application/json
+      description: Start a trip with driver location
+      parameters:
+      - description: Trip ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Start trip data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Start Trip
+      tags:
+      - trips
+  /uploads/{id}:
+    delete:
+      description: Delete an uploaded file and its metadata
+      parameters:
+      - description: Upload ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Delete Upload
+      tags:
+      - uploads
+    get:
+      description: Get upload details and metadata by ID
+      parameters:
+      - description: Upload ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Upload
+      tags:
+      - uploads
+  /uploads/{id}/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify an uploaded document (admin only)
+      parameters:
+      - description: Upload ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Verification data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Verify Upload
+      tags:
+      - uploads
+  /uploads/document:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a general document (license, insurance, etc.)
+      parameters:
+      - description: Document file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Document type
+        in: formData
+        name: document_type
+        required: true
+        type: string
+      - description: Entity type (driver, vehicle, etc.)
+        in: formData
+        name: entity_type
+        required: true
+        type: string
+      - description: Entity ID
+        in: formData
+        name: entity_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Upload Document
+      tags:
+      - uploads
+  /uploads/fuel-receipt:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload fuel receipt image for verification
+      parameters:
+      - description: Receipt image
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Fuel Event ID
+        in: formData
+        name: fuel_event_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Upload Fuel Receipt
+      tags:
+      - uploads
+  /uploads/pod:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload proof of delivery document
+      parameters:
+      - description: POD document
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Trip ID
+        in: formData
+        name: trip_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Upload POD
+      tags:
+      - uploads
+  /vehicles:
+    get:
+      description: Get paginated list of vehicles with filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Vehicles
+      tags:
+      - vehicles
+    post:
+      consumes:
+      - application/json
+      description: Create a new vehicle in the fleet
+      parameters:
+      - description: Vehicle data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Create Vehicle
+      tags:
+      - vehicles
+  /vehicles/{id}:
+    delete:
+      description: Soft delete a vehicle from the fleet
+      parameters:
+      - description: Vehicle ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Delete Vehicle
+      tags:
+      - vehicles
+    get:
+      description: Get vehicle details by ID
+      parameters:
+      - description: Vehicle ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Vehicle
+      tags:
+      - vehicles
+    put:
+      consumes:
+      - application/json
+      description: Update vehicle information
+      parameters:
+      - description: Vehicle ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Vehicle data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update Vehicle
+      tags:
+      - vehicles
+  /vehicles/{id}/compliance:
+    get:
+      description: Get compliance status for a vehicle
+      parameters:
+      - description: Vehicle ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Vehicle Compliance
+      tags:
+      - vehicles
+  /vehicles/{id}/location:
+    get:
+      description: Get current GPS location of a vehicle
+      parameters:
+      - description: Vehicle ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Vehicle Location
+      tags:
+      - vehicles
+  /vehicles/{id}/performance:
+    get:
+      description: Get performance metrics for a vehicle
+      parameters:
+      - description: Vehicle ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get Vehicle Performance
+      tags:
+      - vehicles
+  /whatsapp/process-event:
+    post:
+      consumes:
+      - application/json
+      description: Process trip lifecycle events for WhatsApp notifications
+      parameters:
+      - description: Trip event data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Process Trip Event
+      tags:
+      - whatsapp
+  /whatsapp/send:
+    post:
+      consumes:
+      - application/json
+      description: Send a WhatsApp message to a phone number
+      parameters:
+      - description: Message data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Send WhatsApp Message
+      tags:
+      - whatsapp
+  /whatsapp/status:
+    get:
+      description: Get WhatsApp service connection status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get WhatsApp Status
+      tags:
+      - whatsapp
+  /whatsapp/trip-notification:
+    post:
+      consumes:
+      - application/json
+      description: Send trip status notification via WhatsApp
+      parameters:
+      - description: Notification data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      security:
+      - BearerAuth: []
+      summary: Send Trip Notification
+      tags:
+      - whatsapp
+  /whatsapp/webhook:
+    get:
+      consumes:
+      - application/json
+      description: Handle WhatsApp webhook for verification and incoming messages
+        (public endpoint)
+      parameters:
+      - description: Webhook mode
+        in: query
+        name: hub.mode
+        type: string
+      - description: Verification token
+        in: query
+        name: hub.verify_token
+        type: string
+      - description: Challenge string
+        in: query
+        name: hub.challenge
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Verification successful
+          schema:
+            type: string
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.APIError'
+      summary: WhatsApp Webhook
+      tags:
+      - whatsapp
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

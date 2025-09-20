@@ -1,0 +1,583 @@
+package test
+
+import (
+	"fmt"
+	"testing"
+	"time"
+
+	"github.com/fleetflow/backend/internal/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestTripAPI(t *testing.T) {
+	tf, err := NewTestFramework()
+	require.NoError(t, err)
+	defer tf.CleanDatabase()
+
+	// Test cases for trip management endpoints
+	testCases := []struct {
+		name     string
+		testFunc func(*testing.T, *TestFramework)
+	}{
+		{"Create Trip - Valid Data", testCreateTripValid},
+		{"Create Trip - Missing Data", testCreateTripMissing},
+		{"Create Trip - Unauthorized", testCreateTripUnauthorized},
+		{"Get Trips - Admin Access", testGetTripsAdmin},
+		{"Get Trips - Driver Access", testGetTripsDriver},
+		{"Get Trip - Valid ID", testGetTripValid},
+		{"Get Trip - Invalid ID", testGetTripInvalid},
+		{"Update Trip - Valid", testUpdateTripValid},
+		{"Delete Trip - Valid", testDeleteTripValid},
+		{"Assign Trip - Valid", testAssignTripValid},
+		{"Assign Trip - Driver Busy", testAssignTripDriverBusy},
+		{"Start Trip - Valid", testStartTripValid},
+		{"Start Trip - Not Assigned", testStartTripNotAssigned},
+		{"Start Trip - Already Started", testStartTripAlreadyStarted},
+		{"Pause Trip - Valid", testPauseTripValid},
+		{"Pause Trip - Not Started", testPauseTripNotStarted},
+		{"Resume Trip - Valid", testResumeTripValid},
+		{"Resume Trip - Not Paused", testResumeTripNotPaused},
+		{"Complete Trip - Valid", testCompleteTripValid},
+		{"Complete Trip - Not Started", testCompleteTripNotStarted},
+		{"Cancel Trip - Valid", testCancelTripValid},
+		{"Cancel Trip - Already Completed", testCancelTripCompleted},
+		{"Get Trip Location - Valid", testGetTripLocationValid},
+		{"Get Trip Route - Valid", testGetTripRouteValid},
+		{"Update ETA - Valid", testUpdateETAValid},
+		{"Public Tracking - Valid", testPublicTrackingValid},
+		{"Public Tracking - Invalid ID", testPublicTrackingInvalid},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tf.CleanDatabase()
+			tc.testFunc(t, tf)
+		})
+	}
+}
+
+// Test: Create trip with valid data
+func testCreateTripValid(t *testing.T, tf *TestFramework) {
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Create Trip - Valid Data",
+		Method: "POST",
+		URL:    "/api/v1/trips",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"pickup_address":  "Mumbai Warehouse",
+			"dropoff_address": "Delhi Hub",
+			"customer_phone":  "+919888888888",
+			"customer_name":   "Test Customer",
+			"cargo_type":      "Electronics",
+			"cargo_weight":    500,
+			"cargo_value":     50000,
+			"pickup_time":     "2024-09-07T10:00:00Z",
+			"delivery_time":   "2024-09-08T18:00:00Z",
+		},
+		ExpectedStatus: 201,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+
+	// Verify trip was created with tracking ID
+	var trip models.Trip
+	err := tf.DB.Where("pickup_address = ?", "Mumbai Warehouse").First(&trip).Error
+	assert.NoError(t, err, "Trip should be created in database")
+	assert.NotEmpty(t, trip.TrackingID, "Trip should have tracking ID")
+	assert.Equal(t, models.TripStatusScheduled, trip.Status)
+}
+
+// Test: Create trip with missing required data
+func testCreateTripMissing(t *testing.T, tf *TestFramework) {
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Create Trip - Missing Data",
+		Method: "POST",
+		URL:    "/api/v1/trips",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"pickup_address": "Mumbai", // Missing dropoff_address, customer details
+		},
+		ExpectedStatus: 400,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Create trip without authorization
+func testCreateTripUnauthorized(t *testing.T, tf *TestFramework) {
+	testCase := APITestCase{
+		Name:   "Create Trip - Unauthorized",
+		Method: "POST",
+		URL:    "/api/v1/trips",
+		RequestBody: map[string]interface{}{
+			"pickup_address":  "Mumbai",
+			"dropoff_address": "Delhi",
+			"customer_phone":  "+919888888888",
+		},
+		ExpectedStatus: 401,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Get trips list (admin access)
+func testGetTripsAdmin(t *testing.T, tf *TestFramework) {
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+
+		// Create test data
+		driver, _ := tf.CreateTestDriver("Test Driver", TestDriverPhone, TestDriverLicense)
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		tf.CreateTestTrip("Mumbai", "Delhi", driver.ID, vehicle.ID)
+		tf.CreateTestTrip("Delhi", "Bangalore", driver.ID, vehicle.ID)
+	}
+
+	testCase := APITestCase{
+		Name:   "Get Trips - Admin Access",
+		Method: "GET",
+		URL:    "/api/v1/trips?page=1&limit=10&status=CREATED",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Get trips (driver access - only own trips)
+func testGetTripsDriver(t *testing.T, tf *TestFramework) {
+	var driverToken string
+	var driverID uint
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Trip Driver", TestDriverPhone, TestDriverLicense)
+		driverID = driver.ID
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		user.DriverID = &driver.ID
+		tf.DB.Save(user)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+
+		// Create trips
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		tf.CreateTestTrip("Mumbai", "Delhi", driver.ID, vehicle.ID) // Own trip
+
+		// Create trip for other driver
+		otherDriver, _ := tf.CreateTestDriver("Other Driver", "+919999999977", "MH1420110077777")
+		tf.CreateTestTrip("Chennai", "Bangalore", otherDriver.ID, vehicle.ID) // Other's trip
+	}
+
+	testCase := APITestCase{
+		Name:   "Get Trips - Driver Access",
+		Method: "GET",
+		URL:    "/api/v1/trips",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+
+	// Verify driver only sees their own trips
+	// Additional verification logic can be added here
+}
+
+// Test: Assign driver to trip
+func testAssignTripValid(t *testing.T, tf *TestFramework) {
+	var tripID, driverID, vehicleID uint
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+
+		driver, _ := tf.CreateTestDriver("Assign Driver", TestDriverPhone, TestDriverLicense)
+		driverID = driver.ID
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		vehicleID = vehicle.ID
+
+		// Create unassigned trip
+		trip := &models.Trip{
+			FromLocation:  "Mumbai",
+			ToLocation:    "Delhi",
+			Status:        "CREATED",
+			TrackingID:    "RTC240900123",
+			CustomerPhone: "+919888888888",
+		}
+		tf.DB.Create(trip)
+		tripID = trip.ID
+	}
+
+	testCase := APITestCase{
+		Name:   "Assign Trip - Valid",
+		Method: "POST",
+		URL:    fmt.Sprintf("/api/v1/trips/%d/assign", tripID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"driver_id":  driverID,
+			"vehicle_id": vehicleID,
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+
+	// Verify assignment in database
+	var trip models.Trip
+	tf.DB.First(&trip, tripID)
+	assert.Equal(t, driverID, *trip.DriverID, "Driver should be assigned")
+	assert.Equal(t, vehicleID, *trip.VehicleID, "Vehicle should be assigned")
+	assert.Equal(t, "ASSIGNED", trip.Status, "Trip status should be ASSIGNED")
+}
+
+// Test: Assign driver when driver is already busy
+func testAssignTripDriverBusy(t *testing.T, tf *TestFramework) {
+	var tripID1, tripID2, driverID, vehicleID uint
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+
+		driver, _ := tf.CreateTestDriver("Busy Driver", TestDriverPhone, TestDriverLicense)
+		driverID = driver.ID
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		vehicleID = vehicle.ID
+
+		// Create first trip and assign driver (making them busy)
+		trip1, _ := tf.CreateTestTrip("Mumbai", "Delhi", driver.ID, vehicle.ID)
+		tripID1 = trip1.ID
+		trip1.Status = "IN_TRANSIT" // Driver is busy
+		tf.DB.Save(trip1)
+
+		// Create second trip (should fail to assign same driver)
+		trip2 := &models.Trip{
+			PickupAddress:  "Chennai",
+			DropoffAddress: "Bangalore",
+			CustomerName:   "Test Customer 2",
+			Status:         models.TripStatusScheduled,
+			TrackingID:     "RTC240900124",
+			CustomerPhone:  "+919777777777",
+			CargoWeight:    1000,
+			BasePrice:      2500,
+			TotalAmount:    2500,
+		}
+		tf.DB.Create(trip2)
+		tripID2 = trip2.ID
+	}
+
+	testCase := APITestCase{
+		Name:   "Assign Trip - Driver Busy",
+		Method: "POST",
+		URL:    fmt.Sprintf("/api/v1/trips/%d/assign", tripID2),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"driver_id":  driverID,
+			"vehicle_id": vehicleID,
+		},
+		ExpectedStatus: 409, // Conflict - driver is busy
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Start trip with valid assignment
+func testStartTripValid(t *testing.T, tf *TestFramework) {
+	var tripID uint
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Start Driver", TestDriverPhone, TestDriverLicense)
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		user.DriverID = &driver.ID
+		tf.DB.Save(user)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+
+		// Create assigned trip
+		trip, _ := tf.CreateTestTrip("Mumbai", "Delhi", driver.ID, vehicle.ID)
+		tripID = trip.ID
+		trip.Status = models.TripStatusAssigned
+		tf.DB.Save(trip)
+	}
+
+	testCase := APITestCase{
+		Name:   "Start Trip - Valid",
+		Method: "POST",
+		URL:    fmt.Sprintf("/api/v1/trips/%d/start", tripID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		RequestBody: map[string]interface{}{
+			"location": map[string]float64{
+				"lat": 19.0760,
+				"lng": 72.8777,
+			},
+			"odometer": 125000,
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+
+	// Verify trip status changed to IN_PROGRESS
+	var trip models.Trip
+	tf.DB.First(&trip, tripID)
+	assert.Equal(t, models.TripStatusInProgress, trip.Status, "Trip should be IN_PROGRESS after start")
+	assert.NotNil(t, trip.ActualPickupTime, "Trip should have actual_pickup_time timestamp")
+}
+
+// Test: Start trip that's not assigned
+func testStartTripNotAssigned(t *testing.T, tf *TestFramework) {
+	var tripID uint
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Unassigned Driver", TestDriverPhone, TestDriverLicense)
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		user.DriverID = &driver.ID
+		tf.DB.Save(user)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+
+		// Create unassigned trip
+		trip := &models.Trip{
+			PickupAddress:  "Mumbai",
+			DropoffAddress: "Delhi",
+			CustomerName:   "Test Customer",
+			Status:         models.TripStatusScheduled, // Not assigned to any driver
+			TrackingID:     "RTC240900125",
+			CustomerPhone:  "+919888888888",
+			CargoWeight:    1000,
+			BasePrice:      2500,
+			TotalAmount:    2500,
+		}
+		tf.DB.Create(trip)
+		tripID = trip.ID
+	}
+
+	testCase := APITestCase{
+		Name:   "Start Trip - Not Assigned",
+		Method: "POST",
+		URL:    fmt.Sprintf("/api/v1/trips/%d/start", tripID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		RequestBody: map[string]interface{}{
+			"location": map[string]float64{"lat": 19.0760, "lng": 72.8777},
+		},
+		ExpectedStatus: 403, // Forbidden - can't start unassigned trip
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Start trip that's already started
+func testStartTripAlreadyStarted(t *testing.T, tf *TestFramework) {
+	var tripID uint
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Started Driver", TestDriverPhone, TestDriverLicense)
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		user.DriverID = &driver.ID
+		tf.DB.Save(user)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+
+		// Create already started trip
+		trip, _ := tf.CreateTestTrip("Mumbai", "Delhi", driver.ID, vehicle.ID)
+		tripID = trip.ID
+		trip.Status = models.TripStatusInProgress // Already started
+		now := time.Now()
+		trip.ActualPickupTime = &now
+		tf.DB.Save(trip)
+	}
+
+	testCase := APITestCase{
+		Name:   "Start Trip - Already Started",
+		Method: "POST",
+		URL:    fmt.Sprintf("/api/v1/trips/%d/start", tripID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		RequestBody: map[string]interface{}{
+			"location": map[string]float64{"lat": 19.0760, "lng": 72.8777},
+		},
+		ExpectedStatus: 409, // Conflict - trip already started
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Pause trip
+func testPauseTripValid(t *testing.T, tf *TestFramework) {
+	var tripID uint
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Pause Driver", TestDriverPhone, TestDriverLicense)
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		user.DriverID = &driver.ID
+		tf.DB.Save(user)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+
+		// Create in-transit trip
+		trip, _ := tf.CreateTestTrip("Mumbai", "Delhi", driver.ID, vehicle.ID)
+		tripID = trip.ID
+		trip.Status = "IN_TRANSIT"
+		now := time.Now()
+		trip.StartedAt = &now
+		tf.DB.Save(trip)
+	}
+
+	testCase := APITestCase{
+		Name:   "Pause Trip - Valid",
+		Method: "POST",
+		URL:    fmt.Sprintf("/api/v1/trips/%d/pause", tripID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		RequestBody: map[string]interface{}{
+			"reason":   "FUEL_STOP",
+			"location": map[string]float64{"lat": 20.0000, "lng": 73.0000},
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Complete trip with valid data
+func testCompleteTripValid(t *testing.T, tf *TestFramework) {
+	var tripID uint
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Complete Driver", TestDriverPhone, TestDriverLicense)
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		user.DriverID = &driver.ID
+		tf.DB.Save(user)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+
+		// Create in-transit trip
+		trip, _ := tf.CreateTestTrip("Mumbai", "Delhi", driver.ID, vehicle.ID)
+		tripID = trip.ID
+		trip.Status = "IN_TRANSIT"
+		now := time.Now()
+		trip.StartedAt = &now
+		tf.DB.Save(trip)
+	}
+
+	testCase := APITestCase{
+		Name:   "Complete Trip - Valid",
+		Method: "POST",
+		URL:    fmt.Sprintf("/api/v1/trips/%d/complete", tripID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		RequestBody: map[string]interface{}{
+			"location": map[string]float64{
+				"lat": 28.6139, // Delhi coordinates
+				"lng": 77.2090,
+			},
+			"odometer":       125450,
+			"delivery_notes": "Delivered to main gate",
+			"pod_signature":  "base64-encoded-signature",
+			"pod_images":     []string{"image1.jpg", "image2.jpg"},
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+
+	// Verify trip completion
+	var trip models.Trip
+	tf.DB.First(&trip, tripID)
+	assert.Equal(t, models.TripStatusCompleted, trip.Status, "Trip should be completed")
+	assert.NotNil(t, trip.ActualArrival, "Trip should have completion timestamp")
+}
+
+// Test: Public tracking with valid tracking ID
+func testPublicTrackingValid(t *testing.T, tf *TestFramework) {
+	var trackingID string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Public Driver", TestDriverPhone, TestDriverLicense)
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		trip, _ := tf.CreateTestTrip("Mumbai", "Delhi", driver.ID, vehicle.ID)
+		trackingID = trip.TrackingID
+	}
+
+	testCase := APITestCase{
+		Name:           "Public Tracking - Valid",
+		Method:         "GET",
+		URL:            fmt.Sprintf("/api/v1/tracking/%s", trackingID),
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Public tracking with invalid tracking ID
+func testPublicTrackingInvalid(t *testing.T, tf *TestFramework) {
+	testCase := APITestCase{
+		Name:           "Public Tracking - Invalid ID",
+		Method:         "GET",
+		URL:            "/api/v1/tracking/INVALID123",
+		ExpectedStatus: 404,
+	}
+
+	tf.RunAPITest(t, testCase)
+}

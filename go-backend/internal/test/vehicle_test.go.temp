@@ -1,0 +1,151 @@
+package test
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/fleetflow/backend/internal/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestVehicleAPI(t *testing.T) {
+	tf, err := NewTestFramework()
+	require.NoError(t, err)
+	defer tf.CleanDatabase()
+
+	testCases := []struct {
+		name     string
+		testFunc func(*testing.T, *TestFramework)
+	}{
+		{"Create Vehicle - Valid", testCreateVehicleValid},
+		{"Create Vehicle - Duplicate Registration", testCreateVehicleDuplicate},
+		{"Get Vehicles - Admin", testGetVehiclesAdmin},
+		{"Get Vehicle - Valid ID", testGetVehicleValid},
+		{"Update Vehicle - Valid", testUpdateVehicleValid},
+		{"Delete Vehicle - Valid", testDeleteVehicleValid},
+		{"Get Vehicle Location - Valid", testGetVehicleLocationValid},
+		{"Update Vehicle Location - Driver", testUpdateVehicleLocationDriver},
+		{"Vehicle Performance - Admin", testVehiclePerformanceAdmin},
+		{"Vehicle Compliance - Valid", testVehicleComplianceValid},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tf.CleanDatabase()
+			tc.testFunc(t, tf)
+		})
+	}
+}
+
+func testCreateVehicleValid(t *testing.T, tf *TestFramework) {
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Create Vehicle - Valid",
+		Method: "POST",
+		URL:    "/api/v1/vehicles",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"registration":       "MH01CD5678",
+			"type":               "TRUCK",
+			"make":               "Tata Motors",
+			"model":              "Prima 2518.K",
+			"year":               2023,
+			"capacity":           25000, // 25 tons
+			"fuel_tank_capacity": 400,   // 400 liters
+			"insurance_expiry":   "2025-12-31T00:00:00Z",
+			"permit_expiry":      "2025-06-30T00:00:00Z",
+		},
+		ExpectedStatus: 201,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+
+	// Verify vehicle creation
+	var vehicle models.Vehicle
+	err := tf.DB.Where("registration = ?", "MH01CD5678").First(&vehicle).Error
+	assert.NoError(t, err)
+	assert.Equal(t, "TRUCK", vehicle.Type)
+	assert.Equal(t, "AVAILABLE", vehicle.Status)
+}
+
+func testCreateVehicleDuplicate(t *testing.T, tf *TestFramework) {
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+
+		// Create existing vehicle
+		tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+	}
+
+	testCase := APITestCase{
+		Name:   "Create Vehicle - Duplicate Registration",
+		Method: "POST",
+		URL:    "/api/v1/vehicles",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"registration": TestVehicleReg, // Duplicate registration
+			"type":         "TRUCK",
+		},
+		ExpectedStatus: 409, // Conflict
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+func testUpdateVehicleLocationDriver(t *testing.T, tf *TestFramework) {
+	var vehicleID uint
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Location Driver", TestDriverPhone, TestDriverLicense)
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		vehicleID = vehicle.ID
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		user.DriverID = &driver.ID
+		tf.DB.Save(user)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+
+		// Assign vehicle to driver via trip
+		trip, _ := tf.CreateTestTrip("Mumbai", "Delhi", driver.ID, vehicle.ID)
+		trip.Status = "IN_TRANSIT"
+		tf.DB.Save(trip)
+	}
+
+	testCase := APITestCase{
+		Name:   "Update Vehicle Location - Driver",
+		Method: "PUT",
+		URL:    fmt.Sprintf("/api/v1/vehicles/%d/location", vehicleID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		RequestBody: map[string]interface{}{
+			"latitude":  19.1000,
+			"longitude": 72.9000,
+			"speed":     65.5,
+			"heading":   90,
+			"altitude":  10.5,
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}

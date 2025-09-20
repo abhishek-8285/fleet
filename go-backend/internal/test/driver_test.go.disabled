@@ -1,0 +1,579 @@
+package test
+
+import (
+	"fmt"
+	"testing"
+	"time"
+
+	"github.com/fleetflow/backend/internal/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestDriverAPI(t *testing.T) {
+	tf, err := NewTestFramework()
+	require.NoError(t, err)
+	defer tf.CleanDatabase()
+
+	// Test cases for driver endpoints
+	testCases := []struct {
+		name     string
+		testFunc func(*testing.T, *TestFramework)
+	}{
+		{"Create Driver - Valid Data", testCreateDriverValid},
+		{"Create Driver - Invalid Data", testCreateDriverInvalid},
+		{"Create Driver - Unauthorized", testCreateDriverUnauthorized},
+		{"Create Driver - Duplicate License", testCreateDriverDuplicate},
+		{"Get Drivers - Admin Access", testGetDriversAdmin},
+		{"Get Drivers - Driver Access", testGetDriversDriver},
+		{"Get Driver - Valid ID", testGetDriverValid},
+		{"Get Driver - Invalid ID", testGetDriverInvalid},
+		{"Update Driver - Valid", testUpdateDriverValid},
+		{"Update Driver - Unauthorized", testUpdateDriverUnauthorized},
+		{"Delete Driver - Valid", testDeleteDriverValid},
+		{"Delete Driver - In Use", testDeleteDriverInUse},
+		{"Driver Performance - Valid", testDriverPerformanceValid},
+		{"Driver Compliance - Valid", testDriverComplianceValid},
+		{"Update Driver Status - Valid", testUpdateDriverStatusValid},
+		{"Get Current Driver Stats", testGetCurrentDriverStats},
+		{"Get Current Driver Profile", testGetCurrentDriverProfile},
+		{"Get Current Driver Trips", testGetCurrentDriverTrips},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tf.CleanDatabase()
+			tc.testFunc(t, tf)
+		})
+	}
+}
+
+// Test: Create driver with valid data
+func testCreateDriverValid(t *testing.T, tf *TestFramework) {
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Create Driver - Valid Data",
+		Method: "POST",
+		URL:    "/api/v1/drivers",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"name":           "New Test Driver",
+			"phone":          "+919999999993",
+			"license_number": "MH1420110054321",
+			"address":        "Mumbai, Maharashtra",
+		},
+		ExpectedStatus: 201,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+
+	// Verify driver was created in database
+	var driver models.Driver
+	err := tf.DB.Where("phone = ?", "+919999999993").First(&driver).Error
+	assert.NoError(t, err, "Driver should be created in database")
+	assert.Equal(t, "New Test Driver", driver.Name)
+}
+
+// Test: Create driver with invalid data
+func testCreateDriverInvalid(t *testing.T, tf *TestFramework) {
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Create Driver - Invalid Data",
+		Method: "POST",
+		URL:    "/api/v1/drivers",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"name":  "", // Empty name should fail validation
+			"phone": "invalid-phone-format",
+		},
+		ExpectedStatus: 400,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Create driver without authorization
+func testCreateDriverUnauthorized(t *testing.T, tf *TestFramework) {
+	testCase := APITestCase{
+		Name:   "Create Driver - Unauthorized",
+		Method: "POST",
+		URL:    "/api/v1/drivers",
+		RequestBody: map[string]interface{}{
+			"name":           "Unauthorized Driver",
+			"phone":          "+919999999994",
+			"license_number": "MH1420110054322",
+		},
+		ExpectedStatus: 401,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Create driver with duplicate license
+func testCreateDriverDuplicate(t *testing.T, tf *TestFramework) {
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+
+		// Create existing driver
+		tf.CreateTestDriver("Existing Driver", "+919999999995", TestDriverLicense)
+	}
+
+	testCase := APITestCase{
+		Name:   "Create Driver - Duplicate License",
+		Method: "POST",
+		URL:    "/api/v1/drivers",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"name":           "Duplicate Driver",
+			"phone":          "+919999999996",
+			"license_number": TestDriverLicense, // Duplicate license
+		},
+		ExpectedStatus: 409, // Conflict
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Get drivers list (admin access)
+func testGetDriversAdmin(t *testing.T, tf *TestFramework) {
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+
+		// Create test drivers
+		tf.CreateTestDriver("Driver 1", "+919999999997", "MH1420110001111")
+		tf.CreateTestDriver("Driver 2", "+919999999998", "MH1420110002222")
+	}
+
+	testCase := APITestCase{
+		Name:   "Get Drivers - Admin Access",
+		Method: "GET",
+		URL:    "/api/v1/drivers?page=1&limit=10",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Get drivers list (driver access - should be forbidden for listing all)
+func testGetDriversDriver(t *testing.T, tf *TestFramework) {
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		token, _ := tf.GenerateJWTToken(driver)
+		driverToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Get Drivers - Driver Access",
+		Method: "GET",
+		URL:    "/api/v1/drivers",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		ExpectedStatus: 403, // Forbidden - drivers can't list all drivers
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Get specific driver with valid ID
+func testGetDriverValid(t *testing.T, tf *TestFramework) {
+	var driverID uint
+	var token string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Test Driver", TestDriverPhone, TestDriverLicense)
+		driverID = driver.ID
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		accessToken, _ := tf.GenerateJWTToken(user)
+		token = accessToken
+	}
+
+	testCase := APITestCase{
+		Name:   "Get Driver - Valid ID",
+		Method: "GET",
+		URL:    fmt.Sprintf("/api/v1/drivers/%d", driverID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + token,
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Get driver with invalid ID
+func testGetDriverInvalid(t *testing.T, tf *TestFramework) {
+	var token string
+
+	setup := func(tf *TestFramework) {
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		accessToken, _ := tf.GenerateJWTToken(user)
+		token = accessToken
+	}
+
+	testCase := APITestCase{
+		Name:   "Get Driver - Invalid ID",
+		Method: "GET",
+		URL:    "/api/v1/drivers/99999", // Non-existent ID
+		Headers: map[string]string{
+			"Authorization": "Bearer " + token,
+		},
+		ExpectedStatus: 404,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Update driver with valid data
+func testUpdateDriverValid(t *testing.T, tf *TestFramework) {
+	var driverID uint
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Original Name", TestDriverPhone, TestDriverLicense)
+		driverID = driver.ID
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Update Driver - Valid",
+		Method: "PUT",
+		URL:    fmt.Sprintf("/api/v1/drivers/%d", driverID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"name":    "Updated Driver Name",
+			"status":  "ON_TRIP",
+			"address": "Updated Address",
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Update driver without admin authorization
+func testUpdateDriverUnauthorized(t *testing.T, tf *TestFramework) {
+	var driverID uint
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Test Driver", TestDriverPhone, TestDriverLicense)
+		driverID = driver.ID
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Update Driver - Unauthorized",
+		Method: "PUT",
+		URL:    fmt.Sprintf("/api/v1/drivers/%d", driverID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		RequestBody: map[string]interface{}{
+			"name": "Unauthorized Update",
+		},
+		ExpectedStatus: 403, // Forbidden - drivers can't update other drivers
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Delete driver
+func testDeleteDriverValid(t *testing.T, tf *TestFramework) {
+	var driverID uint
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Delete Me", "+919999999999", "MH1420110099999")
+		driverID = driver.ID
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Delete Driver - Valid",
+		Method: "DELETE",
+		URL:    fmt.Sprintf("/api/v1/drivers/%d", driverID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Delete driver that's currently on a trip
+func testDeleteDriverInUse(t *testing.T, tf *TestFramework) {
+	var driverID uint
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Busy Driver", "+919999999988", "MH1420110088888")
+		driverID = driver.ID
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+
+		// Create active trip for this driver
+		tf.CreateTestTrip("Mumbai", "Delhi", driver.ID, vehicle.ID)
+
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Delete Driver - In Use",
+		Method: "DELETE",
+		URL:    fmt.Sprintf("/api/v1/drivers/%d", driverID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		ExpectedStatus: 409, // Conflict - driver is on active trip
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Get driver performance metrics
+func testDriverPerformanceValid(t *testing.T, tf *TestFramework) {
+	var driverID uint
+	var token string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Performance Driver", TestDriverPhone, TestDriverLicense)
+		driverID = driver.ID
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		accessToken, _ := tf.GenerateJWTToken(user)
+		token = accessToken
+
+		// Add some performance data
+		driver.Rating = 4.8
+		driver.TotalTrips = 127
+		driver.OnTimeDeliveries = 120
+		tf.DB.Save(driver)
+	}
+
+	testCase := APITestCase{
+		Name:   "Driver Performance - Valid",
+		Method: "GET",
+		URL:    fmt.Sprintf("/api/v1/drivers/%d/performance", driverID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + token,
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Get driver compliance status
+func testDriverComplianceValid(t *testing.T, tf *TestFramework) {
+	var driverID uint
+	var token string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Compliance Driver", TestDriverPhone, TestDriverLicense)
+		driverID = driver.ID
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		accessToken, _ := tf.GenerateJWTToken(user)
+		token = accessToken
+
+		// Set license expiry date
+		futureDate := time.Now().Add(365 * 24 * time.Hour) // 1 year from now
+		driver.LicenseExpiry = &futureDate
+		tf.DB.Save(driver)
+	}
+
+	testCase := APITestCase{
+		Name:   "Driver Compliance - Valid",
+		Method: "GET",
+		URL:    fmt.Sprintf("/api/v1/drivers/%d/compliance", driverID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + token,
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Update driver status
+func testUpdateDriverStatusValid(t *testing.T, tf *TestFramework) {
+	var driverID uint
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Status Driver", TestDriverPhone, TestDriverLicense)
+		driverID = driver.ID
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		user.DriverID = &driver.ID
+		tf.DB.Save(user)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Update Driver Status - Valid",
+		Method: "PUT",
+		URL:    fmt.Sprintf("/api/v1/drivers/%d/status", driverID),
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		RequestBody: map[string]interface{}{
+			"status": "ON_TRIP",
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Get current driver statistics (mobile app)
+func testGetCurrentDriverStats(t *testing.T, tf *TestFramework) {
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Stats Driver", TestDriverPhone, TestDriverLicense)
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		user.DriverID = &driver.ID
+		tf.DB.Save(user)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+
+		// Add some stats
+		driver.Rating = 4.8
+		driver.TotalTrips = 127
+		driver.FuelEfficiency = 12.5
+		tf.DB.Save(driver)
+	}
+
+	testCase := APITestCase{
+		Name:   "Get Current Driver Stats",
+		Method: "GET",
+		URL:    "/api/v1/driver/stats",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		ExpectedStatus: 200,
+		ExpectedBody: map[string]interface{}{
+			"rating":      4.8,
+			"total_trips": float64(127), // JSON numbers are float64
+		},
+		Setup: setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Get current driver profile
+func testGetCurrentDriverProfile(t *testing.T, tf *TestFramework) {
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Profile Driver", TestDriverPhone, TestDriverLicense)
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		user.DriverID = &driver.ID
+		tf.DB.Save(user)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Get Current Driver Profile",
+		Method: "GET",
+		URL:    "/api/v1/driver/profile",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+// Test: Get current driver trips
+func testGetCurrentDriverTrips(t *testing.T, tf *TestFramework) {
+	var driverToken string
+
+	setup := func(tf *TestFramework) {
+		driver, _ := tf.CreateTestDriver("Trip Driver", TestDriverPhone, TestDriverLicense)
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		user, _ := tf.CreateTestUser(TestDriverPhone, models.RoleDriver)
+		user.DriverID = &driver.ID
+		tf.DB.Save(user)
+		token, _ := tf.GenerateJWTToken(user)
+		driverToken = token
+
+		// Create trips for this driver
+		tf.CreateTestTrip("Mumbai", "Delhi", driver.ID, vehicle.ID)
+		tf.CreateTestTrip("Delhi", "Bangalore", driver.ID, vehicle.ID)
+	}
+
+	testCase := APITestCase{
+		Name:   "Get Current Driver Trips",
+		Method: "GET",
+		URL:    "/api/v1/driver/trips/current",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + driverToken,
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}

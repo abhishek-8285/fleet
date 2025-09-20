@@ -1,0 +1,287 @@
+syntax = "proto3";
+
+package fleetflow.v1;
+option go_package = "github.com/fleetflow/backend/proto/gen";
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+import "location.proto";
+import "analytics.proto";
+
+// Vehicle Management Service
+service VehicleService {
+  // Get all vehicles
+  rpc GetVehicles(GetVehiclesRequest) returns (GetVehiclesResponse);
+  
+  // Create new vehicle
+  rpc CreateVehicle(CreateVehicleRequest) returns (Vehicle);
+  
+  // Get vehicle by ID
+  rpc GetVehicle(GetVehicleRequest) returns (Vehicle);
+  
+  // Update vehicle
+  rpc UpdateVehicle(UpdateVehicleRequest) returns (Vehicle);
+  
+  // Delete vehicle
+  rpc DeleteVehicle(DeleteVehicleRequest) returns (SuccessResponse);
+  
+  // Get vehicle location
+  rpc GetVehicleLocation(GetVehicleLocationRequest) returns (VehicleLocationResponse);
+  
+  // Update vehicle location
+  rpc UpdateVehicleLocation(UpdateVehicleLocationRequest) returns (SuccessResponse);
+  
+  // Get vehicle performance
+  rpc GetVehiclePerformance(GetVehiclePerformanceRequest) returns (VehiclePerformance);
+  
+  // Get vehicle compliance
+  rpc GetVehicleCompliance(GetVehicleComplianceRequest) returns (VehicleCompliance);
+  
+  // Get available vehicles
+  rpc GetAvailableVehicles(GetAvailableVehiclesRequest) returns (GetAvailableVehiclesResponse);
+  
+  // Get vehicle statistics
+  rpc GetVehicleStats(GetVehicleStatsRequest) returns (VehicleStats);
+  
+  // Stream vehicle locations (real-time)
+  rpc StreamVehicleLocations(StreamVehicleLocationsRequest) returns (stream VehicleLocationUpdate);
+  
+  // Stream vehicle status changes
+  rpc StreamVehicleStatus(StreamVehicleStatusRequest) returns (stream VehicleStatusUpdate);
+  
+  // Stream maintenance alerts
+  rpc StreamMaintenanceAlerts(StreamMaintenanceAlertsRequest) returns (stream MaintenanceAlert);
+}
+
+// Vehicle types
+enum VehicleType {
+  VEHICLE_TYPE_UNSPECIFIED = 0;
+  VEHICLE_TYPE_TRUCK = 1;
+  VEHICLE_TYPE_VAN = 2;
+  VEHICLE_TYPE_BIKE = 3;
+  VEHICLE_TYPE_PICKUP = 4;
+  VEHICLE_TYPE_TRAILER = 5;
+}
+
+// Messages
+message Vehicle {
+  uint32 id = 1;
+  string license_plate = 2;
+  string make = 3;
+  string model = 4;
+  uint32 year = 5;
+  VehicleType vehicle_type = 6;
+  VehicleStatus status = 7;
+  string fuel_type = 8;
+  double fuel_capacity = 9;
+  double current_fuel_level = 10;
+  double mileage = 11;
+  bool is_active = 12;
+  google.protobuf.Timestamp purchased_at = 13;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
+  
+  // Compliance fields
+  string registration_number = 16;
+  google.protobuf.Timestamp registration_expiry = 17;
+  string insurance_number = 18;
+  google.protobuf.Timestamp insurance_expiry = 19;
+  google.protobuf.Timestamp pollution_cert_expiry = 20;
+  google.protobuf.Timestamp fitness_test_expiry = 21;
+  google.protobuf.Timestamp permit_expiry = 22;
+  
+  // Technical specs
+  string engine_number = 23;
+  string chassis_number = 24;
+  double load_capacity = 25;
+  string dimensions = 26; // JSON string
+  
+  // Performance metrics
+  double average_fuel_efficiency = 27;
+  uint32 total_trips = 28;
+  double total_kilometers = 29;
+  double maintenance_cost = 30;
+  google.protobuf.Timestamp last_maintenance_date = 31;
+  google.protobuf.Timestamp next_maintenance_due = 32;
+  
+  // Current location
+  Location current_location = 33;
+  
+  // Current assignment
+  uint32 current_driver_id = 34;
+  uint32 current_trip_id = 35;
+}
+
+message CreateVehicleRequest {
+  string license_plate = 1;
+  string make = 2;
+  string model = 3;
+  uint32 year = 4;
+  VehicleType vehicle_type = 5;
+  string fuel_type = 6;
+  double fuel_capacity = 7;
+  string registration_number = 8;
+  google.protobuf.Timestamp registration_expiry = 9;
+  string insurance_number = 10;
+  google.protobuf.Timestamp insurance_expiry = 11;
+  string engine_number = 12;
+  string chassis_number = 13;
+  double load_capacity = 14;
+  google.protobuf.Timestamp purchased_at = 15;
+}
+
+message GetVehiclesRequest {
+  Pagination pagination = 1;
+  FilterParams filters = 2;
+  VehicleStatus status_filter = 3;
+  VehicleType type_filter = 4;
+  bool maintenance_due = 5;
+  bool compliance_expiring = 6;
+}
+
+message GetVehiclesResponse {
+  repeated Vehicle vehicles = 1;
+  Pagination pagination = 2;
+}
+
+message GetVehicleRequest {
+  uint32 id = 1;
+}
+
+message UpdateVehicleRequest {
+  uint32 id = 1;
+  string make = 2;
+  string model = 3;
+  VehicleStatus status = 4;
+  double current_fuel_level = 5;
+  double mileage = 6;
+  google.protobuf.Timestamp registration_expiry = 7;
+  google.protobuf.Timestamp insurance_expiry = 8;
+  google.protobuf.Timestamp pollution_cert_expiry = 9;
+  google.protobuf.Timestamp fitness_test_expiry = 10;
+  google.protobuf.Timestamp next_maintenance_due = 11;
+  bool is_active = 12;
+}
+
+message DeleteVehicleRequest {
+  uint32 id = 1;
+}
+
+
+
+message UpdateVehicleLocationRequest {
+  uint32 vehicle_id = 1;
+  Location location = 2;
+  double speed = 3;
+  double heading = 4;
+}
+
+message GetVehiclePerformanceRequest {
+  uint32 id = 1;
+  string period = 2; // DAILY, WEEKLY, MONTHLY
+}
+
+message VehiclePerformance {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  uint32 total_trips = 3;
+  double total_kilometers = 4;
+  double average_fuel_efficiency = 5;
+  double utilization_rate = 6;
+  double maintenance_cost = 7;
+  double revenue_generated = 8;
+  double profit_margin = 9;
+  string period = 10;
+  google.protobuf.Timestamp start_date = 11;
+  google.protobuf.Timestamp end_date = 12;
+}
+
+message GetVehicleComplianceRequest {
+  uint32 id = 1;
+}
+
+
+
+message GetAvailableVehiclesRequest {
+  Location pickup_location = 1;
+  double max_distance_km = 2;
+  VehicleType type_preference = 3;
+  double min_load_capacity = 4;
+}
+
+message GetAvailableVehiclesResponse {
+  repeated AvailableVehicle vehicles = 1;
+}
+
+message AvailableVehicle {
+  Vehicle vehicle = 1;
+  double distance_km = 2;
+  uint32 estimated_eta_minutes = 3;
+  bool can_be_assigned = 4;
+  string reason_if_not = 5;
+}
+
+message GetVehicleStatsRequest {
+  // Empty - gets overall stats
+}
+
+message VehicleStats {
+  uint32 total_vehicles = 1;
+  uint32 active_vehicles = 2;
+  uint32 parked_vehicles = 3;
+  uint32 maintenance_vehicles = 4;
+  uint32 on_trip_vehicles = 5;
+  uint32 registration_expiring = 6;
+  uint32 insurance_expiring = 7;
+  uint32 maintenance_due = 8;
+  double average_fuel_efficiency = 9;
+  double fleet_utilization_rate = 10;
+  uint32 best_performer_id = 11;
+  string best_performer_plate = 12;
+  double best_performer_efficiency = 13;
+}
+
+// Streaming messages
+message StreamVehicleLocationsRequest {
+  repeated uint32 vehicle_ids = 1; // Empty means all vehicles
+}
+
+message VehicleLocationUpdate {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  Location location = 3;
+  VehicleStatus status = 4;
+  double speed = 5;
+  double heading = 6;
+  uint32 current_driver_id = 7;
+  string driver_name = 8;
+  uint32 current_trip_id = 9;
+}
+
+message StreamVehicleStatusRequest {
+  repeated uint32 vehicle_ids = 1; // Empty means all vehicles
+}
+
+message VehicleStatusUpdate {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  VehicleStatus old_status = 3;
+  VehicleStatus new_status = 4;
+  string reason = 5;
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+message StreamMaintenanceAlertsRequest {
+  repeated uint32 vehicle_ids = 1; // Empty means all vehicles
+}
+
+message MaintenanceAlert {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  string alert_type = 3; // MAINTENANCE_DUE, BREAKDOWN, SERVICE_REMINDER
+  AlertSeverity severity = 4;
+  string description = 5;
+  google.protobuf.Timestamp due_date = 6;
+  Location location = 7;
+  google.protobuf.Timestamp timestamp = 8;
+}

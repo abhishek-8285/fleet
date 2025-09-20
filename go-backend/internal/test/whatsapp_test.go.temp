@@ -1,0 +1,123 @@
+package test
+
+import (
+	"testing"
+
+	"github.com/fleetflow/backend/internal/models"
+	"github.com/stretchr/testify/require"
+)
+
+func TestWhatsAppAPI(t *testing.T) {
+	tf, err := NewTestFramework()
+	require.NoError(t, err)
+	defer tf.CleanDatabase()
+
+	testCases := []struct {
+		name     string
+		testFunc func(*testing.T, *TestFramework)
+	}{
+		{"WhatsApp Status - Valid", testWhatsAppStatus},
+		{"Send WhatsApp Message - Valid", testSendWhatsAppMessageValid},
+		{"Send WhatsApp Message - Invalid Phone", testSendWhatsAppMessageInvalid},
+		{"Send Trip Notification - Valid", testSendTripNotificationValid},
+		{"Process Trip Event - Valid", testProcessTripEventValid},
+		{"WhatsApp Webhook Verification", testWhatsAppWebhookVerification},
+		{"WhatsApp Webhook Handler", testWhatsAppWebhookHandler},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tf.CleanDatabase()
+			tc.testFunc(t, tf)
+		})
+	}
+}
+
+func testWhatsAppStatus(t *testing.T, tf *TestFramework) {
+	var token string
+
+	setup := func(tf *TestFramework) {
+		user, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		accessToken, _ := tf.GenerateJWTToken(user)
+		token = accessToken
+	}
+
+	testCase := APITestCase{
+		Name:   "WhatsApp Status - Valid",
+		Method: "GET",
+		URL:    "/api/v1/whatsapp/status",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + token,
+		},
+		ExpectedStatus: 200,
+		ExpectedBody: map[string]interface{}{
+			"service": "active",
+		},
+		Setup: setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+func testSendWhatsAppMessageValid(t *testing.T, tf *TestFramework) {
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+	}
+
+	testCase := APITestCase{
+		Name:   "Send WhatsApp Message - Valid",
+		Method: "POST",
+		URL:    "/api/v1/whatsapp/send",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"to":      "+919999999999",
+			"message": "🚛 Test message from FleetFlow!",
+		},
+		ExpectedStatus: 200,
+		ExpectedBody: map[string]interface{}{
+			"success": true,
+		},
+		Setup: setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}
+
+func testSendTripNotificationValid(t *testing.T, tf *TestFramework) {
+	var adminToken string
+
+	setup := func(tf *TestFramework) {
+		admin, _ := tf.CreateTestUser(TestAdminPhone, models.RoleAdmin)
+		token, _ := tf.GenerateJWTToken(admin)
+		adminToken = token
+
+		// Create test trip
+		driver, _ := tf.CreateTestDriver("Notify Driver", TestDriverPhone, TestDriverLicense)
+		vehicle, _ := tf.CreateTestVehicle(TestVehicleReg, "TRUCK")
+		tf.CreateTestTrip("Mumbai", "Delhi", driver.ID, vehicle.ID)
+	}
+
+	testCase := APITestCase{
+		Name:   "Send Trip Notification - Valid",
+		Method: "POST",
+		URL:    "/api/v1/whatsapp/trip-notification",
+		Headers: map[string]string{
+			"Authorization": "Bearer " + adminToken,
+		},
+		RequestBody: map[string]interface{}{
+			"phoneNumber": "+919888888888",
+			"tripId":      "RTC240900001",
+			"status":      "IN_TRANSIT",
+		},
+		ExpectedStatus: 200,
+		Setup:          setup,
+	}
+
+	tf.RunAPITest(t, testCase)
+}

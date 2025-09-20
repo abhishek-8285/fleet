@@ -1,0 +1,311 @@
+syntax = "proto3";
+
+package fleetflow.v1;
+option go_package = "github.com/fleetflow/backend/proto/gen";
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+
+// Trip Management Service
+service TripService {
+  // Get all trips
+  rpc GetTrips(GetTripsRequest) returns (GetTripsResponse);
+  
+  // Create new trip
+  rpc CreateTrip(CreateTripRequest) returns (Trip);
+  
+  // Get trip by ID
+  rpc GetTrip(GetTripRequest) returns (Trip);
+  
+  // Update trip
+  rpc UpdateTrip(UpdateTripRequest) returns (Trip);
+  
+  // Delete trip
+  rpc DeleteTrip(DeleteTripRequest) returns (SuccessResponse);
+  
+  // Assign trip to driver and vehicle
+  rpc AssignTrip(AssignTripRequest) returns (Trip);
+  
+  // Start trip
+  rpc StartTrip(StartTripRequest) returns (Trip);
+  
+  // Pause trip
+  rpc PauseTrip(PauseTripRequest) returns (Trip);
+  
+  // Resume trip
+  rpc ResumeTrip(ResumeTripRequest) returns (Trip);
+  
+  // Complete trip
+  rpc CompleteTrip(CompleteTripRequest) returns (Trip);
+  
+  // Cancel trip
+  rpc CancelTrip(CancelTripRequest) returns (Trip);
+  
+  // Get trip location/route
+  rpc GetTripLocation(GetTripLocationRequest) returns (TripLocation);
+  
+  // Update ETA
+  rpc UpdateETA(UpdateETARequest) returns (SuccessResponse);
+  
+  // Get public trip status (for customers)
+  rpc GetPublicTripStatus(GetPublicTripStatusRequest) returns (PublicTripStatus);
+  
+  // Stream trip updates (real-time)
+  rpc StreamTripUpdates(StreamTripUpdatesRequest) returns (stream TripUpdate);
+  
+  // Stream trip locations (real-time)
+  rpc StreamTripLocations(StreamTripLocationsRequest) returns (stream TripLocationUpdate);
+  
+  // Stream trip assignments (real-time)
+  rpc StreamTripAssignments(StreamTripAssignmentsRequest) returns (stream TripAssignment);
+}
+
+// Messages
+message Trip {
+  uint32 id = 1;
+  string tracking_id = 2;
+  string customer_name = 3;
+  string customer_phone = 4;
+  string customer_email = 5;
+  
+  // Route information
+  string pickup_address = 6;
+  Location pickup_location = 7;
+  string dropoff_address = 8;
+  Location dropoff_location = 9;
+  
+  // Trip details
+  double distance = 10;
+  uint32 estimated_duration = 11; // minutes
+  uint32 actual_duration = 12; // minutes
+  TripStatus status = 13;
+  uint32 priority = 14; // 1=Low, 2=Medium, 3=High, 4=Urgent
+  
+  // Cargo information
+  string cargo_description = 15;
+  double cargo_weight = 16;
+  double cargo_value = 17;
+  string special_instructions = 18;
+  
+  // Pricing
+  double base_price = 19;
+  double fuel_surcharge = 20;
+  double toll_charges = 21;
+  double total_amount = 22;
+  string payment_status = 23;
+  
+  // Timing
+  google.protobuf.Timestamp scheduled_pickup_time = 24;
+  google.protobuf.Timestamp actual_pickup_time = 25;
+  google.protobuf.Timestamp estimated_arrival = 26;
+  google.protobuf.Timestamp actual_arrival = 27;
+  
+  // Performance
+  double customer_rating = 28;
+  string customer_feedback = 29;
+  bool on_time_delivery = 30;
+  
+  // Timestamps
+  google.protobuf.Timestamp created_at = 31;
+  google.protobuf.Timestamp updated_at = 32;
+  
+  // Assignments
+  uint32 driver_id = 33;
+  uint32 vehicle_id = 34;
+  string driver_name = 35;
+  string vehicle_plate = 36;
+  
+  // Current progress
+  double progress_percentage = 37;
+  Location current_location = 38;
+  google.protobuf.Timestamp last_location_update = 39;
+}
+
+message CreateTripRequest {
+  string customer_name = 1;
+  string customer_phone = 2;
+  string customer_email = 3;
+  string pickup_address = 4;
+  Location pickup_location = 5;
+  string dropoff_address = 6;
+  Location dropoff_location = 7;
+  string cargo_description = 8;
+  double cargo_weight = 9;
+  double cargo_value = 10;
+  string special_instructions = 11;
+  google.protobuf.Timestamp scheduled_pickup_time = 12;
+  uint32 priority = 13;
+  double base_price = 14;
+}
+
+message GetTripsRequest {
+  Pagination pagination = 1;
+  FilterParams filters = 2;
+  TripStatus status_filter = 3;
+  uint32 driver_id = 4;
+  uint32 vehicle_id = 5;
+  string customer_phone = 6;
+}
+
+message GetTripsResponse {
+  repeated Trip trips = 1;
+  Pagination pagination = 2;
+}
+
+message GetTripRequest {
+  uint32 id = 1;
+}
+
+message UpdateTripRequest {
+  uint32 id = 1;
+  string customer_name = 2;
+  string customer_phone = 3;
+  string pickup_address = 4;
+  string dropoff_address = 5;
+  string cargo_description = 6;
+  double cargo_weight = 7;
+  string special_instructions = 8;
+  google.protobuf.Timestamp scheduled_pickup_time = 9;
+  uint32 priority = 10;
+  double base_price = 11;
+}
+
+message DeleteTripRequest {
+  uint32 id = 1;
+}
+
+message AssignTripRequest {
+  uint32 trip_id = 1;
+  uint32 driver_id = 2;
+  uint32 vehicle_id = 3;
+  string assignment_notes = 4;
+}
+
+message StartTripRequest {
+  uint32 trip_id = 1;
+  Location current_location = 2;
+  string notes = 3;
+}
+
+message PauseTripRequest {
+  uint32 trip_id = 1;
+  Location current_location = 2;
+  string reason = 3;
+}
+
+message ResumeTripRequest {
+  uint32 trip_id = 1;
+  Location current_location = 2;
+  string notes = 3;
+}
+
+message CompleteTripRequest {
+  uint32 trip_id = 1;
+  Location final_location = 2;
+  string pod_photo_url = 3;
+  string signature_url = 4;
+  string delivery_notes = 5;
+  double customer_rating = 6;
+  string customer_feedback = 7;
+}
+
+message CancelTripRequest {
+  uint32 trip_id = 1;
+  string reason = 2;
+  string cancellation_notes = 3;
+}
+
+message GetTripLocationRequest {
+  uint32 trip_id = 1;
+}
+
+message TripLocation {
+  uint32 trip_id = 1;
+  string tracking_id = 2;
+  Location current_location = 3;
+  TripStatus status = 4;
+  double progress_percentage = 5;
+  google.protobuf.Timestamp estimated_arrival = 6;
+  double distance_remaining = 7;
+  string next_waypoint = 8;
+  repeated Location route_points = 9;
+}
+
+message UpdateETARequest {
+  uint32 trip_id = 1;
+  google.protobuf.Timestamp new_eta = 2;
+  string reason = 3;
+}
+
+message GetPublicTripStatusRequest {
+  string tracking_id = 1;
+}
+
+message PublicTripStatus {
+  string tracking_id = 1;
+  TripStatus status = 2;
+  string status_description = 3;
+  Location current_location = 4;
+  double progress_percentage = 5;
+  google.protobuf.Timestamp estimated_arrival = 6;
+  google.protobuf.Timestamp last_update = 7;
+  string driver_name = 8;
+  string driver_phone = 9;
+  string vehicle_plate = 10;
+}
+
+// Streaming messages
+message StreamTripUpdatesRequest {
+  repeated uint32 trip_ids = 1; // Empty means all trips
+  repeated TripStatus status_filter = 2;
+}
+
+message TripUpdate {
+  uint32 trip_id = 1;
+  string tracking_id = 2;
+  TripStatus old_status = 3;
+  TripStatus new_status = 4;
+  string update_description = 5;
+  Location current_location = 6;
+  double progress_percentage = 7;
+  google.protobuf.Timestamp timestamp = 8;
+  uint32 driver_id = 9;
+  uint32 vehicle_id = 10;
+}
+
+message StreamTripLocationsRequest {
+  repeated uint32 trip_ids = 1; // Empty means active trips
+}
+
+message TripLocationUpdate {
+  uint32 trip_id = 1;
+  string tracking_id = 2;
+  Location location = 3;
+  double speed = 4;
+  double heading = 5;
+  double progress_percentage = 6;
+  google.protobuf.Timestamp estimated_arrival = 7;
+  double distance_remaining = 8;
+  bool is_delayed = 9;
+  uint32 delay_minutes = 10;
+}
+
+message StreamTripAssignmentsRequest {
+  repeated uint32 driver_ids = 1; // Empty means all drivers
+}
+
+message TripAssignment {
+  uint32 trip_id = 1;
+  string tracking_id = 2;
+  uint32 driver_id = 3;
+  string driver_name = 4;
+  uint32 vehicle_id = 5;
+  string vehicle_plate = 6;
+  string assignment_type = 7; // NEW, REASSIGNED, CANCELLED
+  string pickup_address = 8;
+  string dropoff_address = 9;
+  google.protobuf.Timestamp scheduled_pickup = 10;
+  uint32 priority = 11;
+  double distance = 12;
+  google.protobuf.Timestamp timestamp = 13;
+}

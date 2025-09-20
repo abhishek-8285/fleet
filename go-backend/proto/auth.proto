@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package fleetflow.v1;
+option go_package = "github.com/fleetflow/backend/proto/gen";
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+
+// Authentication Service
+service AuthService {
+  // Send OTP to phone number
+  rpc SendOTP(SendOTPRequest) returns (SendOTPResponse);
+  
+  // Verify OTP and get tokens
+  rpc VerifyOTP(VerifyOTPRequest) returns (AuthResponse);
+  
+  // Refresh access token
+  rpc RefreshToken(RefreshTokenRequest) returns (AuthResponse);
+  
+  // Logout and revoke tokens
+  rpc Logout(LogoutRequest) returns (SuccessResponse);
+  
+  // Get user profile
+  rpc GetProfile(GetProfileRequest) returns (UserProfile);
+  
+  // Update user profile
+  rpc UpdateProfile(UpdateProfileRequest) returns (UserProfile);
+  
+  // Admin: Get all users
+  rpc GetUsers(GetUsersRequest) returns (GetUsersResponse);
+  
+  // Admin: Create user
+  rpc CreateUser(CreateUserRequest) returns (UserProfile);
+  
+  // Admin: Update user
+  rpc UpdateUser(UpdateUserRequest) returns (UserProfile);
+  
+  // Admin: Delete user
+  rpc DeleteUser(DeleteUserRequest) returns (SuccessResponse);
+}
+
+// Messages
+message SendOTPRequest {
+  string phone = 1;
+}
+
+message SendOTPResponse {
+  string message = 1;
+  google.protobuf.Timestamp expires_at = 2;
+  string request_id = 3;
+}
+
+message VerifyOTPRequest {
+  string phone = 1;
+  string otp = 2;
+}
+
+message AuthResponse {
+  string message = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+  int32 expires_in = 4;
+  UserProfile user = 5;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message GetProfileRequest {
+  // Empty - user from JWT token
+}
+
+message UpdateProfileRequest {
+  // Limited updates for OTP-based auth
+  map<string, string> metadata = 1;
+}
+
+message UserProfile {
+  uint32 id = 1;
+  string phone = 2;
+  UserRole role = 3;
+  bool is_active = 4;
+  google.protobuf.Timestamp last_login = 5;
+  google.protobuf.Timestamp created_at = 6;
+  uint32 driver_id = 7;
+  DriverInfo driver = 8;
+}
+
+message DriverInfo {
+  uint32 id = 1;
+  string name = 2;
+  DriverStatus status = 3;
+  double rating = 4;
+}
+
+message GetUsersRequest {
+  Pagination pagination = 1;
+  FilterParams filters = 2;
+}
+
+message GetUsersResponse {
+  repeated UserProfile users = 1;
+  Pagination pagination = 2;
+}
+
+message CreateUserRequest {
+  string phone = 1;
+  UserRole role = 2;
+}
+
+message UpdateUserRequest {
+  uint32 id = 1;
+  UserRole role = 2;
+  bool is_active = 3;
+}
+
+message DeleteUserRequest {
+  uint32 id = 1;
+}

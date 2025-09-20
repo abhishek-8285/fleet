@@ -1,0 +1,470 @@
+syntax = "proto3";
+
+package fleetflow.v1;
+option go_package = "github.com/fleetflow/backend/proto/gen";
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+
+// Fuel Management Service
+service FuelService {
+  // Fuel events
+  rpc GetFuelEvents(GetFuelEventsRequest) returns (GetFuelEventsResponse);
+  rpc CreateFuelEvent(CreateFuelEventRequest) returns (FuelEvent);
+  rpc GetFuelEvent(GetFuelEventRequest) returns (FuelEvent);
+  rpc UpdateFuelEvent(UpdateFuelEventRequest) returns (FuelEvent);
+  rpc VerifyFuelEvent(VerifyFuelEventRequest) returns (SuccessResponse);
+  rpc RejectFuelEvent(RejectFuelEventRequest) returns (SuccessResponse);
+  
+  // Fuel alerts
+  rpc GetFuelAlerts(GetFuelAlertsRequest) returns (GetFuelAlertsResponse);
+  rpc GetFuelAlert(GetFuelAlertRequest) returns (FuelAlert);
+  rpc ResolveFuelAlert(ResolveFuelAlertRequest) returns (SuccessResponse);
+  
+  // Fuel analytics
+  rpc GetFuelAnalytics(GetFuelAnalyticsRequest) returns (FuelAnalytics);
+  rpc GetVehicleFuelAnalytics(GetVehicleFuelAnalyticsRequest) returns (VehicleFuelAnalytics);
+  
+  // Fuel stations
+  rpc GetNearbyFuelStations(GetNearbyFuelStationsRequest) returns (GetNearbyFuelStationsResponse);
+  rpc CreateFuelStation(CreateFuelStationRequest) returns (FuelStation);
+  
+  // ==== REAL-TIME FUEL MONITORING (gRPC STREAMING) ====
+  
+  // Stream fuel theft alerts in real-time
+  rpc StreamFuelTheftAlerts(FuelTheftMonitorRequest) returns (stream FuelTheftAlert);
+  
+  // Stream fuel consumption anomalies
+  rpc StreamFuelAnomalies(FuelAnomalyRequest) returns (stream FuelAnomaly);
+  
+  // Stream fuel efficiency updates
+  rpc StreamFuelEfficiency(FuelEfficiencyRequest) returns (stream FuelEfficiencyUpdate);
+  
+  // Bidirectional fuel event processing
+  rpc ProcessFuelEvents(stream FuelEventBatch) returns (stream FuelEventResult);
+}
+
+// Fuel event status
+enum FuelEventStatus {
+  FUEL_EVENT_STATUS_UNSPECIFIED = 0;
+  FUEL_EVENT_STATUS_PENDING = 1;
+  FUEL_EVENT_STATUS_VERIFIED = 2;
+  FUEL_EVENT_STATUS_SUSPICIOUS = 3;
+  FUEL_EVENT_STATUS_REJECTED = 4;
+}
+
+// Fuel alert types
+enum FuelAlertType {
+  FUEL_ALERT_TYPE_UNSPECIFIED = 0;
+  FUEL_ALERT_TYPE_THEFT_SUSPECTED = 1;
+  FUEL_ALERT_TYPE_UNAUTHORIZED_STOP = 2;
+  FUEL_ALERT_TYPE_EXCESS_CONSUMPTION = 3;
+  FUEL_ALERT_TYPE_GEOFENCE_VIOLATION = 4;
+  FUEL_ALERT_TYPE_EFFICIENCY_DROP = 5;
+  FUEL_ALERT_TYPE_REFUEL_FREQUENCY = 6;
+}
+
+// Messages
+message FuelEvent {
+  uint32 id = 1;
+  double liters = 2;
+  double amount_inr = 3;
+  double price_per_liter = 4;
+  double odometer_km = 5;
+  string fuel_type = 6;
+  FuelEventStatus status = 7;
+  
+  // Location
+  string location = 8;
+  double latitude = 9;
+  double longitude = 10;
+  
+  // Station info
+  string station_name = 11;
+  string station_brand = 12;
+  string station_id = 13;
+  
+  // Receipt info
+  string receipt_number = 14;
+  string receipt_photo_url = 15;
+  
+  // Verification
+  uint32 verified_by = 16;
+  google.protobuf.Timestamp verified_at = 17;
+  string verification_notes = 18;
+  
+  // Fraud detection
+  bool is_authorized = 19;
+  double fraud_score = 20;
+  string fraud_reason = 21;
+  
+  // Timestamps
+  google.protobuf.Timestamp created_at = 22;
+  google.protobuf.Timestamp updated_at = 23;
+  
+  // Associations
+  uint32 driver_id = 24;
+  uint32 vehicle_id = 25;
+  uint32 trip_id = 26;
+  string driver_name = 27;
+  string vehicle_plate = 28;
+}
+
+message CreateFuelEventRequest {
+  double liters = 1;
+  double amount_inr = 2;
+  double price_per_liter = 3;
+  double odometer_km = 4;
+  string fuel_type = 5;
+  string location = 6;
+  double latitude = 7;
+  double longitude = 8;
+  string station_name = 9;
+  string station_brand = 10;
+  string receipt_number = 11;
+  string receipt_photo_url = 12;
+  uint32 driver_id = 13;
+  uint32 vehicle_id = 14;
+  uint32 trip_id = 15;
+}
+
+message GetFuelEventsRequest {
+  Pagination pagination = 1;
+  FilterParams filters = 2;
+  FuelEventStatus status_filter = 3;
+  uint32 vehicle_id = 4;
+  uint32 driver_id = 5;
+  bool suspicious_only = 6;
+}
+
+message GetFuelEventsResponse {
+  repeated FuelEvent events = 1;
+  Pagination pagination = 2;
+}
+
+message GetFuelEventRequest {
+  uint32 id = 1;
+}
+
+message UpdateFuelEventRequest {
+  uint32 id = 1;
+  double liters = 2;
+  double amount_inr = 3;
+  string location = 4;
+  string station_name = 5;
+  string receipt_number = 6;
+}
+
+message VerifyFuelEventRequest {
+  uint32 id = 1;
+  string verification_notes = 2;
+}
+
+message RejectFuelEventRequest {
+  uint32 id = 1;
+  string reason = 2;
+}
+
+// Fuel Alerts
+message FuelAlert {
+  uint32 id = 1;
+  FuelAlertType alert_type = 2;
+  AlertSeverity severity = 3;
+  string title = 4;
+  string description = 5;
+  
+  // Alert details
+  google.protobuf.Timestamp detected_at = 6;
+  double expected_value = 7;
+  double actual_value = 8;
+  double variance = 9;
+  double threshold_value = 10;
+  
+  // Location
+  Location location = 11;
+  
+  // Resolution
+  bool is_resolved = 12;
+  google.protobuf.Timestamp resolved_at = 13;
+  uint32 resolved_by = 14;
+  string resolution_notes = 15;
+  
+  // Notifications
+  bool is_notified = 16;
+  google.protobuf.Timestamp notification_sent = 17;
+  uint32 escalation_level = 18;
+  google.protobuf.Timestamp last_escalated_at = 19;
+  
+  // Timestamps
+  google.protobuf.Timestamp created_at = 20;
+  google.protobuf.Timestamp updated_at = 21;
+  
+  // Associations
+  uint32 vehicle_id = 22;
+  uint32 driver_id = 23;
+  uint32 trip_id = 24;
+  uint32 fuel_event_id = 25;
+  string vehicle_plate = 26;
+  string driver_name = 27;
+}
+
+message GetFuelAlertsRequest {
+  Pagination pagination = 1;
+  FilterParams filters = 2;
+  FuelAlertType alert_type = 3;
+  AlertSeverity min_severity = 4;
+  uint32 vehicle_id = 5;
+  bool unresolved_only = 6;
+}
+
+message GetFuelAlertsResponse {
+  repeated FuelAlert alerts = 1;
+  Pagination pagination = 2;
+}
+
+message GetFuelAlertRequest {
+  uint32 id = 1;
+}
+
+message ResolveFuelAlertRequest {
+  uint32 id = 1;
+  string resolution_notes = 2;
+}
+
+// Fuel Analytics
+message FuelAnalytics {
+  string period = 1; // DAILY, WEEKLY, MONTHLY
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+  
+  // Fleet-wide metrics
+  double total_fuel_consumed = 4;
+  double total_fuel_cost = 5;
+  double average_fuel_efficiency = 6;
+  double cost_per_kilometer = 7;
+  uint32 number_of_refuels = 8;
+  uint32 suspicious_events = 9;
+  double theft_savings = 10;
+  
+  // Top performers
+  repeated VehicleFuelSummary top_efficient_vehicles = 11;
+  repeated VehicleFuelSummary worst_performing_vehicles = 12;
+  
+  // Trends
+  repeated DailyFuelSummary daily_trends = 13;
+}
+
+message GetFuelAnalyticsRequest {
+  string period = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+}
+
+message VehicleFuelAnalytics {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  string period = 3;
+  google.protobuf.Timestamp start_date = 4;
+  google.protobuf.Timestamp end_date = 5;
+  
+  double total_fuel_consumed = 6;
+  double total_distance = 7;
+  double average_fuel_efficiency = 8;
+  double expected_fuel_consumption = 9;
+  double actual_fuel_consumption = 10;
+  double fuel_variance = 11;
+  double total_fuel_cost = 12;
+  double cost_per_kilometer = 13;
+  uint32 number_of_refuels = 14;
+  uint32 suspicious_events = 15;
+  double theft_savings = 16;
+}
+
+message GetVehicleFuelAnalyticsRequest {
+  uint32 vehicle_id = 1;
+  string period = 2;
+  google.protobuf.Timestamp start_date = 3;
+  google.protobuf.Timestamp end_date = 4;
+}
+
+message VehicleFuelSummary {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  double fuel_efficiency = 3;
+  double total_cost = 4;
+  uint32 suspicious_events = 5;
+}
+
+message DailyFuelSummary {
+  google.protobuf.Timestamp date = 1;
+  double total_fuel = 2;
+  double total_cost = 3;
+  double average_efficiency = 4;
+  uint32 events_count = 5;
+}
+
+// Fuel Stations
+message FuelStation {
+  uint32 id = 1;
+  string name = 2;
+  string brand = 3;
+  string address = 4;
+  string city = 5;
+  string state = 6;
+  string pincode = 7;
+  Location location = 8;
+  bool is_active = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+message GetNearbyFuelStationsRequest {
+  Location current_location = 1;
+  double radius_km = 2;
+  string brand_filter = 3;
+}
+
+message GetNearbyFuelStationsResponse {
+  repeated NearbyFuelStation stations = 1;
+}
+
+message NearbyFuelStation {
+  FuelStation station = 1;
+  double distance_km = 2;
+  double estimated_travel_time = 3;
+}
+
+message CreateFuelStationRequest {
+  string name = 1;
+  string brand = 2;
+  string address = 3;
+  string city = 4;
+  string state = 5;
+  string pincode = 6;
+  Location location = 7;
+}
+
+// ==== REAL-TIME STREAMING MESSAGES ====
+
+// Fuel Theft Monitoring
+message FuelTheftMonitorRequest {
+  repeated uint32 vehicle_ids = 1; // Empty means all vehicles
+  double theft_threshold_percentage = 2; // Default 15%
+  AlertSeverity min_severity = 3;
+}
+
+message FuelTheftAlert {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  uint32 driver_id = 3;
+  string driver_name = 4;
+  FuelAlertType alert_type = 5;
+  AlertSeverity severity = 6;
+  string description = 7;
+  
+  // Theft details
+  double expected_fuel = 8;
+  double actual_fuel = 9;
+  double variance_percentage = 10;
+  double estimated_theft_liters = 11;
+  double estimated_loss_inr = 12;
+  
+  // Location and timing
+  Location location = 13;
+  google.protobuf.Timestamp detected_at = 14;
+  google.protobuf.Timestamp last_refuel = 15;
+  
+  // Context
+  uint32 trip_id = 16;
+  bool is_unauthorized_stop = 17;
+  double distance_from_route = 18;
+  
+  // Evidence
+  repeated string evidence_urls = 19; // Photos, receipts, etc.
+  double confidence_score = 20;
+}
+
+// Fuel Anomaly Detection
+message FuelAnomalyRequest {
+  repeated uint32 vehicle_ids = 1;
+  double anomaly_threshold = 2; // Standard deviations from normal
+}
+
+message FuelAnomaly {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  string anomaly_type = 3; // CONSUMPTION_SPIKE, EFFICIENCY_DROP, REFUEL_FREQUENCY
+  double anomaly_score = 4;
+  string description = 5;
+  
+  // Current vs expected
+  double current_value = 6;
+  double expected_value = 7;
+  double deviation_percentage = 8;
+  
+  // Context
+  Location location = 9;
+  google.protobuf.Timestamp detected_at = 10;
+  uint32 trip_id = 11;
+  uint32 driver_id = 12;
+  
+  // Historical comparison
+  double last_week_average = 13;
+  double last_month_average = 14;
+}
+
+// Fuel Efficiency Monitoring
+message FuelEfficiencyRequest {
+  repeated uint32 vehicle_ids = 1;
+  uint32 update_interval_minutes = 2; // Default 30 minutes
+}
+
+message FuelEfficiencyUpdate {
+  uint32 vehicle_id = 1;
+  string license_plate = 2;
+  
+  // Current efficiency
+  double current_efficiency = 3; // km/liter
+  double distance_traveled = 4;
+  double fuel_consumed = 5;
+  
+  // Comparison
+  double target_efficiency = 6;
+  double efficiency_variance = 7;
+  string performance_grade = 8; // EXCELLENT, GOOD, AVERAGE, POOR
+  
+  // Trends
+  double daily_average = 9;
+  double weekly_average = 10;
+  double trend_direction = 11; // Positive = improving, Negative = declining
+  
+  // Context
+  google.protobuf.Timestamp period_start = 12;
+  google.protobuf.Timestamp period_end = 13;
+  uint32 trips_count = 14;
+  uint32 driver_id = 15;
+}
+
+// Batch Processing
+message FuelEventBatch {
+  repeated FuelEvent events = 1;
+  string batch_id = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+message FuelEventResult {
+  string batch_id = 1;
+  repeated FuelEventProcessingResult results = 2;
+  uint32 processed_count = 3;
+  uint32 suspicious_count = 4;
+  uint32 verified_count = 5;
+}
+
+message FuelEventProcessingResult {
+  uint32 fuel_event_id = 1;
+  FuelEventStatus status = 2;
+  double fraud_score = 3;
+  string fraud_reason = 4;
+  repeated string warnings = 5;
+  bool requires_manual_review = 6;
+}

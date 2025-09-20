@@ -1,0 +1,44 @@
+# MQTT Broker Setup for FleetFlow Development
+version: '3.8'
+
+services:
+  # Eclipse Mosquitto MQTT Broker
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: fleetflow-mqtt-broker
+    restart: unless-stopped
+    ports:
+      - "1883:1883"    # MQTT port
+      - "9001:9001"    # WebSocket port (for web dashboards)
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    environment:
+      - MOSQUITTO_USERNAME=fleetflow
+      - MOSQUITTO_PASSWORD=fleetflow123
+    networks:
+      - fleetflow-network
+
+  # MQTT Web UI for testing and monitoring
+  mqtt-web-ui:
+    image: hivemq/mqtt-web-client
+    container_name: fleetflow-mqtt-ui
+    restart: unless-stopped
+    ports:
+      - "8086:80"
+    depends_on:
+      - mosquitto
+    networks:
+      - fleetflow-network
+
+networks:
+  fleetflow-network:
+    driver: bridge
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:
+
+
+
