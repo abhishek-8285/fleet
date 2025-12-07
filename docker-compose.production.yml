@@ -101,6 +101,40 @@ services:
       - fleetflow-network
     restart: unless-stopped
 
+  # Flow Diagram Service
+  flow-diagram-service:
+    build:
+      context: ./flow-diagram-service
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITLAB_TOKEN=${GITLAB_TOKEN}
+      - LOG_LEVEL=info
+    ports:
+      - "3004:3004"
+    networks:
+      - fleetflow-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+  # Flow Diagram Web Frontend
+  flow-diagram-web:
+    build:
+      context: ./flow-diagram-web
+      dockerfile: Dockerfile
+    ports:
+      - "3005:80"
+    networks:
+      - fleetflow-network
+    depends_on:
+      flow-diagram-service:
+        condition: service_healthy
+    restart: unless-stopped
 
   # NGINX Load Balancer & Reverse Proxy
   nginx:
@@ -119,6 +153,8 @@ services:
       - grpc-backend
       - web-frontend
       - customer-portal
+      - flow-diagram-service
+      - flow-diagram-web
       - whatsapp-service
     restart: unless-stopped
 

@@ -122,20 +122,18 @@ open https://localhost:3001   # Customer Tracking Portal
 
 ```
 fleet/
-├── 🖥️  web/                     # React Dashboard
-├── 📱  mobile/                  # React Native Driver App  
-├── 🌐  customer-portal/         # Next.js Customer Portal
-├── 🚀  go-backend/              # Go gRPC Services
-├── ☕  backend/                 # Java Spring Boot (Legacy)
-├── 💬  whatsapp-service/        # WhatsApp Integration
-├── 🐳  docker-compose.yml       # Docker Development
-├── 🐳  docker-compose.production.yml # Production Deploy
-├── ☸️   k8s/                    # Kubernetes Manifests
-├── 🌐  nginx/                   # Load Balancer Config
-├── 📊  monitoring/              # Prometheus + Grafana
-├── 🌍  localization/            # Multi-language Files
-├── 🚀  scripts/                 # Deployment Scripts
-└── 📚  docs/                    # Documentation
+├── 📂 backend/              # Go gRPC Services (was go-backend)
+├── 📂 frontend/             # Web Applications
+│   ├── 📂 dashboard/        # React Dashboard (was web)
+│   └── 📂 portal/           # Next.js Customer Portal
+├── 📱 mobile/               # React Native Driver App
+├── 📂 docs/                 # Documentation
+│   ├── 📜 FLEETFLOW_MASTER_SPEC.md # Master Product Bible
+│   ├── 📂 mvp/              # Archived MVP Docs
+│   ├── 📂 master-plan/      # Implementation Guides
+│   └── 📂 design/           # Design Prompts
+├── 📂 scripts/              # Deployment Scripts
+└── 📜 run-all-services.sh   # Main Start Script
 ```
 
 ## 🔧 **ENVIRONMENT SETUP**

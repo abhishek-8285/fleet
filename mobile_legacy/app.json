@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "FleetFlow Driver",
+    "slug": "fleetflow-mobile",
+    "scheme": "fleetflow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "FleetFlow needs camera access to capture delivery photos and fuel receipts.",
+        "NSLocationWhenInUseUsageDescription": "FleetFlow needs location access to track trips and provide navigation.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "FleetFlow needs location access to track trips and provide navigation.",
+        "NSLocationAlwaysUsageDescription": "FleetFlow needs background location access to track trips when the app is not in use.",
+        "NSPhotoLibraryUsageDescription": "FleetFlow needs photo library access to select images for delivery proof and fuel receipts."
+      }
+    },
+    "android": {
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "CAMERA",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE"
+      ],
+      "package": "com.anonymous.fleetflowmobile"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-camera",
+      "expo-location",
+      "expo-image-picker",
+      "expo-sqlite"
+    ]
+  }
+}

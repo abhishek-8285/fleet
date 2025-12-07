@@ -19,7 +19,7 @@ services:
       - redis-data:/data
 
   go-backend:
-    build: ./go-backend
+    build: ./backend
     environment:
       PORT: 8080
       DATABASE_URL: postgres://fleet:fleet@postgres:5432/fleetflow?sslmode=disable
@@ -35,7 +35,27 @@ services:
       - postgres
       - redis
 
+  web:
+    build: ./frontend/dashboard
+    ports:
+      - "5173:5173"
+    depends_on:
+      - go-backend
+    restart: unless-stopped
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+
+  customer-portal:
+    build: ./frontend/portal
+    ports:
+      - "3001:3000"
+    depends_on:
+      - go-backend
+    restart: unless-stopped
+    command: npm run dev
+
 volumes:
   postgres-data:
+    driver: local
   redis-data:
+    driver: local
 

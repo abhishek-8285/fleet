@@ -233,10 +233,10 @@ echo ""
 echo "📦 Smart Dependency Installation..."
 echo "==================================="
 
-install_deps_if_needed "Go Backend" "go-backend" "go"
-install_deps_if_needed "Web Dashboard" "web" "npm"
+install_deps_if_needed "Go Backend" "backend" "go"
+install_deps_if_needed "Web Dashboard" "frontend/dashboard" "npm"
 install_deps_if_needed "Mobile App" "mobile" "npm"
-install_deps_if_needed "Customer Portal" "customer-portal" "npm"
+install_deps_if_needed "Customer Portal" "frontend/portal" "npm"
 
 echo "📦 WhatsApp Service: Integrated in Go Backend"
 echo "✅ WhatsApp Service: No separate installation needed (part of Go Backend)"
@@ -247,16 +247,16 @@ echo "🚀 Starting All Services..."
 echo "============================"
 
 # Go Backend
-start_service "go-backend" "cd go-backend && export PORT=8080 && export ENVIRONMENT=development && export DATABASE_URL='postgres://fleet:fleet@localhost:5432/fleetflow?sslmode=disable' && export JWT_SECRET='fleetflow-dev-secret-key-change-in-production' && export JWT_EXPIRATION='24h' && export REFRESH_TOKEN_EXPIRY='168h' && go run main.go"
+start_service "go-backend" "cd backend && export PORT=8080 && export ENVIRONMENT=development && export DATABASE_URL='postgres://fleet:fleet@localhost:5432/fleetflow?sslmode=disable' && export JWT_SECRET='fleetflow-dev-secret-key-change-in-production' && export JWT_EXPIRATION='24h' && export REFRESH_TOKEN_EXPIRY='168h' && go run main.go"
 
 # Wait a bit for Go backend to start
 sleep 5
 
 # Web Dashboard
-start_service "web-dashboard" "cd web && npm run dev"
+start_service "web-dashboard" "cd frontend/dashboard && npm run dev"
 
 # Customer Portal
-start_service "customer-portal" "cd customer-portal && npm run dev -- --port 3000"
+start_service "customer-portal" "cd frontend/portal && npm run dev"
 
 # WhatsApp Service is integrated into Go Backend - no separate service needed
 echo "📱 WhatsApp Service: Running as part of Go Backend on port 8080"
@@ -271,7 +271,7 @@ echo ""
 echo "🌐 Service URLs:"
 echo "   • Go Backend (API + WhatsApp): http://localhost:8080"
 echo "   • Web Dashboard:         http://localhost:5173"
-echo "   • Customer Portal:       http://localhost:3000"  
+echo "   • Customer Portal:       http://localhost:3001"  
 echo "   • Mobile App (Web):      http://localhost:19006"
 echo "   • PostgreSQL:            localhost:5432"
 echo "   • Redis:                 localhost:6379"

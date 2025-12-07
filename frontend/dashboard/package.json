@@ -1,0 +1,41 @@
+{
+  "name": "fleetflow-web",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.16.6",
+    "@mui/material": "^5.16.6",
+    "@peculiar/webcrypto": "^1.5.0",
+    "@react-google-maps/api": "^2.20.7",
+    "@stomp/stompjs": "^7.1.1",
+    "@types/leaflet": "^1.9.20",
+    "chart.js": "^4.4.7",
+    "leaflet": "^1.9.4",
+    "react": "^18.3.1",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^18.3.1",
+    "react-leaflet": "^4.2.1",
+    "react-router-dom": "^6.26.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.59",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.3",
+    "jsdom": "^20.0.3",
+    "typescript": "^5.9.2",
+    "vite": "^5.4.10",
+    "vitest": "^1.6.0"
+  }
+}
