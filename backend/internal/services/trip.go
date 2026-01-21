@@ -6,20 +6,28 @@ import (
 	"time"
 
 	"github.com/fleetflow/backend/internal/models"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
+	"github.com/fleetflow/backend/internal/repositories"
 )
 
 // TripService handles trip operations
 type TripService struct {
-	db           *gorm.DB
+	repo         repositories.TripRepository
+	vehicleRepo  repositories.VehicleRepository
+	uploadRepo   repositories.UploadRepository
 	auditService *AuditService
 }
 
 // NewTripService creates a new trip service
-func NewTripService(db *gorm.DB, auditService *AuditService) *TripService {
+func NewTripService(
+	repo repositories.TripRepository,
+	vehicleRepo repositories.VehicleRepository,
+	uploadRepo repositories.UploadRepository,
+	auditService *AuditService,
+) *TripService {
 	return &TripService{
-		db:           db,
+		repo:         repo,
+		vehicleRepo:  vehicleRepo,
+		uploadRepo:   uploadRepo,
 		auditService: auditService,
 	}
 }
@@ -81,7 +89,7 @@ func (s *TripService) CreateTrip(trip *models.Trip) (*models.Trip, error) {
 	}
 
 	// Create trip
-	if err := s.db.Create(trip).Error; err != nil {
+	if err := s.repo.CreateTrip(trip); err != nil {
 		return nil, fmt.Errorf("failed to create trip: %w", err)
 	}
 
@@ -101,70 +109,28 @@ func (s *TripService) CreateTrip(trip *models.Trip) (*models.Trip, error) {
 
 // GetTripByID gets trip by ID
 func (s *TripService) GetTripByID(id uint) (*models.Trip, error) {
-	var trip models.Trip
-	if err := s.db.Preload("Driver").Preload("Vehicle").First(&trip, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, fmt.Errorf("trip with ID %d not found", id)
-		}
+	trip, err := s.repo.GetTripByID(id)
+	if err != nil {
 		return nil, fmt.Errorf("failed to get trip: %w", err)
 	}
-	return &trip, nil
+	return trip, nil
 }
 
 // GetTrips gets paginated list of trips
 func (s *TripService) GetTrips(page, limit int, filters map[string]interface{}) ([]models.Trip, int64, error) {
-	var trips []models.Trip
-	var total int64
-
-	query := s.db.Model(&models.Trip{}).Preload("Driver").Preload("Vehicle")
-
-	// Apply filters
-	for key, value := range filters {
-		switch key {
-		case "status":
-			query = query.Where("status = ?", value)
-		case "driver_id":
-			query = query.Where("driver_id = ?", value)
-		case "vehicle_id":
-			query = query.Where("vehicle_id = ?", value)
-		case "customer_phone":
-			query = query.Where("customer_phone = ?", value)
-		case "search":
-			searchTerm := fmt.Sprintf("%%%s%%", value)
-			query = query.Where("tracking_id ILIKE ? OR customer_name ILIKE ? OR pickup_address ILIKE ?",
-				searchTerm, searchTerm, searchTerm)
-		}
-	}
-
-	// Count total records
-	if err := query.Count(&total).Error; err != nil {
-		return nil, 0, fmt.Errorf("failed to count trips: %w", err)
-	}
-
-	// Get paginated results
-	offset := (page - 1) * limit
-	if err := query.Order("created_at DESC").
-		Offset(offset).Limit(limit).
-		Find(&trips).Error; err != nil {
-		return nil, 0, fmt.Errorf("failed to get trips: %w", err)
-	}
-
-	return trips, total, nil
+	return s.repo.GetTrips(page, limit, filters)
 }
 
 // UpdateTrip updates a trip
 func (s *TripService) UpdateTrip(trip *models.Trip) (*models.Trip, error) {
 	// Get existing trip for audit trail
-	var existing models.Trip
-	if err := s.db.First(&existing, trip.ID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, fmt.Errorf("trip with ID %d not found", trip.ID)
-		}
+	existing, err := s.repo.GetTripByID(trip.ID)
+	if err != nil {
 		return nil, fmt.Errorf("failed to get trip: %w", err)
 	}
 
 	// Update trip
-	if err := s.db.Save(trip).Error; err != nil {
+	if err := s.repo.UpdateTrip(trip); err != nil {
 		return nil, fmt.Errorf("failed to update trip: %w", err)
 	}
 
@@ -174,7 +140,7 @@ func (s *TripService) UpdateTrip(trip *models.Trip) (*models.Trip, error) {
 		"trip_updated",
 		"trips",
 		trip.ID,
-		&existing,
+		existing, // Pass struct or pointer depends on signature
 		trip,
 		fmt.Sprintf("Trip updated: %s", trip.TrackingID),
 	)
@@ -185,11 +151,8 @@ func (s *TripService) UpdateTrip(trip *models.Trip) (*models.Trip, error) {
 // DeleteTrip deletes a trip
 func (s *TripService) DeleteTrip(id uint) error {
 	// Get existing trip for audit trail
-	var trip models.Trip
-	if err := s.db.First(&trip, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return fmt.Errorf("trip with ID %d not found", id)
-		}
+	trip, err := s.repo.GetTripByID(id)
+	if err != nil {
 		return fmt.Errorf("failed to get trip: %w", err)
 	}
 
@@ -199,7 +162,7 @@ func (s *TripService) DeleteTrip(id uint) error {
 	}
 
 	// Soft delete
-	if err := s.db.Delete(&trip).Error; err != nil {
+	if err := s.repo.DeleteTrip(trip); err != nil {
 		return fmt.Errorf("failed to delete trip: %w", err)
 	}
 
@@ -209,7 +172,7 @@ func (s *TripService) DeleteTrip(id uint) error {
 		"trip_deleted",
 		"trips",
 		id,
-		&trip,
+		trip,
 		nil,
 		fmt.Sprintf("Trip deleted: %s", trip.TrackingID),
 	)
@@ -219,87 +182,31 @@ func (s *TripService) DeleteTrip(id uint) error {
 
 // AssignTrip assigns a trip to driver and vehicle (with concurrency protection)
 func (s *TripService) AssignTrip(tripID, driverID, vehicleID uint) error {
-	// Use transaction for concurrency protection
-	return s.db.Transaction(func(tx *gorm.DB) error {
-		// Get trip with lock
-		var trip models.Trip
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&trip, tripID).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				return fmt.Errorf("trip with ID %d not found", tripID)
-			}
-			return fmt.Errorf("failed to get trip: %w", err)
-		}
+	// Delegate to Repository which handles the transaction and complex business rules
+	trip, err := s.repo.AssignTrip(tripID, driverID, vehicleID)
+	if err != nil {
+		return fmt.Errorf("failed to assign trip: %w", err)
+	}
 
-		// Check trip status
-		if trip.Status != models.TripStatusScheduled {
-			return fmt.Errorf("cannot assign trip with status %s", trip.Status)
-		}
+	// Log audit event (async for performance)
+	go s.auditService.LogEntityChange(
+		nil,
+		"trip_assigned",
+		"trips",
+		tripID,
+		nil,
+		trip,
+		fmt.Sprintf("Trip %s assigned to driver %d and vehicle %d", trip.TrackingID, driverID, vehicleID),
+	)
 
-		// Lock and verify vehicle exists and is available
-		var vehicle models.Vehicle
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&vehicle, vehicleID).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				return fmt.Errorf("vehicle with ID %d not found", vehicleID)
-			}
-			return fmt.Errorf("failed to get vehicle: %w", err)
-		}
-		if vehicle.Status != models.VehicleStatusActive {
-			return fmt.Errorf("vehicle %s is not available (status: %s)", vehicle.LicensePlate, vehicle.Status)
-		}
-
-		// Lock and verify driver exists and is available
-		var driver models.Driver
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&driver, driverID).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				return fmt.Errorf("driver with ID %d not found", driverID)
-			}
-			return fmt.Errorf("failed to get driver: %w", err)
-		}
-
-		// Check if driver is already assigned to another active trip
-		var activeTrips int64
-		tx.Model(&models.Trip{}).
-			Where("driver_id = ? AND status IN ?", driverID, []string{
-				string(models.TripStatusAssigned),
-				string(models.TripStatusInProgress),
-			}).
-			Count(&activeTrips)
-		if activeTrips > 0 {
-			return fmt.Errorf("driver %s is already assigned to an active trip", driver.Name)
-		}
-
-		// Assign trip
-		trip.DriverID = &driverID
-		trip.VehicleID = &vehicleID
-		trip.Status = models.TripStatusAssigned
-
-		if err := tx.Save(&trip).Error; err != nil {
-			return fmt.Errorf("failed to assign trip: %w", err)
-		}
-
-		// Log audit event (async for performance)
-		go s.auditService.LogEntityChange(
-			nil,
-			"trip_assigned",
-			"trips",
-			tripID,
-			nil,
-			&trip,
-			fmt.Sprintf("Trip %s assigned to driver %d and vehicle %d", trip.TrackingID, driverID, vehicleID),
-		)
-
-		return nil
-	})
+	return nil
 }
 
 // StartTrip starts a trip
 func (s *TripService) StartTrip(tripID uint) error {
 	// Get trip
-	var trip models.Trip
-	if err := s.db.First(&trip, tripID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return fmt.Errorf("trip with ID %d not found", tripID)
-		}
+	trip, err := s.repo.GetTripByID(tripID)
+	if err != nil {
 		return fmt.Errorf("failed to get trip: %w", err)
 	}
 
@@ -311,12 +218,9 @@ func (s *TripService) StartTrip(tripID uint) error {
 	// Geofence validation - verify driver is at pickup location
 	if trip.PickupLatitude != 0 && trip.PickupLongitude != 0 && trip.VehicleID != nil {
 		// Get latest location for the vehicle
-		var latestPing models.LocationPing
-		err := s.db.Where("vehicle_id = ?", *trip.VehicleID).
-			Order("timestamp DESC").
-			First(&latestPing).Error
+		latestPing, err := s.vehicleRepo.GetLatestLocation(*trip.VehicleID)
 
-		if err == nil {
+		if err == nil && latestPing != nil {
 			// Calculate distance to pickup location
 			distance := s.calculateDistance(
 				latestPing.Latitude,
@@ -340,13 +244,13 @@ func (s *TripService) StartTrip(tripID uint) error {
 	trip.Status = models.TripStatusInProgress
 	trip.ActualPickupTime = &now
 
-	if err := s.db.Save(&trip).Error; err != nil {
+	if err := s.repo.UpdateTrip(trip); err != nil {
 		return fmt.Errorf("failed to start trip: %w", err)
 	}
 
 	// Update vehicle status
 	if trip.VehicleID != nil {
-		s.db.Model(&models.Vehicle{}).Where("id = ?", *trip.VehicleID).Update("status", models.VehicleStatusActive)
+		s.vehicleRepo.UpdateStatus(*trip.VehicleID, string(models.VehicleStatusActive))
 	}
 
 	// Log audit event
@@ -356,7 +260,7 @@ func (s *TripService) StartTrip(tripID uint) error {
 		"trips",
 		tripID,
 		nil,
-		&trip,
+		trip,
 		fmt.Sprintf("Trip %s started", trip.TrackingID),
 	)
 
@@ -366,11 +270,8 @@ func (s *TripService) StartTrip(tripID uint) error {
 // CompleteTrip completes a trip
 func (s *TripService) CompleteTrip(tripID uint) error {
 	// Get trip
-	var trip models.Trip
-	if err := s.db.First(&trip, tripID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return fmt.Errorf("trip with ID %d not found", tripID)
-		}
+	trip, err := s.repo.GetTripByID(tripID)
+	if err != nil {
 		return fmt.Errorf("failed to get trip: %w", err)
 	}
 
@@ -382,12 +283,9 @@ func (s *TripService) CompleteTrip(tripID uint) error {
 	// Geofence validation - verify driver is at dropoff location
 	if trip.DropoffLatitude != 0 && trip.DropoffLongitude != 0 && trip.VehicleID != nil {
 		// Get latest location for the vehicle
-		var latestPing models.LocationPing
-		err := s.db.Where("vehicle_id = ?", *trip.VehicleID).
-			Order("timestamp DESC").
-			First(&latestPing).Error
+		latestPing, err := s.vehicleRepo.GetLatestLocation(*trip.VehicleID)
 
-		if err == nil {
+		if err == nil && latestPing != nil {
 			// Calculate distance to dropoff location
 			distance := s.calculateDistance(
 				latestPing.Latitude,
@@ -407,11 +305,11 @@ func (s *TripService) CompleteTrip(tripID uint) error {
 	}
 
 	// POD (Proof of Delivery) validation - check for upload attachment
-	var podCount int64
-	s.db.Model(&models.Upload{}).
-		Where("trip_id = ? AND (upload_type = ? OR upload_type = ?)",
-			trip.ID, "POD_SIGNATURE", "POD_PHOTO").
-		Count(&podCount)
+	// Using UploadRepository
+	podCount, _ := s.uploadRepo.CountUploads(map[string]interface{}{
+		"trip_id":        trip.ID,
+		"upload_type_in": []string{"POD_SIGNATURE", "POD_PHOTO"},
+	})
 
 	// Require at least one POD attachment for high-value or priority trips
 	if trip.Priority >= 3 || trip.CargoValue > 10000 {
@@ -441,13 +339,13 @@ func (s *TripService) CompleteTrip(tripID uint) error {
 		}
 	}
 
-	if err := s.db.Save(&trip).Error; err != nil {
+	if err := s.repo.UpdateTrip(trip); err != nil {
 		return fmt.Errorf("failed to complete trip: %w", err)
 	}
 
 	// Update vehicle status back to active
 	if trip.VehicleID != nil {
-		s.db.Model(&models.Vehicle{}).Where("id = ?", *trip.VehicleID).Update("status", models.VehicleStatusActive)
+		s.vehicleRepo.UpdateStatus(*trip.VehicleID, string(models.VehicleStatusActive))
 	}
 
 	// Log audit event
@@ -457,7 +355,7 @@ func (s *TripService) CompleteTrip(tripID uint) error {
 		"trips",
 		tripID,
 		nil,
-		&trip,
+		trip,
 		fmt.Sprintf("Trip %s completed", trip.TrackingID),
 	)
 
@@ -466,11 +364,8 @@ func (s *TripService) CompleteTrip(tripID uint) error {
 
 // PauseTrip pauses a trip (IN_PROGRESS → PAUSED)
 func (s *TripService) PauseTrip(tripID uint) error {
-	var trip models.Trip
-	if err := s.db.First(&trip, tripID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return fmt.Errorf("trip with ID %d not found", tripID)
-		}
+	trip, err := s.repo.GetTripByID(tripID)
+	if err != nil {
 		return fmt.Errorf("failed to get trip: %w", err)
 	}
 
@@ -479,22 +374,19 @@ func (s *TripService) PauseTrip(tripID uint) error {
 	}
 
 	trip.Status = models.TripStatusPaused
-	if err := s.db.Save(&trip).Error; err != nil {
+	if err := s.repo.UpdateTrip(trip); err != nil {
 		return fmt.Errorf("failed to pause trip: %w", err)
 	}
 
-	s.auditService.LogEntityChange(nil, "trip_paused", "trips", tripID, nil, &trip,
+	s.auditService.LogEntityChange(nil, "trip_paused", "trips", tripID, nil, trip,
 		fmt.Sprintf("Trip %s paused", trip.TrackingID))
 	return nil
 }
 
 // ResumeTrip resumes a paused trip (PAUSED → IN_PROGRESS)
 func (s *TripService) ResumeTrip(tripID uint) error {
-	var trip models.Trip
-	if err := s.db.First(&trip, tripID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return fmt.Errorf("trip with ID %d not found", tripID)
-		}
+	trip, err := s.repo.GetTripByID(tripID)
+	if err != nil {
 		return fmt.Errorf("failed to get trip: %w", err)
 	}
 
@@ -503,22 +395,19 @@ func (s *TripService) ResumeTrip(tripID uint) error {
 	}
 
 	trip.Status = models.TripStatusInProgress
-	if err := s.db.Save(&trip).Error; err != nil {
+	if err := s.repo.UpdateTrip(trip); err != nil {
 		return fmt.Errorf("failed to resume trip: %w", err)
 	}
 
-	s.auditService.LogEntityChange(nil, "trip_resumed", "trips", tripID, nil, &trip,
+	s.auditService.LogEntityChange(nil, "trip_resumed", "trips", tripID, nil, trip,
 		fmt.Sprintf("Trip %s resumed", trip.TrackingID))
 	return nil
 }
 
 // CancelTrip cancels a trip (ANY → CANCELLED)
 func (s *TripService) CancelTrip(tripID uint, reason string) error {
-	var trip models.Trip
-	if err := s.db.First(&trip, tripID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return fmt.Errorf("trip with ID %d not found", tripID)
-		}
+	trip, err := s.repo.GetTripByID(tripID)
+	if err != nil {
 		return fmt.Errorf("failed to get trip: %w", err)
 	}
 
@@ -527,17 +416,16 @@ func (s *TripService) CancelTrip(tripID uint, reason string) error {
 	}
 
 	trip.Status = models.TripStatusCancelled
-	if err := s.db.Save(&trip).Error; err != nil {
+	if err := s.repo.UpdateTrip(trip); err != nil {
 		return fmt.Errorf("failed to cancel trip: %w", err)
 	}
 
 	// Free up vehicle
 	if trip.VehicleID != nil {
-		s.db.Model(&models.Vehicle{}).Where("id = ?", *trip.VehicleID).
-			Update("status", models.VehicleStatusActive)
+		s.vehicleRepo.UpdateStatus(*trip.VehicleID, string(models.VehicleStatusActive))
 	}
 
-	s.auditService.LogEntityChange(nil, "trip_cancelled", "trips", tripID, nil, &trip,
+	s.auditService.LogEntityChange(nil, "trip_cancelled", "trips", tripID, nil, trip,
 		fmt.Sprintf("Trip %s cancelled: %s", trip.TrackingID, reason))
 	return nil
 }

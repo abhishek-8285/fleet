@@ -173,7 +173,7 @@ class ApiFleetRepository implements FleetRepository {
   }
 
   // Helpers
-  HosStatus _parseHosStatus(String status) {
+  String _parseHosStatus(String status) {
     switch (status) {
       case 'OFF': return HosStatus.offDuty;
       case 'SB': return HosStatus.sleeperBerth;

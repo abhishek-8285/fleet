@@ -1,56 +1,24 @@
-import { 
-  CssBaseline, 
-  ThemeProvider, 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Button, 
-  Box, 
-  Drawer, 
-  List, 
-  ListItem, 
-  ListItemIcon, 
-  ListItemText, 
-  Container,
-  IconButton,
-  useMediaQuery,
-  Avatar,
-  Menu,
-  MenuItem,
+import {
+  CssBaseline,
+  ThemeProvider,
+  Box,
+  Typography,
   Grid,
   Card,
-  Alert,
   Stack,
-  Chip
+  Chip,
+  Alert,
+  Button
 } from '@mui/material'
-import { 
-  Dashboard as DashboardIcon,
-  DirectionsCar as VehicleIcon,
-  Person as DriverIcon,
-  Route as TripIcon,
-  LocalGasStation as FuelIcon,
-  Map as MapIcon,
-  Menu as MenuIcon,
-  AccountCircle,
-  Logout,
-  Build as MaintenanceIcon,
-  Assignment as ComplianceIcon,
-  AttachMoney as FinanceIcon,
-  Business as CustomerIcon,
-  Notifications as NotificationIcon,
-  Analytics as AnalyticsIcon,
-  Settings as SettingsIcon,
-  SupervisorAccount as UserManagementIcon
-} from '@mui/icons-material'
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useState } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Vehicles from './pages/Vehicles'
 import Drivers from './pages/Drivers'
 import Trips from './pages/Trips'
 import FuelEvents from './pages/FuelEvents'
 import Login from './pages/Login'
 import Track from './pages/Track'
-import { RequireAuth, isAuthed } from './auth'
+import { RequireAuth } from './auth'
 import MapView from './pages/MapView'
 import MapViewLeaflet from './pages/MapViewLeaflet'
 import Maintenance from './pages/Maintenance'
@@ -62,210 +30,7 @@ import Settings from './pages/Settings'
 import Notifications from './pages/Notifications'
 import UserManagement from './pages/UserManagement'
 import theme from './theme'
-
-const drawerWidth = 280
-
-const navigationItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-  { text: 'Vehicles', icon: <VehicleIcon />, path: '/vehicles' },
-  { text: 'Drivers', icon: <DriverIcon />, path: '/drivers' },
-  { text: 'Trips', icon: <TripIcon />, path: '/trips' },
-  { text: 'Fuel Management', icon: <FuelIcon />, path: '/fuel' },
-  { text: 'Live Map (Google)', icon: <MapIcon />, path: '/map' },
-  { text: 'Live Map (OpenStreetMap)', icon: <MapIcon />, path: '/map-osm' },
-  { text: 'Maintenance', icon: <MaintenanceIcon />, path: '/maintenance' },
-  { text: 'Financial', icon: <FinanceIcon />, path: '/financial' },
-  { text: 'Compliance', icon: <ComplianceIcon />, path: '/compliance' },
-  { text: 'Customers', icon: <CustomerIcon />, path: '/customers' },
-  { text: 'Analytics', icon: <AnalyticsIcon />, path: '/analytics' },
-  { text: 'Notifications', icon: <NotificationIcon />, path: '/notifications' },
-  { text: 'User Management', icon: <UserManagementIcon />, path: '/users' },
-  { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
-]
-
-function AppLayout({ children }: { children: React.ReactNode }) {
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null)
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
-  const location = useLocation()
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen)
-  }
-
-  const handleProfileMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setProfileAnchor(event.currentTarget)
-  }
-
-  const handleProfileClose = () => {
-    setProfileAnchor(null)
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('refreshToken')
-    window.location.href = '/login'
-    handleProfileClose()
-  }
-
-  const drawer = (
-    <Box>
-      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
-          🚛 FleetFlow India
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Rajesh Transport Co.
-        </Typography>
-      </Box>
-      <List>
-        {navigationItems.map((item) => (
-          <ListItem
-            key={item.text}
-            component={Link}
-            to={item.path}
-            sx={{
-              textDecoration: 'none',
-              // color: 'inherit',
-              backgroundColor: location.pathname === item.path ? 'primary.main' : 'transparent',
-              color: location.pathname === item.path ? 'white' : 'text.primary',
-              '&:hover': {
-                backgroundColor: location.pathname === item.path ? 'primary.dark' : 'grey.100'
-              },
-              borderRadius: 1,
-              mx: 1,
-              mb: 0.5
-            }}
-            onClick={() => isMobile && setMobileOpen(false)}
-          >
-            <ListItemIcon sx={{ color: location.pathname === item.path ? 'white' : 'primary.main' }}>
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  )
-
-  return (
-    <Box sx={{ display: 'flex' }}>
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { md: `calc(100% - ${drawerWidth}px)` },
-          ml: { md: `${drawerWidth}px` },
-          bgcolor: 'background.paper',
-          color: 'text.primary',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          borderBottom: 1,
-          borderColor: 'divider'
-        }}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { md: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {navigationItems.find(item => item.path === location.pathname)?.text || 'Dashboard'}
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Button
-              variant="outlined"
-              size="small"
-              href="/api/health"
-              target="_blank"
-              sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-            >
-              API Status
-            </Button>
-            <IconButton onClick={handleProfileMenu} color="inherit">
-              <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-                R
-              </Avatar>
-            </IconButton>
-            <Menu
-              anchorEl={profileAnchor}
-              open={Boolean(profileAnchor)}
-              onClose={handleProfileClose}
-              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-            >
-              <MenuItem onClick={handleProfileClose}>
-                <AccountCircle sx={{ mr: 1 }} />
-                Profile
-              </MenuItem>
-              <MenuItem onClick={handleLogout}>
-                <Logout sx={{ mr: 1 }} />
-                Logout
-              </MenuItem>
-            </Menu>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
-      <Box
-        component="nav"
-        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
-      >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{ keepMounted: true }}
-          sx={{
-            display: { xs: 'block', md: 'none' },
-            '& .MuiDrawer-paper': { 
-              boxSizing: 'border-box', 
-              width: drawerWidth,
-              border: 'none',
-              boxShadow: '2px 0 8px rgba(0,0,0,0.1)'
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: 'none', md: 'block' },
-            '& .MuiDrawer-paper': { 
-              boxSizing: 'border-box', 
-              width: drawerWidth,
-              border: 'none',
-              borderRight: 1,
-              borderColor: 'divider'
-            },
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
-      </Box>
-
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          width: { md: `calc(100% - ${drawerWidth}px)` },
-          minHeight: '100vh',
-          bgcolor: 'background.default'
-        }}
-      >
-        <Toolbar />
-        <Container maxWidth="xl" sx={{ py: 3 }}>
-          {children}
-        </Container>
-      </Box>
-    </Box>
-  )
-}
+import Layout from './components/Layout'
 
 export default function App() {
   return (
@@ -276,21 +41,21 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/track/:id" element={<Track />} />
           <Route element={<RequireAuth />}>
-            <Route path="/" element={<AppLayout><DashboardHome /></AppLayout>} />
-            <Route path="/vehicles" element={<AppLayout><Vehicles /></AppLayout>} />
-            <Route path="/drivers" element={<AppLayout><Drivers /></AppLayout>} />
-            <Route path="/trips" element={<AppLayout><Trips /></AppLayout>} />
-            <Route path="/fuel" element={<AppLayout><FuelEvents /></AppLayout>} />
-            <Route path="/map" element={<AppLayout><MapView /></AppLayout>} />
-            <Route path="/map-osm" element={<AppLayout><MapViewLeaflet /></AppLayout>} />
-            <Route path="/maintenance" element={<AppLayout><Maintenance /></AppLayout>} />
-            <Route path="/financial" element={<AppLayout><Financial /></AppLayout>} />
-            <Route path="/compliance" element={<AppLayout><Compliance /></AppLayout>} />
-            <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
-            <Route path="/analytics" element={<AppLayout><Analytics /></AppLayout>} />
-            <Route path="/notifications" element={<AppLayout><Notifications /></AppLayout>} />
-            <Route path="/users" element={<AppLayout><UserManagement /></AppLayout>} />
-            <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
+            <Route path="/" element={<Layout><Analytics /></Layout>} />
+            <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
+            <Route path="/vehicles" element={<Layout><Vehicles /></Layout>} />
+            <Route path="/drivers" element={<Layout><Drivers /></Layout>} />
+            <Route path="/trips" element={<Layout><Trips /></Layout>} />
+            <Route path="/fuel" element={<Layout><FuelEvents /></Layout>} />
+            <Route path="/map" element={<Layout><MapView /></Layout>} />
+            <Route path="/map-osm" element={<Layout><MapViewLeaflet /></Layout>} />
+            <Route path="/maintenance" element={<Layout><Maintenance /></Layout>} />
+            <Route path="/financial" element={<Layout><Financial /></Layout>} />
+            <Route path="/compliance" element={<Layout><Compliance /></Layout>} />
+            <Route path="/customers" element={<Layout><Customers /></Layout>} />
+            <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
+            <Route path="/users" element={<Layout><UserManagement /></Layout>} />
+            <Route path="/settings" element={<Layout><Settings /></Layout>} />
           </Route>
         </Routes>
       </BrowserRouter>
@@ -433,7 +198,7 @@ function DashboardHome() {
             </Typography>
             <Stack spacing={2}>
               {aiInsights.map((insight, index) => (
-                <Alert 
+                <Alert
                   key={index}
                   severity={insight.priority === 'high' ? 'error' : insight.priority === 'medium' ? 'warning' : 'info'}
                   sx={{ borderRadius: 2 }}

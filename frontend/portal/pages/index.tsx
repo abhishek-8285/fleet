@@ -1,449 +1,246 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import {
-  Container,
-  Paper,
-  Typography,
   Box,
+  Container,
+  Typography,
   TextField,
   Button,
+  InputAdornment,
   Grid,
   Card,
-  CardContent,
-  Stepper,
-  Step,
-  StepLabel,
-  Alert,
-  Divider,
-  Chip,
-  Avatar,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  InputAdornment
+  useTheme,
+  Stack,
+  IconButton
 } from '@mui/material'
 import {
-  Search as SearchIcon,
-  LocalShipping as TruckIcon,
-  Schedule as ScheduleIcon,
-  Security as SecurityIcon,
-  Speed as SpeedIcon,
-  Support as SupportIcon,
-  Phone as PhoneIcon,
-  Email as EmailIcon,
-  Language as LanguageIcon,
-  QrCodeScanner as QrIcon,
-  Smartphone as PhoneAppIcon,
-  CheckCircle as CheckIcon
+  Search,
+  LocalShipping,
+  Navigation,
+  Shield,
+  AccessTime,
+  RocketLaunch
 } from '@mui/icons-material'
+import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 
-export default function HomePage() {
-  const router = useRouter()
-  const { t, i18n } = useTranslation()
-  
+export default function Home() {
   const [trackingId, setTrackingId] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [demoDialogOpen, setDemoDialogOpen] = useState(false)
+  const router = useRouter()
+  const theme = useTheme()
+  const { t } = useTranslation()
 
-  const handleTrack = async () => {
-    if (!trackingId.trim()) {
-      setError(t('home.enterTrackingId'))
-      return
-    }
-
-    setLoading(true)
-    setError(null)
-
-    try {
-      // Validate tracking ID format (optional)
-      if (!/^[A-Z0-9]+$/.test(trackingId.toUpperCase())) {
-        setError(t('home.invalidFormat'))
-        setLoading(false)
-        return
-      }
-
-      // Navigate to tracking page
-      router.push(`/track/${trackingId.toUpperCase()}`)
-    } catch (err) {
-      setError(t('home.trackingError'))
-      setLoading(false)
+  const handleTrack = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (trackingId.trim()) {
+      router.push(`/track/${trackingId}`)
     }
   }
 
-  const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      handleTrack()
-    }
-  }
-
-  const features = [
-    {
-      icon: <TruckIcon fontSize="large" />,
-      title: t('features.realTimeTracking.title'),
-      description: t('features.realTimeTracking.description'),
-      color: '#2196F3'
-    },
-    {
-      icon: <ScheduleIcon fontSize="large" />,
-      title: t('features.estimatedDelivery.title'),
-      description: t('features.estimatedDelivery.description'),
-      color: '#FF9800'
-    },
-    {
-      icon: <SecurityIcon fontSize="large" />,
-      title: t('features.secureShipping.title'),
-      description: t('features.secureShipping.description'),
-      color: '#4CAF50'
-    },
-    {
-      icon: <SpeedIcon fontSize="large" />,
-      title: t('features.fastDelivery.title'),
-      description: t('features.fastDelivery.description'),
-      color: '#9C27B0'
-    }
-  ]
-
-  const trackingSteps = [
-    t('steps.pickup'),
-    t('steps.inTransit'),
-    t('steps.outForDelivery'),
-    t('steps.delivered')
-  ]
-
-  const demoTrackingIds = [
-    'RTC240801001', // In Transit to Delhi
-    'RTC240801002', // Out for Delivery in Bangalore  
-    'RTC240801003', // Delivered in Mumbai
-    'DEMO001',      // Premium Service Demo (Live)
-    'DEMO002'       // Long Distance Demo (Live)
-  ]
+  const FeatureCard = ({ icon: Icon, title, description }: any) => (
+    <motion.div whileHover={{ y: -10 }}>
+      <Card
+        sx={{
+          p: 4,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          background: 'rgba(255, 255, 255, 0.03)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          transition: 'all 0.3s ease-in-out',
+          '&:hover': {
+            background: 'rgba(255, 255, 255, 0.05)',
+            borderColor: theme.palette.primary.main,
+            boxShadow: `0 0 30px ${theme.palette.primary.main}20`
+          }
+        }}
+      >
+        <Box
+          sx={{
+            p: 2,
+            borderRadius: '50%',
+            background: `linear-gradient(135deg, ${theme.palette.primary.main}20 0%, ${theme.palette.primary.main}05 100%)`,
+            color: theme.palette.primary.main,
+            mb: 2
+          }}
+        >
+          <Icon sx={{ fontSize: 32 }} />
+        </Box>
+        <Typography variant="h6" gutterBottom color="text.primary">
+          {title}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {description}
+        </Typography>
+      </Card>
+    </motion.div>
+  )
 
   return (
-    <>
+    <Box sx={{ minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
       <Head>
-        <title>FleetFlow - Real-time Fleet Tracking</title>
-        <meta name="description" content={t('home.metaDescription')} />
-        <meta name="keywords" content="fleet tracking, cargo tracking, shipment tracking, India logistics" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-        
-        {/* SEO and Social Media Tags */}
-        <meta property="og:title" content="FleetFlow - Real-time Fleet Tracking" />
-        <meta property="og:description" content={t('home.metaDescription')} />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        
-        {/* Structured Data for SEO */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "name": "FleetFlow",
-              "description": t('home.metaDescription'),
-              "url": "https://fleetflow.in",
-              "logo": "https://fleetflow.in/logo.png",
-              "contactPoint": {
-                "@type": "ContactPoint",
-                "telephone": "+91-9999999999",
-                "contactType": "customer service"
-              }
-            })
-          }}
-        />
+        <title>FleetFlow | Premium Shipment Tracking</title>
+        <meta name="description" content="Track your shipments with FleetFlow" />
       </Head>
 
-      {/* Hero Section */}
-      <Box sx={{ 
-        bgcolor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: 'white',
-        py: 8,
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-      }}>
-        <Container maxWidth="md">
-          <Box textAlign="center">
-            <Typography variant="h2" component="h1" gutterBottom fontWeight="bold">
-              🚛 FleetFlow
-            </Typography>
-            <Typography variant="h4" component="h2" gutterBottom sx={{ opacity: 0.9 }}>
-              {t('home.heroTitle')}
-            </Typography>
-            <Typography variant="h6" sx={{ mb: 4, opacity: 0.8 }}>
-              {t('home.heroSubtitle')}
-            </Typography>
-
-            {/* Tracking Input */}
-            <Paper sx={{ p: 2, maxWidth: 500, mx: 'auto', mb: 4 }}>
-              <Box display="flex" alignItems="center">
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  placeholder={t('home.trackingPlaceholder')}
-                  value={trackingId}
-                  onChange={(e) => setTrackingId(e.target.value.toUpperCase())}
-                  onKeyPress={handleKeyPress}
-                  error={!!error}
-                  helperText={error}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon color="primary" />
-                      </InputAdornment>
-                    )
-                  }}
-                  sx={{ mr: 1 }}
-                />
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={handleTrack}
-                  disabled={loading}
-                  sx={{ 
-                    minWidth: 120,
-                    height: 56,
-                    bgcolor: 'primary.main'
-                  }}
-                >
-                  {loading ? '...' : t('home.trackButton')}
-                </Button>
-              </Box>
-            </Paper>
-
-            {/* Demo Button */}
-            <Button
-              variant="outlined"
-              sx={{ 
-                color: 'white', 
-                borderColor: 'white',
-                '&:hover': { 
-                  borderColor: 'white', 
-                  bgcolor: 'rgba(255,255,255,0.1)' 
-                }
-              }}
-              onClick={() => setDemoDialogOpen(true)}
-            >
-              {t('home.tryDemo')}
-            </Button>
-
-            {/* Language Toggle */}
-            <Box mt={3}>
-              <Chip
-                icon={<LanguageIcon />}
-                label={i18n.language === 'en' ? 'हिंदी' : 'English'}
-                clickable
-                variant="outlined"
-                sx={{ 
-                  color: 'white', 
-                  borderColor: 'white',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
-                }}
-                onClick={() => {
-                  const newLang = i18n.language === 'en' ? 'hi' : 'en'
-                  i18n.changeLanguage(newLang)
-                }}
-              />
-            </Box>
-          </Box>
-        </Container>
+      {/* Abstract Background */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: -1,
+          background: 'radial-gradient(circle at 50% 10%, #1a2c4e 0%, #0F172A 100%)',
+        }}
+      >
+        <motion.div
+          animate={{
+            rotate: 360,
+          }}
+          transition={{
+            duration: 100,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+          style={{
+            position: 'absolute',
+            top: '-50%',
+            left: '-10%',
+            width: '120%',
+            height: '120%',
+            background: `conic-gradient(from 0deg at 50% 50%, ${theme.palette.primary.main}10 0deg, transparent 60deg, transparent 300deg, ${theme.palette.primary.main}10 360deg)`,
+            opacity: 0.5
+          }}
+        />
       </Box>
 
-      <Container maxWidth="lg" sx={{ py: 6 }}>
-        {/* How It Works */}
-        <Box mb={8}>
-          <Typography variant="h3" component="h2" textAlign="center" gutterBottom>
-            {t('home.howItWorks')}
+      {/* Navbar */}
+      <Container maxWidth="xl" sx={{ py: 3 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Typography variant="h5" sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <RocketLaunch color="primary" />
+            FleetFlow
           </Typography>
-          <Typography variant="h6" textAlign="center" color="text.secondary" mb={4}>
-            {t('home.howItWorksSubtitle')}
+          <Button variant="outlined" color="primary" href="/login">
+            Driver Login
+          </Button>
+        </Stack>
+      </Container>
+
+      {/* Hero Section */}
+      <Container maxWidth="md" sx={{ mt: 10, mb: 10, textAlign: 'center' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <Typography
+            variant="h1"
+            sx={{
+              fontWeight: 900,
+              fontSize: { xs: '3rem', md: '5rem' },
+              mb: 2,
+              letterSpacing: '-0.02em',
+              background: `linear-gradient(to right, #fff, ${theme.palette.primary.light})`,
+              backgroundClip: 'text',
+              textFillColor: 'transparent'
+            }}
+          >
+            Track Your Journey
           </Typography>
-          
-          <Stepper alternativeLabel>
-            {trackingSteps.map((label, index) => (
-              <Step key={index} active={true}>
-                <StepLabel
-                  StepIconComponent={() => (
-                    <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
-                      {index + 1}
-                    </Avatar>
-                  )}
-                >
-                  <Typography variant="subtitle1" sx={{ mt: 1 }}>
-                    {label}
-                  </Typography>
-                </StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </Box>
-
-        {/* Features */}
-        <Box mb={8}>
-          <Typography variant="h3" component="h2" textAlign="center" gutterBottom>
-            {t('home.whyChooseUs')}
+          <Typography variant="h5" color="text.secondary" sx={{ mb: 6, maxWidth: '600px', mx: 'auto', lineHeight: 1.6 }}>
+            Experience real-time logistics transparency with our premium tracking portal. Enter your ID below to get started.
           </Typography>
-          <Grid container spacing={4} sx={{ mt: 2 }}>
-            {features.map((feature, index) => (
-              <Grid item xs={12} sm={6} md={3} key={index}>
-                <Card sx={{ 
-                  height: '100%', 
-                  textAlign: 'center',
-                  '&:hover': { 
-                    transform: 'translateY(-4px)',
-                    transition: 'transform 0.3s ease-in-out',
-                    boxShadow: 4
-                  }
-                }}>
-                  <CardContent sx={{ p: 3 }}>
-                    <Avatar sx={{ 
-                      bgcolor: feature.color, 
-                      width: 64, 
-                      height: 64, 
-                      mx: 'auto', 
-                      mb: 2 
-                    }}>
-                      {feature.icon}
-                    </Avatar>
-                    <Typography variant="h6" gutterBottom>
-                      {feature.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {feature.description}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
 
-        {/* Stats */}
-        <Paper sx={{ p: 4, mb: 8, bgcolor: 'primary.main', color: 'white' }}>
-          <Grid container spacing={4} textAlign="center">
-            <Grid item xs={12} sm={4}>
-              <Typography variant="h3" fontWeight="bold">50,000+</Typography>
-              <Typography variant="h6">{t('stats.deliveries')}</Typography>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Typography variant="h3" fontWeight="bold">98.5%</Typography>
-              <Typography variant="h6">{t('stats.satisfaction')}</Typography>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Typography variant="h3" fontWeight="bold">24/7</Typography>
-              <Typography variant="h6">{t('stats.support')}</Typography>
-            </Grid>
-          </Grid>
-        </Paper>
+          <Box
+            component="form"
+            onSubmit={handleTrack}
+            sx={{
+              position: 'relative',
+              maxWidth: 600,
+              mx: 'auto',
+              p: 1,
+              borderRadius: 4,
+              background: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: `0 0 40px ${theme.palette.primary.main}20`,
+              display: 'flex',
+              transition: 'all 0.3s',
+              '&:focus-within': {
+                borderColor: theme.palette.primary.main,
+                boxShadow: `0 0 60px ${theme.palette.primary.main}30`
+              }
+            }}
+          >
+            <InputBase
+              fullWidth
+              placeholder="Enter Tracking ID (e.g. TRK-8291)"
+              value={trackingId}
+              onChange={(e) => setTrackingId(e.target.value)}
+              sx={{
+                ml: 2,
+                flex: 1,
+                color: 'white',
+                fontSize: '1.2rem'
+              }}
+              startAdornment={
+                <Search sx={{ color: 'text.secondary', mr: 1, fontSize: 28 }} />
+              }
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              sx={{
+                borderRadius: 3,
+                px: 4,
+                py: 1.5,
+                fontSize: '1.1rem',
+                background: theme.palette.gradients.primary,
+                boxShadow: `0 10px 20px -5px ${theme.palette.primary.main}50`
+              }}
+            >
+              Track Now
+            </Button>
+          </Box>
+        </motion.div>
+      </Container>
 
-        {/* Contact Information */}
+      {/* Features Grid */}
+      <Container maxWidth="lg" sx={{ mb: 10 }}>
         <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 4, height: '100%' }}>
-              <Typography variant="h5" gutterBottom>
-                📞 {t('contact.title')}
-              </Typography>
-              <List>
-                <ListItem>
-                  <ListItemIcon>
-                    <PhoneIcon color="primary" />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary={t('contact.phone')}
-                    secondary="+91 9999-999-999"
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
-                    <EmailIcon color="primary" />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary={t('contact.email')}
-                    secondary="support@fleetflow.in"
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
-                    <SupportIcon color="primary" />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary={t('contact.hours')}
-                    secondary={t('contact.available')}
-                  />
-                </ListItem>
-              </List>
-            </Paper>
+          <Grid item xs={12} md={4}>
+            <FeatureCard
+              icon={Navigation}
+              title="Real-time GPS"
+              description="Monitor your cargo's exact location with live updates every 30 seconds."
+            />
           </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 4, height: '100%' }}>
-              <Typography variant="h5" gutterBottom>
-                📱 {t('mobile.title')}
-              </Typography>
-              <Typography variant="body1" color="text.secondary" mb={3}>
-                {t('mobile.description')}
-              </Typography>
-              <Box display="flex" gap={2}>
-                <Button 
-                  variant="outlined" 
-                  startIcon={<PhoneAppIcon />}
-                  sx={{ flexGrow: 1 }}
-                >
-                  {t('mobile.android')}
-                </Button>
-                <Button 
-                  variant="outlined" 
-                  startIcon={<PhoneAppIcon />}
-                  sx={{ flexGrow: 1 }}
-                >
-                  {t('mobile.ios')}
-                </Button>
-              </Box>
-            </Paper>
+          <Grid item xs={12} md={4}>
+            <FeatureCard
+              icon={Shield}
+              title="Secure Handling"
+              description="End-to-end security for your shipments with verified driver identities."
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <FeatureCard
+              icon={AccessTime}
+              title="Predictive ETA"
+              description="AI-powered arrival estimates that adapt to traffic and weather conditions."
+            />
           </Grid>
         </Grid>
       </Container>
-
-      {/* Demo Dialog */}
-      <Dialog open={demoDialogOpen} onClose={() => setDemoDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {t('demo.title')}
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" gutterBottom>
-            {t('demo.description')}
-          </Typography>
-          <List>
-            {demoTrackingIds.map((id, index) => (
-              <ListItem key={id} button onClick={() => {
-                setTrackingId(id)
-                setDemoDialogOpen(false)
-                router.push(`/track/${id}`)
-              }}>
-                <ListItemIcon>
-                  <TruckIcon color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={id}
-                  secondary={t(`demo.status${index + 1}`)}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDemoDialogOpen(false)}>
-            {t('common.close')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+    </Box>
   )
 }
+// Helper for InputBase (MUI component not imported but used in textfield workaround logic? No, let's use standard TextField or import InputBase)
+import { InputBase } from '@mui/material'

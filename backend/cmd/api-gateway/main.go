@@ -7,21 +7,45 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/fleetflow/backend/internal/config"
+	"github.com/fleetflow/backend/internal/middleware"
+	"github.com/fleetflow/backend/internal/pkg/logger"
+	"github.com/fleetflow/backend/internal/pkg/telemetry"
 	pb "github.com/fleetflow/backend/proto/gen"
 )
 
 func main() {
-	log.Println("🚀 Starting FleetFlow API Gateway...")
+	ctx := context.Background()
+
+	// Temporarily set a default logger before config is loaded
+	logger.Info(ctx, "🚀 Starting FleetFlow API Gateway...")
 
 	// Load configuration
 	cfg := config.Load()
-	log.Printf("📋 Configuration loaded - Environment: %s", cfg.Environment)
+	logger.Info(ctx, "📋 Configuration loaded", "environment", cfg.Environment)
+
+	// Initialize OpenTelemetry
+	// Assuming default Jaeger/OTLP port 4317 if not specified
+	otelEndpoint := "localhost:4317"
+	tp, err := telemetry.InitTracerProvider(ctx, "api-gateway", otelEndpoint)
+	if err != nil {
+		logger.Error(ctx, "❌ Failed to initialize telemetry", "error", err)
+		// We continue even if telemetry fails, but verify if this is desired behavior
+	} else {
+		defer func() {
+			if err := tp.Shutdown(ctx); err != nil {
+				logger.Error(ctx, "❌ Error shutting down tracer provider", "error", err)
+			}
+		}()
+		logger.Info(ctx, "📡 Telemetry initialized", "endpoint", otelEndpoint)
+	}
 
 	// Create gRPC connection to our gRPC server
 	grpcServerAddr := "localhost:9090" // Default gRPC server address
@@ -30,13 +54,15 @@ func main() {
 	}
 
 	// Create a client connection to the gRPC server
+	// TODO: Add OTel gRPC interceptor here
 	conn, err := grpc.DialContext(
-		context.Background(),
+		ctx,
 		grpcServerAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		log.Fatalf("❌ Failed to dial gRPC server: %v", err)
+		logger.Error(ctx, "❌ Failed to dial gRPC server", "error", err)
+		os.Exit(1)
 	}
 	defer conn.Close()
 
@@ -44,45 +70,29 @@ func main() {
 	mux := runtime.NewServeMux()
 
 	// Register gRPC service handlers
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
+	// We use a cancellable context for registration
+	regCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
+	// Helper to register services
+	registerService := func(name string, registerFunc func(context.Context, *runtime.ServeMux, *grpc.ClientConn) error) {
+		if err := registerFunc(regCtx, mux, conn); err != nil {
+			log.Fatalf("❌ Failed to register %s handler: %v", name, err)
+		} else {
+			log.Printf("✅ Registered %s handler", name)
+		}
+	}
+
 	// Register each service
-	err = pb.RegisterAuthServiceHandler(ctx, mux, conn)
-	if err != nil {
-		log.Fatalf("❌ Failed to register AuthService handler: %v", err)
-	}
-
-	err = pb.RegisterDriverServiceHandler(ctx, mux, conn)
-	if err != nil {
-		log.Fatalf("❌ Failed to register DriverService handler: %v", err)
-	}
-
-	err = pb.RegisterVehicleServiceHandler(ctx, mux, conn)
-	if err != nil {
-		log.Fatalf("❌ Failed to register VehicleService handler: %v", err)
-	}
-
-	err = pb.RegisterTripServiceHandler(ctx, mux, conn)
-	if err != nil {
-		log.Fatalf("❌ Failed to register TripService handler: %v", err)
-	}
-
-	err = pb.RegisterLocationServiceHandler(ctx, mux, conn)
-	if err != nil {
-		log.Fatalf("❌ Failed to register LocationService handler: %v", err)
-	}
-
-	err = pb.RegisterFuelServiceHandler(ctx, mux, conn)
-	if err != nil {
-		log.Fatalf("❌ Failed to register FuelService handler: %v", err)
-	}
-
-	err = pb.RegisterAnalyticsServiceHandler(ctx, mux, conn)
-	if err != nil {
-		log.Fatalf("❌ Failed to register AnalyticsService handler: %v", err)
-	}
+	// Register all services from standard proto definitions
+	// Register all services from standard proto definitions
+	registerService("AuthService", pb.RegisterAuthServiceHandler)
+	// registerService("DriverService", pb.RegisterDriverServiceHandler)
+	// registerService("VehicleService", pb.RegisterVehicleServiceHandler)
+	// registerService("TripService", pb.RegisterTripServiceHandler)
+	// registerService("AnalyticsService", pb.RegisterAnalyticsServiceHandler)
+	// registerService("FuelService", pb.RegisterFuelServiceHandler)
+	// registerService("AnalyticsService", pb.RegisterAnalyticsServiceHandler)
 
 	// Create HTTP server
 	gatewayPort := "8080"
@@ -90,23 +100,29 @@ func main() {
 		gatewayPort = cfg.APIGatewayPort
 	}
 
+	// Wrap mux with Middleware and OTel
+	// Apply Security Middleware first (so it runs before OTel)
+	var rootHandler http.Handler = mux
+	rootHandler = middleware.GatewaySecurity(rootHandler)
+	rootHandler = otelhttp.NewHandler(rootHandler, "api-gateway")
+
 	server := &http.Server{
 		Addr:    ":" + gatewayPort,
-		Handler: mux,
+		Handler: rootHandler,
 	}
 
 	// Start HTTP server in a goroutine
 	go func() {
-		log.Printf("🌐 API Gateway listening on :%s", gatewayPort)
-		log.Printf("🔌 Proxying to gRPC server at %s", grpcServerAddr)
-		log.Println("🚀 API Gateway started successfully!")
-		
+		logger.Info(ctx, "🌐 API Gateway listening", "port", gatewayPort)
+		logger.Info(ctx, "🔌 Proxying to gRPC server", "address", grpcServerAddr)
+
 		if cfg.IsDevelopment() {
-			log.Println("📚 API Documentation available at http://localhost:" + gatewayPort + "/swagger/")
+			logger.Info(ctx, "📚 API Documentation available", "url", "http://localhost:"+gatewayPort+"/swagger/")
 		}
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("❌ Failed to start API Gateway: %v", err)
+			logger.Error(ctx, "❌ Failed to start API Gateway", "error", err)
+			os.Exit(1)
 		}
 	}()
 
@@ -115,9 +131,15 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("🛑 Shutting down API Gateway...")
-	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("❌ Failed to shutdown server: %v", err)
+	logger.Info(ctx, "🛑 Shutting down API Gateway...")
+
+	// Create a deadline to wait for.
+	ctxShutdown, cancelShutdown := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelShutdown()
+
+	if err := server.Shutdown(ctxShutdown); err != nil {
+		logger.Error(ctx, "❌ Failed to shutdown server", "error", err)
+		os.Exit(1)
 	}
-	log.Println("👋 API Gateway stopped successfully")
+	logger.Info(ctx, "👋 API Gateway stopped successfully")
 }

@@ -10,6 +10,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"gorm.io/plugin/opentelemetry/tracing"
 )
 
 // Initialize initializes the database connection and runs migrations
@@ -59,6 +60,11 @@ func Initialize(databaseURL string) (*gorm.DB, error) {
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, err
+	}
+
+	// Enable OpenTelemetry Tracing for GORM
+	if err := db.Use(tracing.NewPlugin()); err != nil {
+		log.Printf("⚠️ Failed to enable OpenTelemetry for GORM: %v", err)
 	}
 
 	sqlDB.SetMaxIdleConns(10)

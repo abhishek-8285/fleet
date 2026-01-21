@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/fleetflow/backend/internal/models"
-	"gorm.io/gorm"
+	"github.com/fleetflow/backend/internal/repositories"
 )
 
 // DriverStatusUpdate represents a driver status update for streaming
@@ -33,14 +33,14 @@ type DriverLocationUpdate struct {
 
 // DriverService handles driver operations
 type DriverService struct {
-	db           *gorm.DB
+	repo         repositories.DriverRepository
 	auditService *AuditService
 }
 
 // NewDriverService creates a new driver service
-func NewDriverService(db *gorm.DB, auditService *AuditService) *DriverService {
+func NewDriverService(repo repositories.DriverRepository, auditService *AuditService) *DriverService {
 	return &DriverService{
-		db:           db,
+		repo:         repo,
 		auditService: auditService,
 	}
 }
@@ -48,13 +48,12 @@ func NewDriverService(db *gorm.DB, auditService *AuditService) *DriverService {
 // CreateDriver creates a new driver
 func (s *DriverService) CreateDriver(driver *models.Driver) (*models.Driver, error) {
 	// Check if phone number already exists
-	var existingDriver models.Driver
-	if err := s.db.Where("phone = ?", driver.Phone).First(&existingDriver).Error; err == nil {
+	if _, err := s.repo.GetDriverByPhone(driver.Phone); err == nil {
 		return nil, errors.New("driver with this phone number already exists")
 	}
 
 	// Create driver
-	if err := s.db.Create(driver).Error; err != nil {
+	if err := s.repo.CreateDriver(driver); err != nil {
 		return nil, fmt.Errorf("failed to create driver: %w", err)
 	}
 
@@ -74,58 +73,17 @@ func (s *DriverService) CreateDriver(driver *models.Driver) (*models.Driver, err
 
 // GetDriverByID gets driver by ID
 func (s *DriverService) GetDriverByID(id uint) (*models.Driver, error) {
-	var driver models.Driver
-	if err := s.db.Where("id = ?", id).First(&driver).Error; err != nil {
-		return nil, err
-	}
-	return &driver, nil
+	return s.repo.GetDriverByID(id)
 }
 
 // GetDrivers retrieves paginated list of drivers with filters
 func (s *DriverService) GetDrivers(page, limit int, filters map[string]interface{}) ([]models.Driver, int64, error) {
-	var drivers []models.Driver
-	var total int64
-
-	query := s.db.Model(&models.Driver{})
-
-	// Apply filters
-	for key, value := range filters {
-		switch key {
-		case "status":
-			query = query.Where("status = ?", value)
-		case "is_active":
-			query = query.Where("is_active = ?", value)
-		case "search":
-			searchTerm := fmt.Sprintf("%%%s%%", value)
-			query = query.Where("name ILIKE ? OR phone ILIKE ? OR license_number ILIKE ?",
-				searchTerm, searchTerm, searchTerm)
-		case "license_expiring":
-			if value.(bool) {
-				// Drivers whose license expires within 30 days
-				query = query.Where("license_expiry <= ?", time.Now().AddDate(0, 0, 30))
-			}
-		}
-	}
-
-	// Count total records
-	if err := query.Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-
-	// Get paginated results
-	offset := (page - 1) * limit
-	if err := query.Order("name ASC").
-		Offset(offset).Limit(limit).
-		Find(&drivers).Error; err != nil {
-		return nil, 0, err
-	}
-
-	return drivers, total, nil
+	return s.repo.GetDrivers(page, limit, filters)
 }
 
 // UpdateDriver updates a driver
 func (s *DriverService) UpdateDriver(driver *models.Driver) (*models.Driver, error) {
-	if err := s.db.Save(driver).Error; err != nil {
+	if err := s.repo.UpdateDriver(driver); err != nil {
 		return nil, fmt.Errorf("failed to update driver: %w", err)
 	}
 
@@ -134,7 +92,7 @@ func (s *DriverService) UpdateDriver(driver *models.Driver) (*models.Driver, err
 
 // DeleteDriver deletes a driver
 func (s *DriverService) DeleteDriver(id uint) error {
-	if err := s.db.Delete(&models.Driver{}, id).Error; err != nil {
+	if err := s.repo.DeleteDriver(id); err != nil {
 		return fmt.Errorf("failed to delete driver: %w", err)
 	}
 
@@ -143,10 +101,10 @@ func (s *DriverService) DeleteDriver(id uint) error {
 
 // UpdateDriverStatus updates driver status
 func (s *DriverService) UpdateDriverStatus(id uint, status string, reason string) error {
-	if err := s.db.Model(&models.Driver{}).Where("id = ?", id).Update("status", status).Error; err != nil {
+	if err := s.repo.UpdateDriverStatus(id, status); err != nil {
 		return fmt.Errorf("failed to update driver status: %w", err)
 	}
-
+	// Note: You might want to log the "reason" in audit or status history table if that existed
 	return nil
 }
 
@@ -194,9 +152,9 @@ func (s *DriverService) GetDriverCompliance(id uint) (*models.DriverCompliance, 
 // GetAvailableDrivers gets available drivers for assignment
 func (s *DriverService) GetAvailableDrivers(location *models.Location, maxDistance float64) ([]models.AvailableDriver, error) {
 	// Implementation would find nearby available drivers
-	// For now, return mock data
-	var drivers []models.Driver
-	if err := s.db.Where("status = ? AND is_active = ?", "available", true).Find(&drivers).Error; err != nil {
+	// For now, return mock data from DB based on status
+	drivers, err := s.repo.GetDriversByStatus("available", true)
+	if err != nil {
 		return nil, err
 	}
 
@@ -216,21 +174,20 @@ func (s *DriverService) GetAvailableDrivers(location *models.Location, maxDistan
 // GetDriverSummaryStats gets overall driver statistics
 func (s *DriverService) GetDriverSummaryStats() (*models.DriverSummaryStats, error) {
 	var stats models.DriverSummaryStats
-	var count int64
 
 	// Count total drivers
-	s.db.Model(&models.Driver{}).Count(&count)
-	stats.TotalDrivers = int(count)
+	total, _ := s.repo.CountDrivers(nil)
+	stats.TotalDrivers = int(total)
 
 	// Count by status
-	s.db.Model(&models.Driver{}).Where("is_active = ?", true).Count(&count)
-	stats.ActiveDrivers = int(count)
+	active, _ := s.repo.CountDrivers(map[string]interface{}{"is_active": true})
+	stats.ActiveDrivers = int(active)
 
-	s.db.Model(&models.Driver{}).Where("status = ?", "available").Count(&count)
-	stats.AvailableDrivers = int(count)
+	available, _ := s.repo.CountDrivers(map[string]interface{}{"status": "available"})
+	stats.AvailableDrivers = int(available)
 
-	s.db.Model(&models.Driver{}).Where("status = ?", "on_trip").Count(&count)
-	stats.OnTripDrivers = int(count)
+	onTrip, _ := s.repo.CountDrivers(map[string]interface{}{"status": "on_trip"})
+	stats.OnTripDrivers = int(onTrip)
 
 	// Mock other stats
 	stats.AverageRating = 4.2

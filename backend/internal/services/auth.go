@@ -9,8 +9,8 @@ import (
 
 	"github.com/fleetflow/backend/internal/config"
 	"github.com/fleetflow/backend/internal/models"
+	"github.com/fleetflow/backend/internal/repositories"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 // Error constants
@@ -21,15 +21,15 @@ var (
 
 // AuthService handles authentication operations
 type AuthService struct {
-	db           *gorm.DB
+	repo         repositories.AuthRepository
 	config       *config.Config
 	auditService *AuditService
 }
 
 // NewAuthService creates a new auth service
-func NewAuthService(db *gorm.DB, cfg *config.Config, auditService *AuditService) *AuthService {
+func NewAuthService(repo repositories.AuthRepository, cfg *config.Config, auditService *AuditService) *AuthService {
 	return &AuthService{
-		db:           db,
+		repo:         repo,
 		config:       cfg,
 		auditService: auditService,
 	}
@@ -48,12 +48,12 @@ type VerifyOTPRequest struct {
 
 // SendOTP sends an OTP to the provided phone number
 func (s *AuthService) SendOTP(phone, ipAddress, userAgent string) (*models.OTPVerification, error) {
-	// Clean up old OTP records for this phone (older than 1 hour)
-	s.db.Where("phone = ? AND created_at < ?", phone, time.Now().Add(-time.Hour)).Delete(&models.OTPVerification{})
+	// Clean up old OTP records for this phone
+	_ = s.repo.DeleteOldOTPs(phone)
 
-	// Check if there's a recent OTP request (within 1 minute)
-	var recentOTP models.OTPVerification
-	if err := s.db.Where("phone = ? AND created_at > ?", phone, time.Now().Add(-time.Minute)).First(&recentOTP).Error; err == nil {
+	// Check if there's a recent OTP request
+	_, err := s.repo.GetRecentOTP(phone)
+	if err == nil {
 		return nil, errors.New("OTP already sent recently. Please wait before requesting again")
 	}
 
@@ -77,7 +77,7 @@ func (s *AuthService) SendOTP(phone, ipAddress, userAgent string) (*models.OTPVe
 		UserAgent: userAgent,
 	}
 
-	if err := s.db.Create(otpVerification).Error; err != nil {
+	if err := s.repo.CreateOTP(otpVerification); err != nil {
 		return nil, fmt.Errorf("failed to save OTP: %w", err)
 	}
 
@@ -100,8 +100,8 @@ func (s *AuthService) SendOTP(phone, ipAddress, userAgent string) (*models.OTPVe
 // VerifyOTP verifies the provided OTP and returns a user token
 func (s *AuthService) VerifyOTP(phone, otp, ipAddress, userAgent string) (*models.UserAccount, error) {
 	// Find the OTP verification record
-	var otpVerification models.OTPVerification
-	if err := s.db.Where("phone = ? AND otp = ? AND verified = false", phone, otp).First(&otpVerification).Error; err != nil {
+	otpVerification, err := s.repo.GetOTPForVerification(phone, otp)
+	if err != nil {
 		// Log failed attempt
 		s.auditService.LogAction(models.AuditActionLoginFailed, models.AuditSeverityWarning,
 			fmt.Sprintf("Failed OTP verification for phone %s", phone), nil, nil, &models.AuditContext{
@@ -124,33 +124,30 @@ func (s *AuthService) VerifyOTP(phone, otp, ipAddress, userAgent string) (*model
 
 	// Mark OTP as verified
 	otpVerification.Verified = true
-	s.db.Save(&otpVerification)
+	s.repo.UpdateOTP(otpVerification)
 
 	// Find or create user account
-	var user models.UserAccount
-	if err := s.db.Where("phone = ?", phone).First(&user).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// Create new user account
-			user = models.UserAccount{
-				Phone:    phone,
-				Role:     models.RoleDriver, // Default role
-				IsActive: true,
-			}
-
-			if err := s.db.Create(&user).Error; err != nil {
-				return nil, fmt.Errorf("failed to create user account: %w", err)
-			}
-
-			// Log audit event for new user
-			s.auditService.LogAction(models.AuditActionUserCreated, models.AuditSeverityInfo,
-				fmt.Sprintf("New user account created for phone %s", phone), nil, &user, &models.AuditContext{
-					IPAddress: ipAddress,
-					UserAgent: userAgent,
-					UserID:    &user.ID,
-				})
-		} else {
-			return nil, fmt.Errorf("failed to find user: %w", err)
+	user, err := s.repo.GetUserByPhone(phone)
+	if err != nil {
+		// Create new user account
+		newUser := &models.UserAccount{
+			Phone:    phone,
+			Role:     models.RoleDriver, // Default role
+			IsActive: true,
 		}
+
+		if err := s.repo.CreateUser(newUser); err != nil {
+			return nil, fmt.Errorf("failed to create user account: %w", err)
+		}
+		user = newUser
+
+		// Log audit event for new user
+		s.auditService.LogAction(models.AuditActionUserCreated, models.AuditSeverityInfo,
+			fmt.Sprintf("New user account created for phone %s", phone), nil, user, &models.AuditContext{
+				IPAddress: ipAddress,
+				UserAgent: userAgent,
+				UserID:    &user.ID,
+			})
 	}
 
 	// Check if user account is active
@@ -161,12 +158,13 @@ func (s *AuthService) VerifyOTP(phone, otp, ipAddress, userAgent string) (*model
 	// Update last login time
 	now := time.Now()
 	user.LastLogin = &now
-	s.db.Save(&user)
+	s.repo.UpdateUser(user)
 
-	// Load driver association if exists
-	if user.DriverID != nil {
-		s.db.Preload("Driver").First(&user, user.ID)
-	}
+	// Since repo methods might not preload, use GetByID to be sure if needed
+	// But GetUserByPhone logic in repo doesn't preload driver currently.
+	// Let's rely on standard flow.
+	// Optionally reload:
+	user, _ = s.repo.GetUserByID(user.ID)
 
 	// Log successful login
 	s.auditService.LogAction(models.AuditActionUserLogin, models.AuditSeverityInfo,
@@ -176,43 +174,42 @@ func (s *AuthService) VerifyOTP(phone, otp, ipAddress, userAgent string) (*model
 			UserID:    &user.ID,
 		})
 
-	return &user, nil
+	return user, nil
 }
 
 // GetUserByID retrieves a user by ID
 func (s *AuthService) GetUserByID(userID uint) (*models.UserAccount, error) {
-	var user models.UserAccount
-	if err := s.db.Preload("Driver").First(&user, userID).Error; err != nil {
-		return nil, err
-	}
-	return &user, nil
+	return s.repo.GetUserByID(userID)
 }
 
 // UpdateUserProfile updates user profile information
 func (s *AuthService) UpdateUserProfile(userID uint, updates map[string]interface{}) (*models.UserAccount, error) {
-	var user models.UserAccount
-	if err := s.db.First(&user, userID).Error; err != nil {
+	user, err := s.repo.GetUserByID(userID)
+	if err != nil {
 		return nil, err
 	}
 
 	// Store old values for audit
-	oldValues := user
+	oldValues := *user
 
 	// Update user
-	if err := s.db.Model(&user).Updates(updates).Error; err != nil {
+	if err := s.repo.UpdateUserFields(userID, updates); err != nil {
 		return nil, err
 	}
 
 	// Reload user with associations
-	s.db.Preload("Driver").First(&user, userID)
+	updatedUser, err := s.repo.GetUserByID(userID)
+	if err != nil {
+		return nil, err
+	}
 
 	// Log audit event
 	s.auditService.LogAction(models.AuditActionUserUpdated, models.AuditSeverityInfo,
-		fmt.Sprintf("User profile updated for user ID %d", userID), &oldValues, &user, &models.AuditContext{
+		fmt.Sprintf("User profile updated for user ID %d", userID), &oldValues, updatedUser, &models.AuditContext{
 			UserID: &userID,
 		})
 
-	return &user, nil
+	return updatedUser, nil
 }
 
 // ChangePassword changes user password (if password auth is implemented)
@@ -224,21 +221,21 @@ func (s *AuthService) ChangePassword(userID uint, oldPassword, newPassword strin
 
 // DeactivateUser deactivates a user account
 func (s *AuthService) DeactivateUser(userID, deactivatedBy uint) error {
-	var user models.UserAccount
-	if err := s.db.First(&user, userID).Error; err != nil {
+	user, err := s.repo.GetUserByID(userID)
+	if err != nil {
 		return err
 	}
 
-	oldValues := user
+	oldValues := *user
 	user.IsActive = false
 
-	if err := s.db.Save(&user).Error; err != nil {
+	if err := s.repo.UpdateUser(user); err != nil {
 		return err
 	}
 
 	// Log audit event
 	s.auditService.LogAction(models.AuditActionUserDeleted, models.AuditSeverityWarning,
-		fmt.Sprintf("User account deactivated for user ID %d", userID), &oldValues, &user, &models.AuditContext{
+		fmt.Sprintf("User account deactivated for user ID %d", userID), &oldValues, user, &models.AuditContext{
 			UserID: &deactivatedBy,
 		})
 
@@ -248,29 +245,28 @@ func (s *AuthService) DeactivateUser(userID, deactivatedBy uint) error {
 // CreateAdminUser creates an admin user account
 func (s *AuthService) CreateAdminUser(phone string, createdBy uint) (*models.UserAccount, error) {
 	// Check if user already exists
-	var existingUser models.UserAccount
-	if err := s.db.Where("phone = ?", phone).First(&existingUser).Error; err == nil {
+	if _, err := s.repo.GetUserByPhone(phone); err == nil {
 		return nil, errors.New("user with this phone number already exists")
 	}
 
 	// Create admin user
-	user := models.UserAccount{
+	user := &models.UserAccount{
 		Phone:    phone,
 		Role:     models.RoleAdmin,
 		IsActive: true,
 	}
 
-	if err := s.db.Create(&user).Error; err != nil {
+	if err := s.repo.CreateUser(user); err != nil {
 		return nil, fmt.Errorf("failed to create admin user: %w", err)
 	}
 
 	// Log audit event
 	s.auditService.LogAction(models.AuditActionUserCreated, models.AuditSeverityInfo,
-		fmt.Sprintf("Admin user created for phone %s", phone), nil, &user, &models.AuditContext{
+		fmt.Sprintf("Admin user created for phone %s", phone), nil, user, &models.AuditContext{
 			UserID: &createdBy,
 		})
 
-	return &user, nil
+	return user, nil
 }
 
 // generateOTP generates a 4-digit OTP

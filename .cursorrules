@@ -1,0 +1,298 @@
+Absolutely. Here’s a **comprehensive, point-wise list of coding best practices** tailored for building a **full-fledged, production-grade, manageable product**—aligned with your focus on reliability, observability, and simplicity.
+
+---
+
+### 🧱 **1. Code Structure & Architecture**
+- **Separate concerns**: Use clean architecture (e.g., Layered, Hexagonal, or Clean Architecture).
+  - Keep business logic **decoupled** from frameworks, databases, and I/O.
+- **Domain-first design**: Model code around business capabilities, not technical layers.
+- **Small, focused functions**: Each function should do **one thing**, be < 20–30 lines, and have no side effects unless explicit.
+- **Avoid global state**: It makes testing and reasoning hard. Pass dependencies explicitly.
+- **Use dependency injection (DI)**: Makes code testable and swappable (e.g., Go’s struct-based DI, Python’s `injector`, Rust’s traits).
+
+---
+
+### 🧪 **2. Testing (Non-Negotiable)**
+- **Unit tests**:
+  - Cover **all public functions** (aim for >80% coverage).
+  - Mock external dependencies (DB, HTTP clients) using interfaces/mocks.
+  - Test **error paths** as rigorously as happy paths.
+- **Integration tests**:
+  - Test real DB, API contracts, and service interactions.
+  - Run in isolated environments (e.g., Docker containers).
+- **End-to-end (E2E) tests**:
+  - Simulate real user flows (e.g., “user signs up → places order”).
+- **Mutation testing** (optional but powerful): Tools like **Stryker** or **MutPy** verify if your tests actually catch bugs.
+- **Fail-fast in CI**: Block merge if tests fail, coverage drops, or linters complain.
+
+---
+
+### 🛡️ **3. Error Handling & Logging (Production-Ready)**
+- **Never ignore errors**: `if err != nil` must always be handled (even if just logged).
+- **Wrap errors with context**:
+  - Go: `fmt.Errorf("failed to fetch user: %w", err)`  
+  - Python: `raise CustomError("msg") from original_error`
+  - Rust: Use `anyhow!` or `thiserror` to add context.
+- **Use structured error types** (not strings):
+  - Include error code, severity, and user-facing message.
+- **Log errors with trace context**:
+  - Include `trace_id`, `user_id`, and operation name.
+  - Use `ERROR` level for user-impacting issues.
+- **Never log PII/sensitive data**: Scrub phone numbers, emails, tokens automatically.
+
+---
+
+### 🔐 **4. Security by Default**
+- **Validate & sanitize all inputs**:
+  - Use allowlists (not blocklists).
+  - Reject malformed requests early (fail-fast).
+- **Parameterized queries**: Prevent SQL injection (never concatenate user input into queries).
+- **Use HTTPS everywhere**, enforce HSTS.
+- **Store secrets securely**: Never in code, env files, or version control.
+- **Least privilege principle**: Services run with minimal required permissions.
+- **Scan dependencies**: Use `snyk`, `trivy`, or `dependabot` to detect CVEs.
+
+---
+
+### ⚡ **5. Performance & Efficiency**
+- **Avoid premature optimization**, but **profile before shipping**.
+- **Prefer streaming over loading full datasets** in memory.
+- **Cache wisely**:
+  - Use TTL-based caching (e.g., Redis).
+  - Cache at multiple layers (CDN, app, DB).
+  - Invalidate on write/update.
+- **Batch I/O operations**: Reduce N+1 queries, batch DB inserts, etc.
+- **Use efficient data structures**: e.g., `map` for lookups, `slice` for iteration.
+
+---
+
+### 📦 **6. Observability in Code**
+- **Instrument every public API endpoint** with traces.
+- **Add custom metrics** for business events:
+  - e.g., `orders_created_total`, `payment_failures`
+- **Log key state transitions**:
+  - “Order status changed from PENDING → CONFIRMED”
+- **Use feature flags** to safely enable/disable logic without deploys.
+- **Expose health endpoints** (`/healthz`, `/readyz`) with checks for DB, cache, etc.
+
+---
+
+### 🧹 **7. Code Quality & Maintainability**
+- **Enforce consistent style**:
+  - Go: `gofmt`, `golint`
+  - Python: `black`, `ruff`, `mypy`
+  - Rust: `rustfmt`, `clippy`
+- **Write clear commit messages**: “fix: user login fails when email has uppercase” — not “fix bug”.
+- **Document public APIs** (with OpenAPI/Swagger).
+- **Avoid magic numbers/strings**: Use named constants (`const MAX_RETRY = 3`).
+- **Prefer immutability**: Especially in concurrent code.
+
+---
+
+### 🤖 **8. Automation & CI/CD**
+- **Lint on every PR**: Block merges on style or security violations.
+- **Run tests in parallel** to speed up CI.
+- **Build immutable artifacts**: Docker images or binaries with versioned tags.
+- **Use semantic versioning (SemVer)** for libraries/services.
+- **Automate rollbacks**: If health checks fail post-deploy, auto-rollback.
+
+---
+
+### 🌐 **9. Internationalization & Simplicity (India Context)**
+- **Externalize all user-facing strings** (use `.json` or `.yaml` files).
+  - Enables easy translation to Hindi or regional languages.
+- **Avoid English-only assumptions** in UI/backend logic.
+- **Keep flows simple**: Fewer steps = higher adoption (aligns with your goal).
+- **Design for low-literacy**: Use icons, voice, or OTP-based flows where possible.
+
+---
+
+### 🔁 **10. Operational Friendliness**
+- **Make config external**: Use env vars, config files, or config servers.
+- **Support graceful shutdown**:
+  - Handle `SIGTERM` → stop accepting requests → finish in-flight work → exit.
+- **Log startup/shutdown**: “Service started on port 8080”, “Shutting down DB pool”.
+- **Expose runtime metrics**: Goroutines (Go), thread count (Python), memory usage.
+
+---
+
+### ✅ Final Checklist for Every Pull Request
+- [ ] Code is tested (unit + integration)
+- [ ] Errors are handled and logged with context
+- [ ] No secrets hardcoded
+- [ ] Traces/metrics added for new paths
+- [ ] No performance anti-patterns (e.g., N+1 queries)
+- [ ] Follows team style guide
+- [ ] Docs updated (if public API changed)
+- [ ] Works in low-bandwidth/power-constrained scenarios (India focus)
+
+---
+
+
+# Production-Ready Full-Stack Application Specification
+
+## 🟦 Backend: Go 1.23+ Requirements
+
+### 1. HTTP Service with Observability & Resilience
+- **OpenTelemetry tracing** using W3C Trace Context headers via OTel HTTP middleware  
+- **Structured logging** with `log/slog` in JSON format, including `trace_id`  
+- **Metrics collection** (request count, latency histogram) exported via OTel Prometheus exporter  
+- **Graceful shutdown** on `SIGTERM` signal  
+- **Health endpoints**:  
+  - `/healthz` (liveness probe)  
+  - `/readyz` (readiness probe)  
+- **Error handling** that:  
+  - Logs with contextual information  
+  - Never panics on user-triggered errors (e.g., invalid input, not found)  
+- **Panic recovery middleware** that:  
+  - Logs full stack trace  
+  - Sends panic details to telemetry pipeline  
+- **Dependencies**: Only Go stdlib + `go.opentelemetry.io/*` packages (no external frameworks)
+
+---
+
+### 2. PostgreSQL Client with Resilience
+- **Connection pooling** with configured `MaxIdleConns` and `MaxOpenConns`  
+- **Query instrumentation**: Wrap all DB calls in OTel spans  
+- **Retry logic**:  
+  - Exponential backoff + jitter  
+  - Max 3 attempts on transient errors (e.g., network timeouts, DB locks)  
+- **Query timeout**: 5-second deadline per query  
+- **PII scrubbing**: Automatically redact sensitive fields (email, phone) from logs  
+- **Structured errors**: Return typed errors, not raw strings  
+- **Include example**: `GetUserByID` function demonstrating all above
+
+---
+
+### 3. Error Handling Utility
+- **Error wrapping**: Use `fmt.Errorf("...: %w", err)` for context preservation  
+- **Error classification**: Tag errors as `"user"`, `"system"`, or `"external"`  
+- **Logging behavior**:  
+  - Log `"system"` and `"external"` errors at `ERROR` level  
+  - Include `trace_id`, service name, and stack trace  
+- **Metrics integration**: Optionally emit OTel metric on error count by type  
+- **PII protection**: Never log fields matching denylist: `["password", "token", "aadhaar"]`  
+- **Export function signature**:  
+  ```go
+  func HandleError(ctx context.Context, err error, msg string)
+  ```
+
+---
+
+## 🟥 Frontend: React 18 + TypeScript Requirements
+
+### 4. React Application Foundation
+- **OpenTelemetry Web SDK** for auto-instrumenting:  
+  - User interactions  
+  - Fetch/XHR requests  
+- **Trace propagation**: Automatically inject `traceparent` header in all API calls (via fetch interceptor)  
+- **Error boundary**:  
+  - Logs React render errors to console  
+  - Sends structured error reports to backend telemetry endpoint (`/api/log`)  
+- **Localization**: Full support for Hindi using `i18next` with JSON resource files  
+- **Offline resilience**: Show cached/stale data when API calls fail  
+- **Production logging**:  
+  - No `console.log` in production builds  
+  - Use logger utility that no-ops in prod  
+- **Performance**: Lazy-loaded routes via React Router v6  
+- **Build tool**: Vite
+
+---
+
+### 5. Resilient API Service Layer
+- **Retry mechanism**:  
+  - 3 retry attempts on failure  
+  - Exponential backoff + jitter  
+- **Timeout**: 8-second request timeout using `AbortController`  
+- **Trace propagation**: Automatically include current `traceparent` from OTel context in headers  
+- **Error UX**:  
+  - Handle 4xx/5xx errors gracefully  
+  - Show user-friendly messages in Hindi/English based on locale  
+- **Caching**:  
+  - Cache GET responses in `localStorage`  
+  - Include TTL (time-to-live) for cached entries  
+- **Telemetry**: Log network errors to `/api/log` endpoint  
+- **Export hook**:  
+  ```ts
+  function useApi<T>(url: string): { data: T | null; loading: boolean; error: string | null }
+  ```
+
+---
+
+### 6. React Error Boundary Component
+- **Error capture**: Catches JavaScript and React render errors in child components  
+- **Logging payload**:  
+  - Error message + component stack  
+  - User context: user ID (if available), current locale  
+  - **PII sanitization**: Remove/scrub sensitive data before sending  
+- **Fallback UI**:  
+  - Friendly error screen in Hindi/English  
+  - "Reload" button to retry  
+- **i18n integration**: Uses `i18next` for dynamic language switching  
+- **Usage example**: Include integration in `App.tsx`
+
+---
+
+## 🔗 Full-Stack Feature: User Login Flow
+
+### Go Backend (`/api/login` POST)
+- **Input validation**:  
+  - Email format validation  
+  - Rate limiting (e.g., 5 attempts per 15 mins per IP)  
+- **Observability**:  
+  - Full OTel trace for login flow  
+  - Structured JSON logs with context (excluding credentials)  
+  - Metrics: login success/failure counts, latency  
+- **Security**:  
+  - **Never log password or raw credentials**  
+  - Hash passwords (bcrypt) before DB comparison  
+- **Resilience**:  
+  - DB query timeout of 5 seconds  
+  - Graceful degradation if auth service is slow  
+- **Response**:  
+  - Returns JWT in **HttpOnly cookie** (secure, same-site)  
+  - No tokens in response body or localStorage
+
+### React Frontend
+- **UI components**:  
+  - Login form with email/password fields  
+  - Language toggle (Hindi/English)  
+- **API integration**:  
+  - Calls `/api/login` with `traceparent` header automatically injected  
+  - Shows localized error messages (e.g., “गलत पासवर्ड” / “Wrong password”)  
+- **Security**:  
+  - Token stored only in HttpOnly cookie (backend-set)  
+  - **Prevent XSS**: Escape all user-rendered content  
+- **Error handling**:  
+  - Form wrapped in error boundary  
+  - Graceful UI degradation on JS errors
+
+### End-to-End Tracing
+- Full trace from React UI → Go backend → PostgreSQL, visible in Jaeger  
+- Correlated logs across frontend/backend using `trace_id`
+
+---
+
+## 🛠️ Additional Requirements
+
+### Specificity & Security
+- **Be explicit**: Instead of “make it secure”, specify:  
+  > “Prevent XSS by escaping user input in UI using `textContent` or React’s built-in escaping”  
+- **Hardened inputs**: Validate and sanitize all user inputs on backend
+
+### Configuration Artifacts
+- **Include OTel Collector config**:  
+  > “Also generate the `otel-collector-config.yaml` to export traces to Jaeger and metrics to Prometheus”
+
+### Iteration Guidance
+- If implementation is incomplete, refine with:  
+  > “Add retry logic to the Go HTTP client”  
+  > “Add Hindi translation for error messages in login form”
+
+### Verification Checklist
+Before deployment, **always review**:
+- [ ] **PII leakage**: Are passwords, tokens, Aadhaar, phone numbers ever logged?
+- [ ] **Timeouts**: Are all external calls (DB, HTTP) bounded by timeouts?
+- [ ] **Error safety**: Is error propagation preserving context without exposing internals?
+- [ ] **India readiness**: Are Hindi translations complete? Is UX simple for low-literacy users?
+- [ ] **Cost control**: Are logs/metrics sampled appropriately to avoid bill shock?

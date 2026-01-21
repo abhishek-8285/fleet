@@ -1,0 +1,17 @@
+{
+    "app_title": "फ्लीटफ्लो इंडिया",
+    "dashboard": "डैशबोर्ड",
+    "vehicles": "वाहन",
+    "drivers": "चालक",
+    "trips": "यात्राएं",
+    "settings": "सेटिंग्स",
+    "logout": "लॉग आउट",
+    "profile": "प्रोफ़ाइल",
+    "api_status": "एपीआई स्थिति",
+    "copyright": "राजेश ट्रांसपोर्ट कंपनी",
+    "active_vehicles": "सक्रिय वाहन",
+    "maintenance": "रखरखाव",
+    "parked": "पार्क किए गए",
+    "issues": "समस्याएं",
+    "today_revenue": "आज की राजस्व"
+}

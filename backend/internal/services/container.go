@@ -2,7 +2,7 @@ package services
 
 import (
 	"github.com/fleetflow/backend/internal/config"
-	"github.com/fleetflow/backend/internal/middleware"
+	"github.com/fleetflow/backend/internal/repositories"
 	"googlemaps.github.io/maps"
 	"gorm.io/gorm"
 )
@@ -15,8 +15,15 @@ type Container struct {
 	// Configuration
 	Config *config.Config
 
+	// Repositories
+	AuthRepo    repositories.AuthRepository
+	DriverRepo  repositories.DriverRepository
+	VehicleRepo repositories.VehicleRepository
+	TripRepo    repositories.TripRepository
+	UploadRepo  repositories.UploadRepository
+
 	// Core services
-	JWTService          *middleware.JWTService
+	JWTService          *JWTService
 	AuthService         *AuthService
 	DriverService       *DriverService
 	VehicleService      *VehicleService
@@ -50,13 +57,28 @@ func NewContainer(db *gorm.DB, cfg *config.Config) *Container {
 		Config: cfg,
 	}
 
+	// Initialize repositories
+	container.AuthRepo = repositories.NewPostgresAuthRepository(db)
+	container.DriverRepo = repositories.NewPostgresDriverRepository(db)
+	container.VehicleRepo = repositories.NewPostgresVehicleRepository(db)
+	container.TripRepo = repositories.NewPostgresTripRepository(db)
+	container.UploadRepo = repositories.NewPostgresUploadRepository(db)
+
 	// Initialize core services
-	container.JWTService = middleware.NewJWTService(cfg, db)
+	container.JWTService = NewJWTService(cfg, db)
 	container.AuditService = NewAuditService(db)
-	container.AuthService = NewAuthService(db, cfg, container.AuditService)
-	container.DriverService = NewDriverService(db, container.AuditService)
-	container.VehicleService = NewVehicleService(db, container.AuditService)
-	container.TripService = NewTripService(db, container.AuditService)
+
+	// Create AuthService and others with Repository
+	container.AuthService = NewAuthService(container.AuthRepo, cfg, container.AuditService)
+	// Re-inject AuthService into JWTService if needed (assuming JWTService has a field for it, though NewJWTService doesn't take it currently)
+	// container.JWTService.authService = container.AuthService
+
+	container.DriverService = NewDriverService(container.DriverRepo, container.AuditService)
+	container.VehicleService = NewVehicleService(container.VehicleRepo, container.AuditService)
+
+	// Trip Service needs TripRepo, VehicleRepo, UploadRepo
+	container.TripService = NewTripService(container.TripRepo, container.VehicleRepo, container.UploadRepo, container.AuditService)
+
 	container.FuelService = NewFuelService(db, container.AuditService)
 	container.LocationService = NewLocationService(db, container.AuditService)
 	container.UploadService = NewUploadService(db, cfg, container.AuditService)
@@ -69,7 +91,6 @@ func NewContainer(db *gorm.DB, cfg *config.Config) *Container {
 		container.StorageService = NewLocalStorageService(cfg)
 	} else {
 		container.SMSService = NewTwilioSMSService(cfg)
-		container.StorageService = NewS3StorageService(cfg)
 		container.StorageService = NewS3StorageService(cfg)
 	}
 

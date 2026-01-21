@@ -4,39 +4,87 @@ package fleetflow.v1;
 option go_package = "github.com/fleetflow/backend/proto/gen";
 
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 import "common.proto";
 
 // Authentication Service
 service AuthService {
   // Send OTP to phone number
-  rpc SendOTP(SendOTPRequest) returns (SendOTPResponse);
+  rpc SendOTP(SendOTPRequest) returns (SendOTPResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/otp"
+      body: "*"
+    };
+  }
   
   // Verify OTP and get tokens
-  rpc VerifyOTP(VerifyOTPRequest) returns (AuthResponse);
+  rpc VerifyOTP(VerifyOTPRequest) returns (AuthResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/verify"
+      body: "*"
+    };
+  }
   
   // Refresh access token
-  rpc RefreshToken(RefreshTokenRequest) returns (AuthResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (AuthResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/refresh"
+      body: "*"
+    };
+  }
   
   // Logout and revoke tokens
-  rpc Logout(LogoutRequest) returns (SuccessResponse);
+  rpc Logout(LogoutRequest) returns (SuccessResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/logout"
+      body: "*"
+    };
+  }
   
   // Get user profile
-  rpc GetProfile(GetProfileRequest) returns (UserProfile);
+  rpc GetProfile(GetProfileRequest) returns (UserProfile) {
+    option (google.api.http) = {
+      get: "/v1/auth/profile"
+    };
+  }
   
   // Update user profile
-  rpc UpdateProfile(UpdateProfileRequest) returns (UserProfile);
+  rpc UpdateProfile(UpdateProfileRequest) returns (UserProfile) {
+    option (google.api.http) = {
+      put: "/v1/auth/profile"
+      body: "*"
+    };
+  }
   
   // Admin: Get all users
-  rpc GetUsers(GetUsersRequest) returns (GetUsersResponse);
+  rpc GetUsers(GetUsersRequest) returns (GetUsersResponse) {
+    option (google.api.http) = {
+      get: "/v1/users"
+    };
+  }
   
   // Admin: Create user
-  rpc CreateUser(CreateUserRequest) returns (UserProfile);
+  rpc CreateUser(CreateUserRequest) returns (UserProfile) {
+    option (google.api.http) = {
+      post: "/v1/users"
+      body: "*"
+    };
+  }
   
   // Admin: Update user
-  rpc UpdateUser(UpdateUserRequest) returns (UserProfile);
+  rpc UpdateUser(UpdateUserRequest) returns (UserProfile) {
+    option (google.api.http) = {
+      put: "/v1/users/{id}"
+      body: "*"
+    };
+  }
   
   // Admin: Delete user
-  rpc DeleteUser(DeleteUserRequest) returns (SuccessResponse);
+  rpc DeleteUser(DeleteUserRequest) returns (SuccessResponse) {
+    option (google.api.http) = {
+      delete: "/v1/users/{id}"
+    };
+  }
 }
 
 // Messages

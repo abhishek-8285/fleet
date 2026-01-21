@@ -1,339 +1,296 @@
 import { useState } from 'react'
-import { 
-  Box, 
-  Button, 
-  Stack, 
-  TextField, 
-  Typography, 
-  Paper, 
-  Container,
-  ToggleButton,
-  ToggleButtonGroup,
-  Divider
+import { useNavigate } from 'react-router-dom'
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Paper,
+  InputAdornment,
+  IconButton,
+  Alert,
+  CircularProgress,
+  useTheme,
+  Container
 } from '@mui/material'
-import { Phone, Lock, Language } from '@mui/icons-material'
+import {
+  Visibility,
+  VisibilityOff,
+  Email as EmailIcon,
+  Lock as LockIcon,
+  LocalShipping as TruckIcon
+} from '@mui/icons-material'
+import { motion } from 'framer-motion'
+import { login } from '../auth'
 
 export default function Login() {
-  const [phone, setPhone] = useState('')
-  const [otp, setOtp] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
-  const [language, setLanguage] = useState('en')
-  
-  // Fallback to username/password for development
-  const [username, setUsername] = useState('admin')
-  const [password, setPassword] = useState('admin123')
-  const [loginMode, setLoginMode] = useState<'otp' | 'fallback'>('otp')
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
+  const theme = useTheme()
 
-  const text = {
-    en: {
-      title: 'FleetFlow India',
-      subtitle: 'Fleet Management System',
-      mobileNumber: 'Enter Mobile Number',
-      enterOtp: 'Enter OTP',
-      sendOtp: 'Send OTP',
-      login: 'LOGIN',
-      resendOtp: 'Resend OTP',
-      username: 'Username',
-      password: 'Password',
-      fallback: 'Use Username/Password',
-      useOtp: 'Use OTP Login'
-    },
-    hi: {
-      title: 'फ्लीटफ्लो इंडिया',
-      subtitle: 'फ्लीट प्रबंधन प्रणाली',
-      mobileNumber: 'मोबाइल नंबर दर्ज करें',
-      enterOtp: 'OTP दर्ज करें',
-      sendOtp: 'OTP भेजें',
-      login: 'लॉगिन',
-      resendOtp: 'OTP दोबारा भेजें',
-      username: 'उपयोगकर्ता नाम',
-      password: 'पासवर्ड',
-      fallback: 'उपयोगकर्ता नाम/पासवर्ड का उपयोग करें',
-      useOtp: 'OTP लॉगिन का उपयोग करें'
-    }
-  }
-
-  const currentText = text[language as keyof typeof text]
-
-  async function sendOtp() {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     setError('')
-    if (!phone) return setError('Please enter mobile number')
-    
+    setLoading(true)
+
     try {
-      const res = await fetch('/api/v1/auth/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: `+91${phone}` })
-      })
-      if (res.ok) {
-        setOtpSent(true)
-      } else {
-        setError('Failed to send OTP')
-      }
+      await login(email, password)
+      navigate('/')
     } catch (err) {
-      setError('Network error')
+      setError('Invalid email or password')
+    } finally {
+      setLoading(false)
     }
   }
 
-  async function verifyOtp() {
-    setError('')
-    if (!otp) return setError('Please enter OTP')
-    
-    try {
-      const res = await fetch('/api/v1/auth/otp/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: `+91${phone}`, otp: otp })
-      })
-      if (res.ok) {
-        const json = await res.json()
-        localStorage.setItem('token', json.token)
-        if (json.refreshToken) localStorage.setItem('refreshToken', json.refreshToken)
-        window.location.href = '/'
-      } else {
-        setError('Invalid OTP')
-      }
-    } catch (err) {
-      setError('Network error')
-    }
-  }
-
-  async function fallbackLogin() {
-    setError('')
-    const res = await fetch('/api/auth/login', {
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    })
-    if (!res.ok) return setError('Invalid credentials')
-    const json = await res.json()
-    localStorage.setItem('token', json.token)
-    if (json.refreshToken) localStorage.setItem('refreshToken', json.refreshToken)
-    window.location.href = '/'
-  }
+  // Animated background effect
+  const BackgroundMesh = () => (
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: 'hidden',
+        zIndex: 0,
+        background: `radial-gradient(circle at 15% 50%, ${theme.palette.secondary.dark} 0%, transparent 25%),
+                     radial-gradient(circle at 85% 30%, ${theme.palette.primary.dark} 0%, transparent 25%)`,
+        opacity: 0.4,
+      }}
+    >
+      <motion.div
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.3, 0.5, 0.3],
+          rotate: [0, 45, 0],
+        }}
+        transition={{
+          duration: 10,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+        style={{
+          position: 'absolute',
+          top: '-20%',
+          left: '-10%',
+          width: '60%',
+          height: '60%',
+          background: `radial-gradient(circle, ${theme.palette.primary.main} 0%, transparent 70%)`,
+          filter: 'blur(60px)',
+          borderRadius: '40%',
+        }}
+      />
+      <motion.div
+        animate={{
+          scale: [1, 1.3, 1],
+          opacity: [0.2, 0.4, 0.2],
+          x: [0, -50, 0],
+        }}
+        transition={{
+          duration: 15,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+        style={{
+          position: 'absolute',
+          bottom: '-10%',
+          right: '-10%',
+          width: '50%',
+          height: '50%',
+          background: `radial-gradient(circle, ${theme.palette.secondary.main} 0%, transparent 70%)`,
+          filter: 'blur(80px)',
+          borderRadius: '50%',
+        }}
+      />
+    </Box>
+  )
 
   return (
-    <Box 
-      sx={{ 
+    <Box
+      sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        py: 4
+        position: 'relative',
+        bgcolor: 'background.default',
       }}
     >
-      <Container maxWidth="sm">
-        <Paper 
-          elevation={8}
-          sx={{ 
-            p: 4, 
-            borderRadius: 3,
-            textAlign: 'center',
-            background: '#FAFAFA'
-          }}
+      <BackgroundMesh />
+
+      <Container maxWidth="xs" sx={{ position: 'relative', zIndex: 1 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
         >
-          {/* Logo and Title */}
-          <Box sx={{ mb: 4 }}>
-            <Typography 
-              variant="h3" 
-              sx={{ 
-                fontWeight: 700, 
-                color: 'primary.main',
-                mb: 1
+          <Paper
+            elevation={0}
+            sx={{
+              p: 5,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              background: 'rgba(30, 41, 59, 0.6)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 6,
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+            >
+              <Box
+                sx={{
+                  m: 1,
+                  bgcolor: 'transparent',
+                  p: 2,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                  boxShadow: `0 0 20px ${theme.palette.primary.main}60`,
+                  mb: 2
+                }}
+              >
+                <TruckIcon sx={{ fontSize: 40, color: 'white' }} />
+              </Box>
+            </motion.div>
+
+            <Typography
+              component="h1"
+              variant="h4"
+              sx={{
+                mb: 1,
+                fontWeight: 700,
+                letterSpacing: '-0.02em',
+                background: `linear-gradient(to right, #fff, ${theme.palette.grey[400]})`,
+                backgroundClip: 'text',
+                textFillColor: 'transparent'
               }}
             >
-              🚛 {currentText.title}
+              FleetFlow
             </Typography>
-            <Typography variant="h6" color="text.secondary">
-              {currentText.subtitle}
+
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+              Operational Command Center
             </Typography>
-          </Box>
 
-          {/* Language Toggle */}
-          <Box sx={{ mb: 4 }}>
-            <ToggleButtonGroup
-              value={language}
-              exclusive
-              onChange={(_, value) => value && setLanguage(value)}
-              size="small"
-              sx={{ mb: 2 }}
-            >
-              <ToggleButton value="hi">🌐 हिंदी</ToggleButton>
-              <ToggleButton value="en">🌐 English</ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
-
-          {loginMode === 'otp' ? (
-            <Stack spacing={3} sx={{ maxWidth: 400, mx: 'auto' }}>
-              {/* Mobile Number Input */}
-              <TextField
-                fullWidth
-                label={currentText.mobileNumber}
-                placeholder="9876543210"
-                value={phone}
-                onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                InputProps={{
-                  startAdornment: (
-                    <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
-                      <Phone color="primary" sx={{ mr: 1 }} />
-                      <Typography color="text.secondary">+91</Typography>
-                    </Box>
-                  ),
-                }}
-                disabled={otpSent}
-                sx={{ 
-                  '& .MuiOutlinedInput-root': { 
-                    borderRadius: 2,
-                    minHeight: 56
-                  }
-                }}
-              />
-
-              {/* OTP Input (shown after sending OTP) */}
-              {otpSent && (
-                <TextField
-                  fullWidth
-                  label={currentText.enterOtp}
-                  placeholder="1 2 3 4 5 6"
-                  value={otp}
-                  onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  InputProps={{
-                    startAdornment: <Lock color="primary" sx={{ mr: 2 }} />,
-                  }}
-                  sx={{ 
-                    '& .MuiOutlinedInput-root': { 
-                      borderRadius: 2,
-                      minHeight: 56,
-                      letterSpacing: '0.5em',
-                      textAlign: 'center'
-                    }
-                  }}
-                />
-              )}
-
-              {/* Error Message */}
-              {error && (
-                <Typography color="error" variant="body2">
-                  {error}
-                </Typography>
-              )}
-
-              {/* Action Buttons */}
-              {!otpSent ? (
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={sendOtp}
-                  disabled={phone.length !== 10}
-                  sx={{ 
-                    py: 2,
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    borderRadius: 2
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                style={{ width: '100%' }}
+              >
+                <Alert
+                  severity="error"
+                  sx={{
+                    mb: 3,
+                    borderRadius: 3,
+                    bgcolor: 'rgba(239, 68, 68, 0.1)',
+                    color: '#fca5a5',
+                    border: '1px solid rgba(239, 68, 68, 0.2)'
                   }}
                 >
-                  {currentText.sendOtp}
-                </Button>
-              ) : (
-                <Stack spacing={2}>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={verifyOtp}
-                    disabled={otp.length !== 6}
-                    sx={{ 
-                      py: 2,
-                      fontSize: '1.1rem',
-                      fontWeight: 600,
-                      borderRadius: 2
-                    }}
-                  >
-                    {currentText.login}
-                  </Button>
-                  <Button
-                    variant="text"
-                    onClick={() => { setOtpSent(false); setOtp(''); setError('') }}
-                    sx={{ color: 'primary.main' }}
-                  >
-                    {currentText.resendOtp}
-                  </Button>
-                </Stack>
-              )}
-
-              <Divider sx={{ my: 2 }} />
-              
-              <Button
-                variant="outlined"
-                onClick={() => setLoginMode('fallback')}
-                sx={{ py: 1.5 }}
-              >
-                {currentText.fallback}
-              </Button>
-            </Stack>
-          ) : (
-            <Stack spacing={3} sx={{ maxWidth: 400, mx: 'auto' }}>
-              <TextField
-                fullWidth
-                label={currentText.username}
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                sx={{ 
-                  '& .MuiOutlinedInput-root': { 
-                    borderRadius: 2,
-                    minHeight: 56
-                  }
-                }}
-              />
-              <TextField
-                fullWidth
-                label={currentText.password}
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                sx={{ 
-                  '& .MuiOutlinedInput-root': { 
-                    borderRadius: 2,
-                    minHeight: 56
-                  }
-                }}
-              />
-              
-              {error && (
-                <Typography color="error" variant="body2">
                   {error}
-                </Typography>
-              )}
+                </Alert>
+              </motion.div>
+            )}
+
+            <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                autoFocus
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ mb: 2.5 }}
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockIcon color="action" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ mb: 4 }}
+              />
 
               <Button
+                type="submit"
+                fullWidth
                 variant="contained"
-                size="large"
-                onClick={fallbackLogin}
-                sx={{ 
-                  py: 2,
-                  fontSize: '1.1rem',
+                disabled={loading}
+                sx={{
+                  py: 1.8,
+                  fontSize: '1rem',
                   fontWeight: 600,
-                  borderRadius: 2
+                  borderRadius: 3,
+                  textTransform: 'none',
+                  letterSpacing: '0.02em',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                  boxShadow: `0 8px 16px -4px ${theme.palette.primary.main}80`,
+                  '&:hover': {
+                    boxShadow: `0 12px 20px -4px ${theme.palette.primary.main}90`,
+                    transform: 'translateY(-1px)',
+                  }
                 }}
               >
-                {currentText.login}
+                {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
               </Button>
+            </Box>
+          </Paper>
 
-              <Divider sx={{ my: 2 }} />
-              
-              <Button
-                variant="outlined"
-                onClick={() => setLoginMode('otp')}
-                sx={{ py: 1.5 }}
-              >
-                {currentText.useOtp}
-              </Button>
-            </Stack>
-          )}
-        </Paper>
+          <Box sx={{ mt: 4, textAlign: 'center' }}>
+            <Typography variant="caption" color="text.secondary" sx={{ opacity: 0.6 }}>
+              © 2024 FleetFlow Technologies. All rights reserved.
+            </Typography>
+          </Box>
+        </motion.div>
       </Container>
     </Box>
   )
 }
-

@@ -1,0 +1,17 @@
+{
+    "app_title": "FleetFlow India",
+    "dashboard": "Dashboard",
+    "vehicles": "Vehicles",
+    "drivers": "Drivers",
+    "trips": "Trips",
+    "settings": "Settings",
+    "logout": "Logout",
+    "profile": "Profile",
+    "api_status": "API Status",
+    "copyright": "Rajesh Transport Co.",
+    "active_vehicles": "Active Vehicles",
+    "maintenance": "Maintenance",
+    "parked": "Parked",
+    "issues": "Issues",
+    "today_revenue": "Today's Revenue"
+}
