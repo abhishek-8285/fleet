@@ -1,0 +1,54 @@
+name: Fleet Professional Release
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    runs-on: self-hosted
+    outputs:
+      new_tag: ${{ steps.tagger.outputs.new_tag }}
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 1. SEMANTIC VERSIONING (Auto-increment v1.0.1, v1.0.2...)
+      - name: 🏷️ Auto Tag Version
+        id: tagger
+        run: |
+          # Get current tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          echo "Current Version: $LATEST_TAG"
+          
+          # Logic to increment (Simple Patch increment for demo)
+          VERSION_PARTS=(${LATEST_TAG//./ })
+          PATCH=$((VERSION_PARTS[2] + 1))
+          NEW_TAG="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH"
+          
+          echo "New Version: $NEW_TAG"
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          
+          # Locally create tag
+          git tag $NEW_TAG
+          # Note: Pushing tags requires a GITHUB_TOKEN with write access
+
+      # 2. GENERATE CHANGELOG
+      - name: 📝 Generate Changelog
+        run: |
+          echo "### Changes in ${{ steps.tagger.outputs.new_tag }}" > CHANGELOG.md
+          git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --oneline >> CHANGELOG.md
+
+      # 3. CREATE GITHUB RELEASE
+      - name: 🚀 Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/heads/master')
+        with:
+          tag_name: ${{ steps.tagger.outputs.new_tag }}
+          body_path: CHANGELOG.md
+          files: |
+            fleet-server
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
