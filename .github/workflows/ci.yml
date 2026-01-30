@@ -1,35 +1,56 @@
-name: Fleet Production Build
+name: Fleet Ultimate CI
 on: [push, pull_request]
 
 jobs:
-  build-and-test:
+  # STAGE 1: QUALITY & SECURITY
+  secure-check:
     runs-on: self-hosted
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js (if applicable)
-        if: hashFiles('package.json') != ''
+      # 1. SECRET SCANNING (Don't leak API Keys)
+      - name: 🕵️ Check for Secrets
         run: |
-          echo "Detected package.json - Installing Dependencies..."
-          npm install
-          echo "Running Tests..."
-          npm test || echo "No tests found (skipping)"
+          # Simple grep check for common leaks (AWS, Private Keys)
+          if grep -rE "AWS_ACCESS_KEY_ID|BEGIN RSA PRIVATE KEY" .; then
+            echo "❌ CRITICAL: Potential Secrets found in code!"
+            exit 1
+          fi
 
-      - name: 🔵 Setup Go (if applicable)
-        if: hashFiles('go.mod') != ''
+      # 2. VULNERABILITY SCAN (Trivy)
+      - name: 🛡️ Security Scan (Trivy)
         run: |
-          echo "Detected go.mod - Downloading Modules..."
-          go mod download
-          echo "Verifying Code..."
-          go vet ./...
-          echo "Running Tests..."
-          go test ./...
-          echo "Compiling Binary..."
-          go build -v ./...
+          # Install Trivy (Lightweight Security Scanner)
+          if ! command -v trivy &> /dev/null; then
+             curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+          fi
+          # Scan filesystem for known CVEs
+          trivy fs . --scanners vuln,secret,config --exit-code 1 --severity CRITICAL,HIGH
 
-      - name: ✅ Build Summary
-        if: always()
-        run: |
-          echo "Build Complete on Tecno Pova!"
-          echo "Disk Space Used: $(du -sh .)"
+  # STAGE 2: BUILD & TEST
+  build-release:
+    needs: secure-check
+    runs-on: self-hosted
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🧪 Run Unit Tests
+        run: go test -race -v ./...
+
+      - name: 🏗️ Compile Binary
+        run: go build -o fleet-server ./cmd/server/main.go || go build -o fleet-server .
+
+      # 3. ARTIFACT UPLOAD (Save the binary)
+      - name: 📤 Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fleet-server-arm64
+          path: fleet-server
+          retention-days: 5
+
+      # 4. NOTIFICATION (Optional - Slack/Discord)
+      # - name: 🔔 Notify Failure
+      #   if: failure()
+      #   run: curl -X POST -H 'Content-type: application/json' --data '{"text":"❌ Build Failed on Pova!"}' ${{ secrets.SLACK_WEBHOOK }}
