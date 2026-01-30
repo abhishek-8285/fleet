@@ -38,8 +38,7 @@ var (
 func NewTestFramework() (*TestFramework, error) {
 	var err error
 	if sharedDB == nil {
-		// Use a temporary file for SQLite to ensure all connections share the same data and schema
-		dbPath := fmt.Sprintf("/tmp/fleetflow_test.db") // Single file for entire run
+		dbPath := "/tmp/fleetflow_test.db" // Single file for entire run
 		sharedDB, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 		if err != nil {
 			return nil, err
