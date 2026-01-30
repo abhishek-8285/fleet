@@ -1,0 +1,25 @@
+name: Pova Build Station Test
+on: [push, workflow_dispatch]
+
+jobs:
+  pova-check:
+    runs-on: self-hosted
+    steps:
+      - name: 📱 Check Hardware
+        run: |
+          echo "🔥 Hello from Tecno Pova!"
+          echo "--------------------------------"
+          uname -a
+          echo "CPU Cores: $(nproc)"
+          cat /etc/os-release
+
+      - name: 📦 Check Build Tools
+        run: |
+          echo "Node Version: $(node -v)"
+          echo "Go Version: $(go version)"
+          echo "GCC Version: $(gcc --version | head -n 1)"
+
+      - name: 🚀 Test Workspace
+        run: |
+          echo "Workspace: $GITHUB_WORKSPACE"
+          ls -la
