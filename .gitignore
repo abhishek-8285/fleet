@@ -28,3 +28,14 @@ mvnw.cmd
 *.ear
 docker-data/
 
+# Go
+backend/main
+backend/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
