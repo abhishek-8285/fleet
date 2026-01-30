@@ -7,7 +7,7 @@ try {
   if (!(globalThis as any).crypto) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { webcrypto } = require('crypto')
-    ;(globalThis as any).crypto = webcrypto
+      ; (globalThis as any).crypto = webcrypto
   }
 } catch (_) {
   // ignore
@@ -16,28 +16,32 @@ try {
 // Ensure globalThis.crypto is present even when the shell Node lacks webcrypto
 const cryptoPolyfillPlugin = (): Plugin => ({
   name: 'crypto-polyfill',
-  config () {
+  config() {
     try {
       if (!(globalThis as any).crypto || !(globalThis as any).crypto.getRandomValues) {
         try {
           // Prefer Node built-in if present
           const { webcrypto } = require('crypto')
           if (webcrypto && webcrypto.getRandomValues) {
-            ;(globalThis as any).crypto = webcrypto
+            ; (globalThis as any).crypto = webcrypto
           }
-        } catch {}
+        } catch { }
         if (!(globalThis as any).crypto || !(globalThis as any).crypto.getRandomValues) {
           // Fallback to @peculiar/webcrypto
           const { Crypto } = require('@peculiar/webcrypto')
-          ;(globalThis as any).crypto = new Crypto()
+            ; (globalThis as any).crypto = new Crypto()
         }
       }
-    } catch (_) {}
+    } catch (_) { }
     return {}
   }
 })
 
 export default defineConfig({
+  base: '/dashboard/',
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production') // Polyfill for legacy code
+  },
   plugins: [cryptoPolyfillPlugin(), react()],
   // test: {
   //   environment: 'jsdom',

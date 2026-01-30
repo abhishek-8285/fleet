@@ -13,6 +13,7 @@ const nextConfig = {
     domains: ['localhost'],
     unoptimized: true,
   },
+  output: 'export',
   // Note: Customer portal uses its own local API routes for tracking
   // No rewrites needed - let Next.js handle /api routes internally
 }

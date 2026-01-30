@@ -36,7 +36,7 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter>
+      <BrowserRouter basename="/dashboard">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/track/:id" element={<Track />} />
