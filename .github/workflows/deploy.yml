@@ -1,0 +1,67 @@
+name: Deploy to Pova 2
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v4
+
+    # Backend Build
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+    - name: Build Backend
+      run: |
+        cd backend
+        go build -o fleetflow-monolith-cgo ./cmd/server
+      env:
+        CGO_ENABLED: 1
+
+    # Frontend Build (Portal)
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - name: Build Portal
+      run: |
+        cd frontend/portal
+        npm install
+        npm run build
+
+    # Frontend Build (Dashboard)
+    - name: Build Dashboard
+      run: |
+        cd frontend/dashboard
+        npm install
+        npm run build
+
+    # Deployment
+    - name: Deploy Artifacts
+      run: |
+        echo "Starting Deployment..."
+        
+        # 1. Deploy Backend
+        echo "Updating Backend Binary..."
+        sudo cp backend/fleetflow-monolith-cgo /root/fleet/backend/
+        
+        # 2. Deploy Portal (Static)
+        echo "Updating Portal..."
+        sudo rm -rf /var/www/fleetflow/portal/*
+        sudo cp -r frontend/portal/out/* /var/www/fleetflow/portal/
+
+        # 3. Deploy Dashboard (Static)
+        echo "Updating Dashboard..."
+        sudo rm -rf /var/www/fleetflow/dashboard/*
+        sudo cp -r frontend/dashboard/dist/* /var/www/fleetflow/dashboard/
+
+        # 4. Restart Backend Service
+        echo "Restarting Backend Service..."
+        sudo /usr/local/bin/deploy_backend.sh
+        
+        echo "Deployment Complete!"
