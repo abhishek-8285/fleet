@@ -9,10 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TelemetryHandler handles telemetry-related requests
 type TelemetryHandler struct {
 	telemetryService *services.TelemetryService
-	db               interface{} // Placeholder
 }
 
 // NewTelemetryHandler creates a new telemetry handler

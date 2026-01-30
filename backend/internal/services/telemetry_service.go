@@ -93,7 +93,7 @@ func (s *TelemetryService) processDTCs(vehicleID uint, codes []string) {
 		} else if err == nil {
 			// Update existing code
 			existing.LastSeen = time.Now()
-			s.db.Save(&existing)
+			_ = s.db.Save(&existing)
 		}
 	}
 }

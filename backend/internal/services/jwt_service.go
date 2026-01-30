@@ -124,7 +124,7 @@ func (j *JWTService) RefreshToken(refreshTokenString string) (string, *models.Re
 
 	// Generate new refresh token and revoke old one
 	refreshToken.Revoked = true
-	j.db.Save(&refreshToken)
+	_ = j.db.Save(&refreshToken)
 
 	newRefreshToken, err := j.GenerateRefreshToken(user.ID)
 	if err != nil {

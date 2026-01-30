@@ -291,7 +291,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	}
 
 	var req dto.LogoutRequest
-	c.ShouldBindJSON(&req) // Optional body
+	_ = c.ShouldBindJSON(&req) // Optional body, ignore error
 
 	// Revoke specific refresh token or all user tokens
 	if req.RefreshToken != "" {
@@ -308,7 +308,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	}
 
 	// Log audit event
-	h.services.AuditService.LogAction(
+	_ = h.services.AuditService.LogAction(
 		models.AuditActionUserLogout,
 		models.AuditSeverityInfo,
 		"User logged out",
@@ -461,7 +461,7 @@ func (h *AuthHandler) GetUsers(c *gin.Context) {
 	}
 
 	var filters dto.FilterParams
-	c.ShouldBindQuery(&filters)
+	_ = c.ShouldBindQuery(&filters) // Optional filters, ignore error
 
 	// Get users from service (to be implemented)
 	c.JSON(http.StatusOK, dto.UsersListResponse{

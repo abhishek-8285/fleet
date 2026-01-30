@@ -9,10 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// SafetyHandler handles safety-related requests
 type SafetyHandler struct {
 	safetyService *services.SafetyService
-	db            interface{} // Placeholder for DB access if needed directly
 }
 
 // NewSafetyHandler creates a new safety handler
@@ -37,7 +35,7 @@ func (h *SafetyHandler) GetSafetyEvents(c *gin.Context) {
 	// This would typically call a service method to query DB with filters
 	// For now, we'll return a mock response or implement basic DB query if service exposed it
 	// In a real implementation, we'd add a GetEvents method to SafetyService
-	
+
 	c.JSON(http.StatusOK, []models.SafetyEvent{})
 }
 
@@ -59,9 +57,9 @@ func (h *SafetyHandler) GetDriverScore(c *gin.Context) {
 
 	// Mock response for now
 	score := models.DriverScore{
-		OverallScore: 95,
-		BrakingScore: 98,
-		AccelScore:   92,
+		OverallScore:  95,
+		BrakingScore:  98,
+		AccelScore:    92,
 		SpeedingScore: 95,
 	}
 

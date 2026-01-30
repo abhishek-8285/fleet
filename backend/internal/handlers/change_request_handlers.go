@@ -275,7 +275,14 @@ func (h *DriverHandler) ApproveChangeRequest(c *gin.Context) {
 	var requestBody struct {
 		AdminComments string `json:"admin_comments"`
 	}
-	c.ShouldBindJSON(&requestBody)
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, dto.APIError{
+			Error:   "invalid_request",
+			Message: "Invalid request body",
+			Code:    http.StatusBadRequest,
+		})
+		return
+	}
 
 	adminID := c.GetUint("user_id")
 

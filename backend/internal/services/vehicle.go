@@ -48,7 +48,7 @@ func (s *VehicleService) CreateVehicle(vehicle *models.Vehicle) (*models.Vehicle
 	}
 
 	// Log audit event
-	s.auditService.LogEntityChange(
+	_ = s.auditService.LogEntityChange(
 		nil, // System created
 		"vehicle_created",
 		"vehicles",
@@ -89,7 +89,7 @@ func (s *VehicleService) UpdateVehicle(vehicle *models.Vehicle) (*models.Vehicle
 	}
 
 	// Log audit event
-	s.auditService.LogEntityChange(
+	_ = s.auditService.LogEntityChange(
 		nil, // System updated
 		"vehicle_updated",
 		"vehicles",
@@ -116,7 +116,7 @@ func (s *VehicleService) DeleteVehicle(id uint) error {
 	}
 
 	// Log audit event
-	s.auditService.LogEntityChange(
+	_ = s.auditService.LogEntityChange(
 		nil,
 		"vehicle_deleted",
 		"vehicles",

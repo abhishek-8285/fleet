@@ -88,7 +88,7 @@ func (s *AuthService) SendOTP(phone, ipAddress, userAgent string) (*models.OTPVe
 	}
 
 	// Log audit event
-	s.auditService.LogAction(models.AuditActionUserLogin, models.AuditSeverityInfo,
+	_ = s.auditService.LogAction(models.AuditActionUserLogin, models.AuditSeverityInfo,
 		fmt.Sprintf("OTP sent to phone %s", phone), nil, nil, &models.AuditContext{
 			IPAddress: ipAddress,
 			UserAgent: userAgent,
@@ -103,7 +103,7 @@ func (s *AuthService) VerifyOTP(phone, otp, ipAddress, userAgent string) (*model
 	otpVerification, err := s.repo.GetOTPForVerification(phone, otp)
 	if err != nil {
 		// Log failed attempt
-		s.auditService.LogAction(models.AuditActionLoginFailed, models.AuditSeverityWarning,
+		_ = s.auditService.LogAction(models.AuditActionLoginFailed, models.AuditSeverityWarning,
 			fmt.Sprintf("Failed OTP verification for phone %s", phone), nil, nil, &models.AuditContext{
 				IPAddress: ipAddress,
 				UserAgent: userAgent,
@@ -124,7 +124,9 @@ func (s *AuthService) VerifyOTP(phone, otp, ipAddress, userAgent string) (*model
 
 	// Mark OTP as verified
 	otpVerification.Verified = true
-	s.repo.UpdateOTP(otpVerification)
+	if err := s.repo.UpdateOTP(otpVerification); err != nil {
+		return nil, fmt.Errorf("failed to update OTP: %w", err)
+	}
 
 	// Find or create user account
 	user, err := s.repo.GetUserByPhone(phone)
@@ -142,7 +144,7 @@ func (s *AuthService) VerifyOTP(phone, otp, ipAddress, userAgent string) (*model
 		user = newUser
 
 		// Log audit event for new user
-		s.auditService.LogAction(models.AuditActionUserCreated, models.AuditSeverityInfo,
+		_ = s.auditService.LogAction(models.AuditActionUserCreated, models.AuditSeverityInfo,
 			fmt.Sprintf("New user account created for phone %s", phone), nil, user, &models.AuditContext{
 				IPAddress: ipAddress,
 				UserAgent: userAgent,
@@ -158,7 +160,9 @@ func (s *AuthService) VerifyOTP(phone, otp, ipAddress, userAgent string) (*model
 	// Update last login time
 	now := time.Now()
 	user.LastLogin = &now
-	s.repo.UpdateUser(user)
+	if err := s.repo.UpdateUser(user); err != nil {
+		return nil, fmt.Errorf("failed to update user login: %w", err)
+	}
 
 	// Since repo methods might not preload, use GetByID to be sure if needed
 	// But GetUserByPhone logic in repo doesn't preload driver currently.
@@ -167,7 +171,7 @@ func (s *AuthService) VerifyOTP(phone, otp, ipAddress, userAgent string) (*model
 	user, _ = s.repo.GetUserByID(user.ID)
 
 	// Log successful login
-	s.auditService.LogAction(models.AuditActionUserLogin, models.AuditSeverityInfo,
+	_ = s.auditService.LogAction(models.AuditActionUserLogin, models.AuditSeverityInfo,
 		fmt.Sprintf("Successful OTP verification for phone %s", phone), nil, nil, &models.AuditContext{
 			IPAddress: ipAddress,
 			UserAgent: userAgent,
@@ -204,7 +208,7 @@ func (s *AuthService) UpdateUserProfile(userID uint, updates map[string]interfac
 	}
 
 	// Log audit event
-	s.auditService.LogAction(models.AuditActionUserUpdated, models.AuditSeverityInfo,
+	_ = s.auditService.LogAction(models.AuditActionUserUpdated, models.AuditSeverityInfo,
 		fmt.Sprintf("User profile updated for user ID %d", userID), &oldValues, updatedUser, &models.AuditContext{
 			UserID: &userID,
 		})
@@ -234,7 +238,7 @@ func (s *AuthService) DeactivateUser(userID, deactivatedBy uint) error {
 	}
 
 	// Log audit event
-	s.auditService.LogAction(models.AuditActionUserDeleted, models.AuditSeverityWarning,
+	_ = s.auditService.LogAction(models.AuditActionUserDeleted, models.AuditSeverityWarning,
 		fmt.Sprintf("User account deactivated for user ID %d", userID), &oldValues, user, &models.AuditContext{
 			UserID: &deactivatedBy,
 		})
@@ -261,7 +265,7 @@ func (s *AuthService) CreateAdminUser(phone string, createdBy uint) (*models.Use
 	}
 
 	// Log audit event
-	s.auditService.LogAction(models.AuditActionUserCreated, models.AuditSeverityInfo,
+	_ = s.auditService.LogAction(models.AuditActionUserCreated, models.AuditSeverityInfo,
 		fmt.Sprintf("Admin user created for phone %s", phone), nil, user, &models.AuditContext{
 			UserID: &createdBy,
 		})

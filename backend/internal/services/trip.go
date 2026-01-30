@@ -94,7 +94,7 @@ func (s *TripService) CreateTrip(trip *models.Trip) (*models.Trip, error) {
 	}
 
 	// Log audit event
-	s.auditService.LogEntityChange(
+	_ = s.auditService.LogEntityChange(
 		nil,
 		"trip_created",
 		"trips",
@@ -135,7 +135,7 @@ func (s *TripService) UpdateTrip(trip *models.Trip) (*models.Trip, error) {
 	}
 
 	// Log audit event
-	s.auditService.LogEntityChange(
+	_ = s.auditService.LogEntityChange(
 		nil,
 		"trip_updated",
 		"trips",
@@ -167,7 +167,7 @@ func (s *TripService) DeleteTrip(id uint) error {
 	}
 
 	// Log audit event
-	s.auditService.LogEntityChange(
+	_ = s.auditService.LogEntityChange(
 		nil,
 		"trip_deleted",
 		"trips",
@@ -189,15 +189,17 @@ func (s *TripService) AssignTrip(tripID, driverID, vehicleID uint) error {
 	}
 
 	// Log audit event (async for performance)
-	go s.auditService.LogEntityChange(
-		nil,
-		"trip_assigned",
-		"trips",
-		tripID,
-		nil,
-		trip,
-		fmt.Sprintf("Trip %s assigned to driver %d and vehicle %d", trip.TrackingID, driverID, vehicleID),
-	)
+	go func() {
+		_ = s.auditService.LogEntityChange(
+			nil,
+			"trip_assigned",
+			"trips",
+			tripID,
+			nil,
+			trip,
+			fmt.Sprintf("Trip %s assigned to driver %d and vehicle %d", trip.TrackingID, driverID, vehicleID),
+		)
+	}()
 
 	return nil
 }
@@ -250,11 +252,11 @@ func (s *TripService) StartTrip(tripID uint) error {
 
 	// Update vehicle status
 	if trip.VehicleID != nil {
-		s.vehicleRepo.UpdateStatus(*trip.VehicleID, string(models.VehicleStatusActive))
+		_ = s.vehicleRepo.UpdateStatus(*trip.VehicleID, string(models.VehicleStatusActive))
 	}
 
 	// Log audit event
-	s.auditService.LogEntityChange(
+	_ = s.auditService.LogEntityChange(
 		nil,
 		"trip_started",
 		"trips",
@@ -345,11 +347,11 @@ func (s *TripService) CompleteTrip(tripID uint) error {
 
 	// Update vehicle status back to active
 	if trip.VehicleID != nil {
-		s.vehicleRepo.UpdateStatus(*trip.VehicleID, string(models.VehicleStatusActive))
+		_ = s.vehicleRepo.UpdateStatus(*trip.VehicleID, string(models.VehicleStatusActive))
 	}
 
 	// Log audit event
-	s.auditService.LogEntityChange(
+	_ = s.auditService.LogEntityChange(
 		nil,
 		"trip_completed",
 		"trips",
@@ -378,7 +380,7 @@ func (s *TripService) PauseTrip(tripID uint) error {
 		return fmt.Errorf("failed to pause trip: %w", err)
 	}
 
-	s.auditService.LogEntityChange(nil, "trip_paused", "trips", tripID, nil, trip,
+	_ = s.auditService.LogEntityChange(nil, "trip_paused", "trips", tripID, nil, trip,
 		fmt.Sprintf("Trip %s paused", trip.TrackingID))
 	return nil
 }
@@ -399,7 +401,7 @@ func (s *TripService) ResumeTrip(tripID uint) error {
 		return fmt.Errorf("failed to resume trip: %w", err)
 	}
 
-	s.auditService.LogEntityChange(nil, "trip_resumed", "trips", tripID, nil, trip,
+	_ = s.auditService.LogEntityChange(nil, "trip_resumed", "trips", tripID, nil, trip,
 		fmt.Sprintf("Trip %s resumed", trip.TrackingID))
 	return nil
 }
@@ -422,10 +424,10 @@ func (s *TripService) CancelTrip(tripID uint, reason string) error {
 
 	// Free up vehicle
 	if trip.VehicleID != nil {
-		s.vehicleRepo.UpdateStatus(*trip.VehicleID, string(models.VehicleStatusActive))
+		_ = s.vehicleRepo.UpdateStatus(*trip.VehicleID, string(models.VehicleStatusActive))
 	}
 
-	s.auditService.LogEntityChange(nil, "trip_cancelled", "trips", tripID, nil, trip,
+	_ = s.auditService.LogEntityChange(nil, "trip_cancelled", "trips", tripID, nil, trip,
 		fmt.Sprintf("Trip %s cancelled: %s", trip.TrackingID, reason))
 	return nil
 }

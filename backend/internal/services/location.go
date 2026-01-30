@@ -61,7 +61,7 @@ func (s *LocationService) GetVehicleLocation(vehicleID uint) (*models.VehicleLoc
 
 	// Get vehicle details
 	var vehicle models.Vehicle
-	s.db.First(&vehicle, vehicleID)
+	_ = s.db.First(&vehicle, vehicleID)
 
 	// Calculate additional metrics
 	isMoving := false
@@ -108,7 +108,7 @@ func (s *LocationService) GetDriverLocation(driverID uint) (*models.DriverLocati
 
 	// Get driver details
 	var driver models.Driver
-	s.db.First(&driver, driverID)
+	_ = s.db.First(&driver, driverID)
 
 	// Get current vehicle info if available
 	var vehiclePlate string
@@ -218,7 +218,7 @@ func (s *LocationService) GetFleetLocations(vehicleIDs []uint32, includeOffline 
 
 		// Get vehicle details
 		var vehicle models.Vehicle
-		s.db.First(&vehicle, vehicleID)
+		_ = s.db.First(&vehicle, vehicleID)
 
 		// Determine online status
 		lastSeen := time.Since(ping.CreatedAt)
@@ -316,7 +316,7 @@ func (s *LocationService) GetRecentFleetUpdates(vehicleIDs []uint32, since time.
 	// Convert to FleetLocationUpdate format
 	for vehicleID, ping := range vehiclePings {
 		var vehicle models.Vehicle
-		s.db.First(&vehicle, vehicleID)
+		_ = s.db.First(&vehicle, vehicleID)
 
 		update := &models.FleetLocationUpdate{
 			VehicleID:    vehicleID,
@@ -666,17 +666,6 @@ func (s *LocationService) getSpeedLimitForLocation(lat, lon float64) float64 {
 	return 60.0
 }
 
-func (s *LocationService) getDeviationSeverity(deviation float64) string {
-	if deviation > 5000 { // > 5km
-		return "CRITICAL"
-	} else if deviation > 2000 { // > 2km
-		return "HIGH"
-	} else if deviation > 1000 { // > 1km
-		return "MEDIUM"
-	}
-	return "LOW"
-}
-
 func (s *LocationService) updateFleetLocationCache(ping *models.LocationPing) {
 	// In production, would update Redis cache or similar for real-time fleet tracking
 	log.Printf("📡 Updated fleet location cache for vehicle %d", ping.VehicleID)
@@ -779,7 +768,7 @@ func (s *LocationService) checkGeofenceAlertsForSubscription(vehicleIDs, geofenc
 		query = query.Where("geofence_id IN ?", geofenceIDsInterface)
 	}
 
-	query.Find(&alerts)
+	_ = query.Find(&alerts)
 
 	// Send alerts to channel
 	for _, alert := range alerts {
@@ -811,7 +800,7 @@ func (s *LocationService) checkRouteDeviationsForSubscription(tripIDs []uint32, 
 		query = query.Where("deviation_distance >= ?", maxDeviation)
 	}
 
-	query.Find(&deviations)
+	_ = query.Find(&deviations)
 
 	// Send deviations to channel
 	for _, deviation := range deviations {
@@ -839,7 +828,7 @@ func (s *LocationService) checkLocationEventsForSubscription(vehicleIDs []uint32
 		query = query.Where("vehicle_id IN ?", vehicleIDsInterface)
 	}
 
-	query.Find(&pings)
+	_ = query.Find(&pings)
 
 	// Analyze pings for events
 	for _, ping := range pings {

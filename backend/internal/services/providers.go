@@ -81,7 +81,7 @@ func NewLocalStorageService(cfg *config.Config) *LocalStorageService {
 	}
 
 	// Create directory if it doesn't exist
-	os.MkdirAll(basePath, 0755)
+	_ = os.MkdirAll(basePath, 0755)
 
 	return &LocalStorageService{
 		basePath: basePath,

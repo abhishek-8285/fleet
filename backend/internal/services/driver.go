@@ -58,7 +58,7 @@ func (s *DriverService) CreateDriver(driver *models.Driver) (*models.Driver, err
 	}
 
 	// Log audit event
-	s.auditService.LogEntityChange(
+	_ = s.auditService.LogEntityChange(
 		nil, // System created
 		"driver_created",
 		"drivers",

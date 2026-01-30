@@ -47,7 +47,7 @@ func (s *AssetService) ProcessBeaconPing(beaconID string, lat, lon float64) erro
 	// Check for Yard Entry/Exit
 	// This is a simplified check. In production, use spatial queries (PostGIS)
 	var yards []models.Yard
-	s.db.Find(&yards)
+	_ = s.db.Find(&yards)
 
 	inYard := false
 	var detectedYardID uint
@@ -81,8 +81,7 @@ func (s *AssetService) ProcessBeaconPing(beaconID string, lat, lon float64) erro
 
 // isInsideYard checks if a point is within the yard's radius
 func (s *AssetService) isInsideYard(lat, lon float64, yard models.Yard) bool {
-	// Haversine formula approximation
-	const R = 6371000 // Earth radius in meters
+	// Simplified distance calculation for small distances
 
 	// Simplified distance calculation for small distances
 	// dx = R * dLon * cos(lat)

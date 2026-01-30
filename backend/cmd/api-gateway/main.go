@@ -63,7 +63,7 @@ func main() {
 		logger.Error(ctx, "❌ Failed to dial gRPC server", "error", err)
 		os.Exit(1)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	// Create new gRPC-gateway mux
 	mux := runtime.NewServeMux()

@@ -61,10 +61,10 @@ func (s *FuelService) CreateFuelEvent(event *models.FuelEvent) (*models.FuelEven
 			Message:     fmt.Sprintf("High fraud risk detected: %s", fraudReason),
 			IsResolved:  false,
 		}
-		s.db.Create(alert)
+		_ = s.db.Create(alert)
 
 		// Log security event
-		s.auditService.LogAction("FUEL_FRAUD_DETECTED", "HIGH",
+		_ = s.auditService.LogAction("FUEL_FRAUD_DETECTED", "HIGH",
 			fmt.Sprintf("Fraud detected for fuel event %d: %s", event.ID, fraudReason),
 			nil, nil, nil)
 	}
@@ -159,7 +159,7 @@ func (s *FuelService) VerifyFuelEvent(eventID, verifierID uint, notes string) er
 	}
 
 	// Log audit event
-	s.auditService.LogAction("FUEL_EVENT_VERIFIED", "INFO",
+	_ = s.auditService.LogAction("FUEL_EVENT_VERIFIED", "INFO",
 		fmt.Sprintf("Fuel event %d verified by user %d: %s", eventID, verifierID, notes),
 		nil, nil, &models.AuditContext{UserID: &verifierID})
 
@@ -184,7 +184,7 @@ func (s *FuelService) RejectFuelEvent(eventID, verifierID uint, reason string) e
 	}
 
 	// Log audit event
-	s.auditService.LogAction("FUEL_EVENT_REJECTED", "WARNING",
+	_ = s.auditService.LogAction("FUEL_EVENT_REJECTED", "WARNING",
 		fmt.Sprintf("Fuel event %d rejected by user %d: %s", eventID, verifierID, reason),
 		nil, nil, &models.AuditContext{UserID: &verifierID})
 
@@ -203,10 +203,13 @@ func (s *FuelService) GetFuelAnalytics(period string, startDate, endDate time.Ti
 	var totalFuel, totalCost float64
 	var eventCount int64
 
-	s.db.Model(&models.FuelEvent{}).
+	err := s.db.Model(&models.FuelEvent{}).
 		Where("created_at BETWEEN ? AND ? AND status = 'VERIFIED'", startDate, endDate).
 		Select("COALESCE(SUM(liters), 0), COALESCE(SUM(amount_inr), 0), COUNT(*)").
 		Row().Scan(&totalFuel, &totalCost, &eventCount)
+	if err != nil {
+		log.Printf("⚠️ Failed to scan fuel analytics: %v", err)
+	}
 
 	analytics.TotalFuelConsumed = totalFuel
 	analytics.TotalFuelCost = totalCost
@@ -221,16 +224,18 @@ func (s *FuelService) GetFuelAnalytics(period string, startDate, endDate time.Ti
 
 	// Get fraud alerts count
 	var fraudAlerts int64
-	s.db.Model(&models.FuelAlert{}).
+	_ = s.db.Model(&models.FuelAlert{}).
 		Where("created_at BETWEEN ? AND ? AND alert_type = 'FRAUD_DETECTED'", startDate, endDate).
 		Count(&fraudAlerts)
 	analytics.FraudAlertsCount = int(fraudAlerts)
 
-	// Calculate cost savings from fraud prevention
 	var rejectedCost float64
-	s.db.Model(&models.FuelEvent{}).
+	err = s.db.Model(&models.FuelEvent{}).
 		Where("created_at BETWEEN ? AND ? AND status = 'REJECTED'", startDate, endDate).
 		Select("COALESCE(SUM(amount_inr), 0)").Row().Scan(&rejectedCost)
+	if err != nil {
+		log.Printf("⚠️ Failed to scan rejected cost savings: %v", err)
+	}
 	analytics.CostSavings = rejectedCost
 
 	// Get top efficient vehicles (mock data)
@@ -323,7 +328,7 @@ func (s *FuelService) analyzeConsumptionRate(event *models.FuelEvent) (score flo
 
 	// Get last 30 days of fuel events for comparison
 	thirtyDaysAgo := time.Now().AddDate(0, 0, -30)
-	s.db.Where("vehicle_id = ? AND created_at >= ? AND id != ?",
+	_ = s.db.Where("vehicle_id = ? AND created_at >= ? AND id != ?",
 		event.VehicleID, thirtyDaysAgo, event.ID).Find(&events)
 
 	if len(events) < 3 {
@@ -421,7 +426,7 @@ func (s *FuelService) analyzeTimingPattern(event *models.FuelEvent) (score float
 	// Check for rapid successive fuel events (potential card cloning)
 	var recentEvents []models.FuelEvent
 	oneHourAgo := event.CreatedAt.Add(-1 * time.Hour)
-	s.db.Where("vehicle_id = ? AND created_at >= ? AND created_at <= ? AND id != ?",
+	_ = s.db.Where("vehicle_id = ? AND created_at >= ? AND created_at <= ? AND id != ?",
 		event.VehicleID, oneHourAgo, event.CreatedAt, event.ID).Find(&recentEvents)
 
 	if len(recentEvents) > 0 {
@@ -952,7 +957,7 @@ func (s *FuelService) checkRealtimeTheft(vehicleID uint, threshold float64, aler
 	var recentEvents []models.FuelEvent
 	twoHoursAgo := time.Now().Add(-2 * time.Hour)
 
-	s.db.Where("vehicle_id = ? AND created_at >= ?", vehicleID, twoHoursAgo).
+	_ = s.db.Where("vehicle_id = ? AND created_at >= ?", vehicleID, twoHoursAgo).
 		Order("created_at DESC").Find(&recentEvents)
 
 	for _, event := range recentEvents {
@@ -985,7 +990,7 @@ func (s *FuelService) checkRealtimeAnomalies(vehicleID uint, threshold float64, 
 	var events []models.FuelEvent
 	sevenDaysAgo := time.Now().AddDate(0, 0, -7)
 
-	s.db.Where("vehicle_id = ? AND created_at >= ?", vehicleID, sevenDaysAgo).
+	_ = s.db.Where("vehicle_id = ? AND created_at >= ?", vehicleID, sevenDaysAgo).
 		Order("created_at DESC").Find(&events)
 
 	if len(events) < 3 {

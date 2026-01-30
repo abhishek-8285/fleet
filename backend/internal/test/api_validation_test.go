@@ -176,7 +176,8 @@ func TestAPIValidation(t *testing.T) {
 				if w.Code == 400 {
 					// Verify error response contains validation details
 					var response map[string]interface{}
-					json.Unmarshal(w.Body.Bytes(), &response)
+					err := json.Unmarshal(w.Body.Bytes(), &response)
+					assert.NoError(t, err)
 					assert.Contains(t, fmt.Sprintf("%v", response), "validation",
 						"Error response should contain validation information")
 				}

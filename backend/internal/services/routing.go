@@ -94,10 +94,10 @@ func (rs *RoutingService) OptimizeMultiStopRoute(ctx context.Context, start Loca
 	// 2. Solve TSP (Traveling Salesman Problem)
 	// For small N (< 10), we can use brute force or dynamic programming.
 	// For larger N, we use Nearest Neighbor with 2-opt (implemented in MapsService, but we can enhance it here with Matrix data)
-	
+
 	// For now, let's use a greedy approach with the matrix data
 	optimizedIndices := rs.solveTSP_Greedy(matrix)
-	
+
 	// 3. Reconstruct the ordered list of stops
 	// Note: optimizedIndices[0] is always 0 (start), so we skip it
 	orderedStops := make([]RoutePoint, len(stops))
@@ -115,7 +115,7 @@ func (rs *RoutingService) solveTSP_Greedy(matrix [][]MatrixElement) []int {
 	n := len(matrix)
 	visited := make([]bool, n)
 	path := make([]int, 0, n)
-	
+
 	current := 0 // Start at origin
 	visited[current] = true
 	path = append(path, current)
@@ -183,7 +183,7 @@ func (rs *RoutingService) CheckRouteDeviation(ctx context.Context, currentLoc Lo
 
 	// Find minimum distance from current location to any point on the path
 	minDistance := math.MaxFloat64
-	
+
 	// Convert current location to maps.LatLng
 	point := maps.LatLng{Lat: currentLoc.Lat, Lng: currentLoc.Lng}
 
@@ -202,7 +202,7 @@ func (rs *RoutingService) CheckRouteDeviation(ctx context.Context, currentLoc Lo
 // distance calculates distance between two points in meters (Haversine approximation)
 func (rs *RoutingService) distance(p1, p2 maps.LatLng) float64 {
 	const R = 6371000 // Earth radius in meters
-	
+
 	lat1 := p1.Lat * math.Pi / 180
 	lat2 := p2.Lat * math.Pi / 180
 	dLat := (p2.Lat - p1.Lat) * math.Pi / 180
@@ -219,7 +219,6 @@ func (rs *RoutingService) distance(p1, p2 maps.LatLng) float64 {
 // RouteAssignmentService handles automated trip assignment
 type RouteAssignmentService struct {
 	routingService *RoutingService
-	db             interface{} // Placeholder for DB access
 }
 
 // NewRouteAssignmentService creates a new route assignment service
@@ -238,13 +237,13 @@ func (ras *RouteAssignmentService) AssignTripToBestDriver(ctx context.Context, t
 	// 1. Calculate ETA for each driver to pickup location
 	pickupLoc := Location{Lat: trip.PickupLatitude, Lng: trip.PickupLongitude}
 	driverLocs := make([]Location, len(availableDrivers))
-	
+
 	// In a real scenario, we would get the driver's current location from Redis/DB
 	// For now, we'll assume the driver's last known location is available
 	// This is a placeholder implementation
 	for i := range availableDrivers {
 		// Mock location for now
-		driverLocs[i] = Location{Lat: 28.6139, Lng: 77.2090} 
+		driverLocs[i] = Location{Lat: 28.6139, Lng: 77.2090}
 	}
 
 	matrix, err := ras.routingService.GetDistanceMatrix(ctx, driverLocs, []Location{pickupLoc})

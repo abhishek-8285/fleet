@@ -83,13 +83,13 @@ func (s *MaintenanceService) CheckMaintenanceDue(ctx context.Context) ([]models.
 		for _, schedule := range schedules {
 			// Check mileage
 			mileageDue := schedule.NextDueMileage > 0 && int(vehicle.TotalKilometers) >= schedule.NextDueMileage
-			
+
 			// Check time
 			timeDue := schedule.NextDueDate != nil && time.Now().After(*schedule.NextDueDate)
 
 			if mileageDue || timeDue {
 				dueSchedules = append(dueSchedules, schedule)
-				
+
 				// Create alert (placeholder logic)
 				// In real system, this would trigger a notification
 				fmt.Printf("Maintenance Due: Vehicle %s needs %s\n", vehicle.LicensePlate, schedule.MaintenanceTask.Name)
@@ -135,7 +135,7 @@ func (s *MaintenanceService) ResolveWorkOrder(ctx context.Context, workOrderID u
 
 		// Check if there are other open work orders for this vehicle
 		var count int64
-		tx.Model(&models.WorkOrder{}).Where("vehicle_id = ? AND status IN ?", workOrder.VehicleID, []string{"OPEN", "IN_PROGRESS"}).Count(&count)
+		_ = tx.Model(&models.WorkOrder{}).Where("vehicle_id = ? AND status IN ?", workOrder.VehicleID, []string{"OPEN", "IN_PROGRESS"}).Count(&count).Error
 
 		// If no other open work orders, set vehicle status back to ACTIVE
 		if count == 0 {
@@ -150,15 +150,15 @@ func (s *MaintenanceService) ResolveWorkOrder(ctx context.Context, workOrderID u
 			var schedule models.ServiceSchedule
 			if err := tx.Where("vehicle_id = ? AND maintenance_task_id = ?", workOrder.VehicleID, *workOrder.MaintenanceTaskID).
 				First(&schedule).Error; err == nil {
-				
+
 				// Update schedule
 				schedule.LastPerformedAt = &now
-				
+
 				// Get current vehicle mileage
 				var vehicle models.Vehicle
-				tx.First(&vehicle, workOrder.VehicleID)
+				_ = tx.First(&vehicle, workOrder.VehicleID)
 				schedule.LastMileage = int(vehicle.TotalKilometers)
-				
+
 				// Calculate next due
 				if schedule.IntervalMileage > 0 {
 					schedule.NextDueMileage = schedule.LastMileage + schedule.IntervalMileage
@@ -167,8 +167,8 @@ func (s *MaintenanceService) ResolveWorkOrder(ctx context.Context, workOrderID u
 					nextDate := now.AddDate(0, schedule.IntervalMonths, 0)
 					schedule.NextDueDate = &nextDate
 				}
-				
-				tx.Save(&schedule)
+
+				_ = tx.Save(&schedule)
 			}
 		}
 

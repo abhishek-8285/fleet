@@ -39,7 +39,7 @@ func (m *MQTTClient) PublishTelemetry(vehicleID string, data TelemetryData) {
 	payload, _ := json.Marshal(data)
 
 	token := m.client.Publish(topic, 0, false, payload)
-	token.Wait()
+	_ = token.Wait()
 }
 
 func (m *MQTTClient) Disconnect() {

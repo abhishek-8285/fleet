@@ -3,6 +3,7 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -35,7 +36,7 @@ func SetupTestRouter() (*SimpleTestFramework, error) {
 	}
 
 	// Auto-migrate core models
-	db.AutoMigrate(
+	err = db.AutoMigrate(
 		&models.UserAccount{},
 		&models.Driver{},
 		&models.Vehicle{},
@@ -47,6 +48,9 @@ func SetupTestRouter() (*SimpleTestFramework, error) {
 		&models.Upload{},
 		&models.AuditLog{},
 	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to migrate test database: %w", err)
+	}
 
 	// Create test config
 	cfg := &config.Config{
@@ -241,7 +245,8 @@ func TestAuthFlow(t *testing.T) {
 		assert.Equal(t, 200, w.Code)
 
 		var response map[string]interface{}
-		json.Unmarshal(w.Body.Bytes(), &response)
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
 
 		accessTokenValue, exists := response["access_token"]
 		if exists {

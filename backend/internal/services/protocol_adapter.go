@@ -324,7 +324,7 @@ func (pa *ProtocolAdapter) loadPartnerSubscriptions() {
 	// Example partner registrations:
 
 	// ERP System Integration
-	pa.RegisterPartner(PartnerSubscriber{
+	_ = pa.RegisterPartner(PartnerSubscriber{
 		PartnerID:   "sap-erp-001",
 		PartnerName: "SAP ERP System",
 		Protocol:    "grpc",
@@ -335,7 +335,7 @@ func (pa *ProtocolAdapter) loadPartnerSubscriptions() {
 	})
 
 	// Logistics Partner
-	pa.RegisterPartner(PartnerSubscriber{
+	_ = pa.RegisterPartner(PartnerSubscriber{
 		PartnerID:   "logistics-partner-001",
 		PartnerName: "DHL Logistics API",
 		Protocol:    "rest",
@@ -346,7 +346,7 @@ func (pa *ProtocolAdapter) loadPartnerSubscriptions() {
 	})
 
 	// Insurance Company
-	pa.RegisterPartner(PartnerSubscriber{
+	_ = pa.RegisterPartner(PartnerSubscriber{
 		PartnerID:   "insurance-001",
 		PartnerName: "Fleet Insurance Provider",
 		Protocol:    "webhook",
