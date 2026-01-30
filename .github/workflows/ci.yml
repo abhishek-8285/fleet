@@ -8,17 +8,11 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      # 1. SECURITY SCAN (Trivy - Professional Grade)
+      # 1. SECURITY SCAN (Trivy - Already installed on host)
       - name: 🛡️ Security & Secret Scan
         run: |
-          echo "Installing/Updating Trivy Security Scanner..."
-          if ! command -v trivy &> /dev/null; then
-             curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-          fi
-          
-          echo "Running Security Audit (Detecting real secrets and CVEs)..."
-          # We use Trivy's built-in 'secret' scanner which is much smarter than grep.
-          # It ignores binary files and common false positives automatically.
+          echo "Running Professional Security Audit..."
+          # Trivy is pre-installed in /usr/local/bin by admin
           trivy fs . \
             --scanners vuln,secret \
             --exit-code 1 \
