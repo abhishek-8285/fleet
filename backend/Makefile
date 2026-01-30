@@ -5,6 +5,10 @@ PROTO_DIR = proto
 GEN_DIR = proto/gen
 BUF_VERSION = v1.28.1
 
+# Ensure Go bin is in PATH for CI
+GOPATH = $(shell go env GOPATH)
+export PATH := $(GOPATH)/bin:$(PATH)
+
 # Default target
 .PHONY: all
 all: clean gen-proto build
