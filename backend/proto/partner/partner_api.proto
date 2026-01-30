@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package fleetflow.partner.v1;
-option go_package = "github.com/fleetflow/backend/proto/partner";
+option go_package = "github.com/fleetflow/backend/proto/gen/partner";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";

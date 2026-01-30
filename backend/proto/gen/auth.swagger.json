@@ -144,7 +144,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/fleetflowV1AuthResponse"
+              "$ref": "#/definitions/v1AuthResponse"
             }
           },
           "default": {
@@ -160,7 +160,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/fleetflowV1RefreshTokenRequest"
+              "$ref": "#/definitions/v1RefreshTokenRequest"
             }
           }
         ],
@@ -177,7 +177,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/fleetflowV1AuthResponse"
+              "$ref": "#/definitions/v1AuthResponse"
             }
           },
           "default": {

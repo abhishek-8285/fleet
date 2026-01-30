@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.0
 // - protoc             v3.21.12
-// source: partner_api.proto
+// source: partner/partner_api.proto
 
 package partner
 
@@ -1100,5 +1100,5 @@ var FleetPartnerAPI_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "partner_api.proto",
+	Metadata: "partner/partner_api.proto",
 }

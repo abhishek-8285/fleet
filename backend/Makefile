@@ -39,6 +39,7 @@ gen-proto: check-protoc clean
 	@mkdir -p $(GEN_DIR)
 	
 	# Generate Go protobuf code
+	# Generate internal protos
 	protoc \
 		--proto_path=$(PROTO_DIR) \
 		--proto_path=third_party \
@@ -50,6 +51,19 @@ gen-proto: check-protoc clean
 		--grpc-gateway_opt=paths=source_relative \
 		--openapiv2_out=$(GEN_DIR) \
 		$(PROTO_DIR)/*.proto
+
+	# Generate partner protos
+	protoc \
+		--proto_path=$(PROTO_DIR) \
+		--proto_path=third_party \
+		--go_out=$(GEN_DIR) \
+		--go_opt=paths=source_relative \
+		--go-grpc_out=$(GEN_DIR) \
+		--go-grpc_opt=paths=source_relative \
+		--grpc-gateway_out=$(GEN_DIR) \
+		--grpc-gateway_opt=paths=source_relative \
+		--openapiv2_out=$(GEN_DIR) \
+		$(PROTO_DIR)/partner/*.proto
 	
 	@echo "✅ gRPC code generated successfully"
 	@echo "📁 Generated files in: $(GEN_DIR)/"

@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v3.21.12
-// source: partner_api.proto
+// source: partner/partner_api.proto
 
 package partner
 
@@ -35,7 +35,7 @@ type AuthRequest struct {
 
 func (x *AuthRequest) Reset() {
 	*x = AuthRequest{}
-	mi := &file_partner_api_proto_msgTypes[0]
+	mi := &file_partner_partner_api_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47,7 +47,7 @@ func (x *AuthRequest) String() string {
 func (*AuthRequest) ProtoMessage() {}
 
 func (x *AuthRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[0]
+	mi := &file_partner_partner_api_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60,7 +60,7 @@ func (x *AuthRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AuthRequest.ProtoReflect.Descriptor instead.
 func (*AuthRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{0}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *AuthRequest) GetApiKey() string {
@@ -96,7 +96,7 @@ type AuthResponse struct {
 
 func (x *AuthResponse) Reset() {
 	*x = AuthResponse{}
-	mi := &file_partner_api_proto_msgTypes[1]
+	mi := &file_partner_partner_api_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -108,7 +108,7 @@ func (x *AuthResponse) String() string {
 func (*AuthResponse) ProtoMessage() {}
 
 func (x *AuthResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[1]
+	mi := &file_partner_partner_api_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -121,7 +121,7 @@ func (x *AuthResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AuthResponse.ProtoReflect.Descriptor instead.
 func (*AuthResponse) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{1}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *AuthResponse) GetAccessToken() string {
@@ -161,7 +161,7 @@ type RefreshTokenRequest struct {
 
 func (x *RefreshTokenRequest) Reset() {
 	*x = RefreshTokenRequest{}
-	mi := &file_partner_api_proto_msgTypes[2]
+	mi := &file_partner_partner_api_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -173,7 +173,7 @@ func (x *RefreshTokenRequest) String() string {
 func (*RefreshTokenRequest) ProtoMessage() {}
 
 func (x *RefreshTokenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[2]
+	mi := &file_partner_partner_api_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -186,7 +186,7 @@ func (x *RefreshTokenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RefreshTokenRequest.ProtoReflect.Descriptor instead.
 func (*RefreshTokenRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{2}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RefreshTokenRequest) GetRefreshToken() string {
@@ -207,7 +207,7 @@ type FleetOverviewRequest struct {
 
 func (x *FleetOverviewRequest) Reset() {
 	*x = FleetOverviewRequest{}
-	mi := &file_partner_api_proto_msgTypes[3]
+	mi := &file_partner_partner_api_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -219,7 +219,7 @@ func (x *FleetOverviewRequest) String() string {
 func (*FleetOverviewRequest) ProtoMessage() {}
 
 func (x *FleetOverviewRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[3]
+	mi := &file_partner_partner_api_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -232,7 +232,7 @@ func (x *FleetOverviewRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FleetOverviewRequest.ProtoReflect.Descriptor instead.
 func (*FleetOverviewRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{3}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *FleetOverviewRequest) GetPartnerId() string {
@@ -266,7 +266,7 @@ type FleetOverview struct {
 
 func (x *FleetOverview) Reset() {
 	*x = FleetOverview{}
-	mi := &file_partner_api_proto_msgTypes[4]
+	mi := &file_partner_partner_api_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -278,7 +278,7 @@ func (x *FleetOverview) String() string {
 func (*FleetOverview) ProtoMessage() {}
 
 func (x *FleetOverview) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[4]
+	mi := &file_partner_partner_api_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -291,7 +291,7 @@ func (x *FleetOverview) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FleetOverview.ProtoReflect.Descriptor instead.
 func (*FleetOverview) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{4}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *FleetOverview) GetTotalVehicles() int32 {
@@ -370,7 +370,7 @@ type FleetSummary struct {
 
 func (x *FleetSummary) Reset() {
 	*x = FleetSummary{}
-	mi := &file_partner_api_proto_msgTypes[5]
+	mi := &file_partner_partner_api_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -382,7 +382,7 @@ func (x *FleetSummary) String() string {
 func (*FleetSummary) ProtoMessage() {}
 
 func (x *FleetSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[5]
+	mi := &file_partner_partner_api_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -395,7 +395,7 @@ func (x *FleetSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FleetSummary.ProtoReflect.Descriptor instead.
 func (*FleetSummary) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{5}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *FleetSummary) GetFleetId() string {
@@ -447,7 +447,7 @@ type VehicleListRequest struct {
 
 func (x *VehicleListRequest) Reset() {
 	*x = VehicleListRequest{}
-	mi := &file_partner_api_proto_msgTypes[6]
+	mi := &file_partner_partner_api_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -459,7 +459,7 @@ func (x *VehicleListRequest) String() string {
 func (*VehicleListRequest) ProtoMessage() {}
 
 func (x *VehicleListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[6]
+	mi := &file_partner_partner_api_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -472,7 +472,7 @@ func (x *VehicleListRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VehicleListRequest.ProtoReflect.Descriptor instead.
 func (*VehicleListRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{6}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *VehicleListRequest) GetPartnerId() string {
@@ -522,7 +522,7 @@ type VehicleListResponse struct {
 
 func (x *VehicleListResponse) Reset() {
 	*x = VehicleListResponse{}
-	mi := &file_partner_api_proto_msgTypes[7]
+	mi := &file_partner_partner_api_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -534,7 +534,7 @@ func (x *VehicleListResponse) String() string {
 func (*VehicleListResponse) ProtoMessage() {}
 
 func (x *VehicleListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[7]
+	mi := &file_partner_partner_api_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -547,7 +547,7 @@ func (x *VehicleListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VehicleListResponse.ProtoReflect.Descriptor instead.
 func (*VehicleListResponse) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{7}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *VehicleListResponse) GetVehicles() []*VehicleSummary {
@@ -594,7 +594,7 @@ type VehicleSummary struct {
 
 func (x *VehicleSummary) Reset() {
 	*x = VehicleSummary{}
-	mi := &file_partner_api_proto_msgTypes[8]
+	mi := &file_partner_partner_api_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -606,7 +606,7 @@ func (x *VehicleSummary) String() string {
 func (*VehicleSummary) ProtoMessage() {}
 
 func (x *VehicleSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[8]
+	mi := &file_partner_partner_api_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -619,7 +619,7 @@ func (x *VehicleSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VehicleSummary.ProtoReflect.Descriptor instead.
 func (*VehicleSummary) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{8}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *VehicleSummary) GetVehicleId() string {
@@ -689,7 +689,7 @@ type VehicleDetailsRequest struct {
 
 func (x *VehicleDetailsRequest) Reset() {
 	*x = VehicleDetailsRequest{}
-	mi := &file_partner_api_proto_msgTypes[9]
+	mi := &file_partner_partner_api_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -701,7 +701,7 @@ func (x *VehicleDetailsRequest) String() string {
 func (*VehicleDetailsRequest) ProtoMessage() {}
 
 func (x *VehicleDetailsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[9]
+	mi := &file_partner_partner_api_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -714,7 +714,7 @@ func (x *VehicleDetailsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VehicleDetailsRequest.ProtoReflect.Descriptor instead.
 func (*VehicleDetailsRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{9}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *VehicleDetailsRequest) GetVehicleId() string {
@@ -758,7 +758,7 @@ type VehicleDetails struct {
 
 func (x *VehicleDetails) Reset() {
 	*x = VehicleDetails{}
-	mi := &file_partner_api_proto_msgTypes[10]
+	mi := &file_partner_partner_api_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -770,7 +770,7 @@ func (x *VehicleDetails) String() string {
 func (*VehicleDetails) ProtoMessage() {}
 
 func (x *VehicleDetails) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[10]
+	mi := &file_partner_partner_api_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -783,7 +783,7 @@ func (x *VehicleDetails) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VehicleDetails.ProtoReflect.Descriptor instead.
 func (*VehicleDetails) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{10}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *VehicleDetails) GetVehicleId() string {
@@ -883,7 +883,7 @@ type DriverListRequest struct {
 
 func (x *DriverListRequest) Reset() {
 	*x = DriverListRequest{}
-	mi := &file_partner_api_proto_msgTypes[11]
+	mi := &file_partner_partner_api_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -895,7 +895,7 @@ func (x *DriverListRequest) String() string {
 func (*DriverListRequest) ProtoMessage() {}
 
 func (x *DriverListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[11]
+	mi := &file_partner_partner_api_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -908,7 +908,7 @@ func (x *DriverListRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DriverListRequest.ProtoReflect.Descriptor instead.
 func (*DriverListRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{11}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *DriverListRequest) GetPartnerId() string {
@@ -951,7 +951,7 @@ type DriverListResponse struct {
 
 func (x *DriverListResponse) Reset() {
 	*x = DriverListResponse{}
-	mi := &file_partner_api_proto_msgTypes[12]
+	mi := &file_partner_partner_api_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -963,7 +963,7 @@ func (x *DriverListResponse) String() string {
 func (*DriverListResponse) ProtoMessage() {}
 
 func (x *DriverListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[12]
+	mi := &file_partner_partner_api_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -976,7 +976,7 @@ func (x *DriverListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DriverListResponse.ProtoReflect.Descriptor instead.
 func (*DriverListResponse) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{12}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *DriverListResponse) GetDrivers() []*DriverSummary {
@@ -1024,7 +1024,7 @@ type DriverSummary struct {
 
 func (x *DriverSummary) Reset() {
 	*x = DriverSummary{}
-	mi := &file_partner_api_proto_msgTypes[13]
+	mi := &file_partner_partner_api_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1036,7 +1036,7 @@ func (x *DriverSummary) String() string {
 func (*DriverSummary) ProtoMessage() {}
 
 func (x *DriverSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[13]
+	mi := &file_partner_partner_api_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1049,7 +1049,7 @@ func (x *DriverSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DriverSummary.ProtoReflect.Descriptor instead.
 func (*DriverSummary) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{13}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *DriverSummary) GetDriverId() string {
@@ -1135,7 +1135,7 @@ type CreateTripRequest struct {
 
 func (x *CreateTripRequest) Reset() {
 	*x = CreateTripRequest{}
-	mi := &file_partner_api_proto_msgTypes[14]
+	mi := &file_partner_partner_api_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1147,7 +1147,7 @@ func (x *CreateTripRequest) String() string {
 func (*CreateTripRequest) ProtoMessage() {}
 
 func (x *CreateTripRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[14]
+	mi := &file_partner_partner_api_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1160,7 +1160,7 @@ func (x *CreateTripRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTripRequest.ProtoReflect.Descriptor instead.
 func (*CreateTripRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{14}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CreateTripRequest) GetPartnerId() string {
@@ -1250,7 +1250,7 @@ type BulkTripRequest struct {
 
 func (x *BulkTripRequest) Reset() {
 	*x = BulkTripRequest{}
-	mi := &file_partner_api_proto_msgTypes[15]
+	mi := &file_partner_partner_api_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1262,7 +1262,7 @@ func (x *BulkTripRequest) String() string {
 func (*BulkTripRequest) ProtoMessage() {}
 
 func (x *BulkTripRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[15]
+	mi := &file_partner_partner_api_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1275,7 +1275,7 @@ func (x *BulkTripRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BulkTripRequest.ProtoReflect.Descriptor instead.
 func (*BulkTripRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{15}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *BulkTripRequest) GetPartnerId() string {
@@ -1305,7 +1305,7 @@ type BulkTripResponse struct {
 
 func (x *BulkTripResponse) Reset() {
 	*x = BulkTripResponse{}
-	mi := &file_partner_api_proto_msgTypes[16]
+	mi := &file_partner_partner_api_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1317,7 +1317,7 @@ func (x *BulkTripResponse) String() string {
 func (*BulkTripResponse) ProtoMessage() {}
 
 func (x *BulkTripResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[16]
+	mi := &file_partner_partner_api_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1330,7 +1330,7 @@ func (x *BulkTripResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BulkTripResponse.ProtoReflect.Descriptor instead.
 func (*BulkTripResponse) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{16}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *BulkTripResponse) GetSuccessfulTrips() []*TripResponse {
@@ -1379,7 +1379,7 @@ type TripError struct {
 
 func (x *TripError) Reset() {
 	*x = TripError{}
-	mi := &file_partner_api_proto_msgTypes[17]
+	mi := &file_partner_partner_api_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1391,7 +1391,7 @@ func (x *TripError) String() string {
 func (*TripError) ProtoMessage() {}
 
 func (x *TripError) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[17]
+	mi := &file_partner_partner_api_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1404,7 +1404,7 @@ func (x *TripError) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TripError.ProtoReflect.Descriptor instead.
 func (*TripError) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{17}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *TripError) GetExternalTripId() string {
@@ -1441,7 +1441,7 @@ type TripResponse struct {
 
 func (x *TripResponse) Reset() {
 	*x = TripResponse{}
-	mi := &file_partner_api_proto_msgTypes[18]
+	mi := &file_partner_partner_api_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1453,7 +1453,7 @@ func (x *TripResponse) String() string {
 func (*TripResponse) ProtoMessage() {}
 
 func (x *TripResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[18]
+	mi := &file_partner_partner_api_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1466,7 +1466,7 @@ func (x *TripResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TripResponse.ProtoReflect.Descriptor instead.
 func (*TripResponse) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{18}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *TripResponse) GetTripId() string {
@@ -1516,7 +1516,7 @@ type LocationStreamRequest struct {
 
 func (x *LocationStreamRequest) Reset() {
 	*x = LocationStreamRequest{}
-	mi := &file_partner_api_proto_msgTypes[19]
+	mi := &file_partner_partner_api_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1528,7 +1528,7 @@ func (x *LocationStreamRequest) String() string {
 func (*LocationStreamRequest) ProtoMessage() {}
 
 func (x *LocationStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[19]
+	mi := &file_partner_partner_api_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1541,7 +1541,7 @@ func (x *LocationStreamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LocationStreamRequest.ProtoReflect.Descriptor instead.
 func (*LocationStreamRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{19}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *LocationStreamRequest) GetPartnerId() string {
@@ -1581,7 +1581,7 @@ type VehicleLocationUpdate struct {
 
 func (x *VehicleLocationUpdate) Reset() {
 	*x = VehicleLocationUpdate{}
-	mi := &file_partner_api_proto_msgTypes[20]
+	mi := &file_partner_partner_api_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1593,7 +1593,7 @@ func (x *VehicleLocationUpdate) String() string {
 func (*VehicleLocationUpdate) ProtoMessage() {}
 
 func (x *VehicleLocationUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[20]
+	mi := &file_partner_partner_api_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1606,7 +1606,7 @@ func (x *VehicleLocationUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VehicleLocationUpdate.ProtoReflect.Descriptor instead.
 func (*VehicleLocationUpdate) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{20}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *VehicleLocationUpdate) GetVehicleId() string {
@@ -1675,7 +1675,7 @@ type TripStreamRequest struct {
 
 func (x *TripStreamRequest) Reset() {
 	*x = TripStreamRequest{}
-	mi := &file_partner_api_proto_msgTypes[21]
+	mi := &file_partner_partner_api_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1687,7 +1687,7 @@ func (x *TripStreamRequest) String() string {
 func (*TripStreamRequest) ProtoMessage() {}
 
 func (x *TripStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[21]
+	mi := &file_partner_partner_api_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1700,7 +1700,7 @@ func (x *TripStreamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TripStreamRequest.ProtoReflect.Descriptor instead.
 func (*TripStreamRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{21}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *TripStreamRequest) GetPartnerId() string {
@@ -1733,7 +1733,7 @@ type TripStatusUpdate struct {
 
 func (x *TripStatusUpdate) Reset() {
 	*x = TripStatusUpdate{}
-	mi := &file_partner_api_proto_msgTypes[22]
+	mi := &file_partner_partner_api_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1745,7 +1745,7 @@ func (x *TripStatusUpdate) String() string {
 func (*TripStatusUpdate) ProtoMessage() {}
 
 func (x *TripStatusUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[22]
+	mi := &file_partner_partner_api_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1758,7 +1758,7 @@ func (x *TripStatusUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TripStatusUpdate.ProtoReflect.Descriptor instead.
 func (*TripStatusUpdate) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{22}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *TripStatusUpdate) GetTripId() string {
@@ -1828,7 +1828,7 @@ type AlertStreamRequest struct {
 
 func (x *AlertStreamRequest) Reset() {
 	*x = AlertStreamRequest{}
-	mi := &file_partner_api_proto_msgTypes[23]
+	mi := &file_partner_partner_api_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1840,7 +1840,7 @@ func (x *AlertStreamRequest) String() string {
 func (*AlertStreamRequest) ProtoMessage() {}
 
 func (x *AlertStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[23]
+	mi := &file_partner_partner_api_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1853,7 +1853,7 @@ func (x *AlertStreamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AlertStreamRequest.ProtoReflect.Descriptor instead.
 func (*AlertStreamRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{23}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *AlertStreamRequest) GetPartnerId() string {
@@ -1896,7 +1896,7 @@ type FleetAlert struct {
 
 func (x *FleetAlert) Reset() {
 	*x = FleetAlert{}
-	mi := &file_partner_api_proto_msgTypes[24]
+	mi := &file_partner_partner_api_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1908,7 +1908,7 @@ func (x *FleetAlert) String() string {
 func (*FleetAlert) ProtoMessage() {}
 
 func (x *FleetAlert) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[24]
+	mi := &file_partner_partner_api_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1921,7 +1921,7 @@ func (x *FleetAlert) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FleetAlert.ProtoReflect.Descriptor instead.
 func (*FleetAlert) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{24}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *FleetAlert) GetAlertId() string {
@@ -2015,7 +2015,7 @@ type LocationHistoryRequest struct {
 
 func (x *LocationHistoryRequest) Reset() {
 	*x = LocationHistoryRequest{}
-	mi := &file_partner_api_proto_msgTypes[25]
+	mi := &file_partner_partner_api_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2027,7 +2027,7 @@ func (x *LocationHistoryRequest) String() string {
 func (*LocationHistoryRequest) ProtoMessage() {}
 
 func (x *LocationHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[25]
+	mi := &file_partner_partner_api_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2040,7 +2040,7 @@ func (x *LocationHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LocationHistoryRequest.ProtoReflect.Descriptor instead.
 func (*LocationHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{25}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *LocationHistoryRequest) GetPartnerId() string {
@@ -2089,7 +2089,7 @@ type LocationHistoryResponse struct {
 
 func (x *LocationHistoryResponse) Reset() {
 	*x = LocationHistoryResponse{}
-	mi := &file_partner_api_proto_msgTypes[26]
+	mi := &file_partner_partner_api_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2101,7 +2101,7 @@ func (x *LocationHistoryResponse) String() string {
 func (*LocationHistoryResponse) ProtoMessage() {}
 
 func (x *LocationHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[26]
+	mi := &file_partner_partner_api_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2114,7 +2114,7 @@ func (x *LocationHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LocationHistoryResponse.ProtoReflect.Descriptor instead.
 func (*LocationHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{26}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *LocationHistoryResponse) GetPoints() []*LocationPoint {
@@ -2150,7 +2150,7 @@ type LocationPoint struct {
 
 func (x *LocationPoint) Reset() {
 	*x = LocationPoint{}
-	mi := &file_partner_api_proto_msgTypes[27]
+	mi := &file_partner_partner_api_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2162,7 +2162,7 @@ func (x *LocationPoint) String() string {
 func (*LocationPoint) ProtoMessage() {}
 
 func (x *LocationPoint) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[27]
+	mi := &file_partner_partner_api_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2175,7 +2175,7 @@ func (x *LocationPoint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LocationPoint.ProtoReflect.Descriptor instead.
 func (*LocationPoint) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{27}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *LocationPoint) GetLocation() *Location {
@@ -2219,7 +2219,7 @@ type UtilizationRequest struct {
 
 func (x *UtilizationRequest) Reset() {
 	*x = UtilizationRequest{}
-	mi := &file_partner_api_proto_msgTypes[28]
+	mi := &file_partner_partner_api_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2231,7 +2231,7 @@ func (x *UtilizationRequest) String() string {
 func (*UtilizationRequest) ProtoMessage() {}
 
 func (x *UtilizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[28]
+	mi := &file_partner_partner_api_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2244,7 +2244,7 @@ func (x *UtilizationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UtilizationRequest.ProtoReflect.Descriptor instead.
 func (*UtilizationRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{28}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *UtilizationRequest) GetPartnerId() string {
@@ -2288,7 +2288,7 @@ type UtilizationReport struct {
 
 func (x *UtilizationReport) Reset() {
 	*x = UtilizationReport{}
-	mi := &file_partner_api_proto_msgTypes[29]
+	mi := &file_partner_partner_api_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2300,7 +2300,7 @@ func (x *UtilizationReport) String() string {
 func (*UtilizationReport) ProtoMessage() {}
 
 func (x *UtilizationReport) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[29]
+	mi := &file_partner_partner_api_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2313,7 +2313,7 @@ func (x *UtilizationReport) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UtilizationReport.ProtoReflect.Descriptor instead.
 func (*UtilizationReport) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{29}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *UtilizationReport) GetFleetUtilizationPercentage() float64 {
@@ -2366,7 +2366,7 @@ type VehicleUtilization struct {
 
 func (x *VehicleUtilization) Reset() {
 	*x = VehicleUtilization{}
-	mi := &file_partner_api_proto_msgTypes[30]
+	mi := &file_partner_partner_api_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2378,7 +2378,7 @@ func (x *VehicleUtilization) String() string {
 func (*VehicleUtilization) ProtoMessage() {}
 
 func (x *VehicleUtilization) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[30]
+	mi := &file_partner_partner_api_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2391,7 +2391,7 @@ func (x *VehicleUtilization) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VehicleUtilization.ProtoReflect.Descriptor instead.
 func (*VehicleUtilization) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{30}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *VehicleUtilization) GetVehicleId() string {
@@ -2457,7 +2457,7 @@ type EventSubscriptionRequest struct {
 
 func (x *EventSubscriptionRequest) Reset() {
 	*x = EventSubscriptionRequest{}
-	mi := &file_partner_api_proto_msgTypes[31]
+	mi := &file_partner_partner_api_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2469,7 +2469,7 @@ func (x *EventSubscriptionRequest) String() string {
 func (*EventSubscriptionRequest) ProtoMessage() {}
 
 func (x *EventSubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[31]
+	mi := &file_partner_partner_api_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2482,7 +2482,7 @@ func (x *EventSubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventSubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*EventSubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{31}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *EventSubscriptionRequest) GetPartnerId() string {
@@ -2532,7 +2532,7 @@ type SubscriptionResponse struct {
 
 func (x *SubscriptionResponse) Reset() {
 	*x = SubscriptionResponse{}
-	mi := &file_partner_api_proto_msgTypes[32]
+	mi := &file_partner_partner_api_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2544,7 +2544,7 @@ func (x *SubscriptionResponse) String() string {
 func (*SubscriptionResponse) ProtoMessage() {}
 
 func (x *SubscriptionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[32]
+	mi := &file_partner_partner_api_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2557,7 +2557,7 @@ func (x *SubscriptionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscriptionResponse.ProtoReflect.Descriptor instead.
 func (*SubscriptionResponse) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{32}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *SubscriptionResponse) GetSubscriptionId() string {
@@ -2603,7 +2603,7 @@ type Location struct {
 
 func (x *Location) Reset() {
 	*x = Location{}
-	mi := &file_partner_api_proto_msgTypes[33]
+	mi := &file_partner_partner_api_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2615,7 +2615,7 @@ func (x *Location) String() string {
 func (*Location) ProtoMessage() {}
 
 func (x *Location) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[33]
+	mi := &file_partner_partner_api_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2628,7 +2628,7 @@ func (x *Location) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Location.ProtoReflect.Descriptor instead.
 func (*Location) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{33}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *Location) GetLatitude() float64 {
@@ -2686,7 +2686,7 @@ type VehicleSpecifications struct {
 
 func (x *VehicleSpecifications) Reset() {
 	*x = VehicleSpecifications{}
-	mi := &file_partner_api_proto_msgTypes[34]
+	mi := &file_partner_partner_api_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2698,7 +2698,7 @@ func (x *VehicleSpecifications) String() string {
 func (*VehicleSpecifications) ProtoMessage() {}
 
 func (x *VehicleSpecifications) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[34]
+	mi := &file_partner_partner_api_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2711,7 +2711,7 @@ func (x *VehicleSpecifications) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VehicleSpecifications.ProtoReflect.Descriptor instead.
 func (*VehicleSpecifications) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{34}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *VehicleSpecifications) GetEngineType() string {
@@ -2762,7 +2762,7 @@ type VehicleLocation struct {
 
 func (x *VehicleLocation) Reset() {
 	*x = VehicleLocation{}
-	mi := &file_partner_api_proto_msgTypes[35]
+	mi := &file_partner_partner_api_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2774,7 +2774,7 @@ func (x *VehicleLocation) String() string {
 func (*VehicleLocation) ProtoMessage() {}
 
 func (x *VehicleLocation) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[35]
+	mi := &file_partner_partner_api_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2787,7 +2787,7 @@ func (x *VehicleLocation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VehicleLocation.ProtoReflect.Descriptor instead.
 func (*VehicleLocation) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{35}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *VehicleLocation) GetLocation() *Location {
@@ -2842,7 +2842,7 @@ type Trip struct {
 
 func (x *Trip) Reset() {
 	*x = Trip{}
-	mi := &file_partner_api_proto_msgTypes[36]
+	mi := &file_partner_partner_api_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2854,7 +2854,7 @@ func (x *Trip) String() string {
 func (*Trip) ProtoMessage() {}
 
 func (x *Trip) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[36]
+	mi := &file_partner_partner_api_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2867,7 +2867,7 @@ func (x *Trip) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Trip.ProtoReflect.Descriptor instead.
 func (*Trip) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{36}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *Trip) GetTripId() string {
@@ -2948,7 +2948,7 @@ type MaintenanceRecord struct {
 
 func (x *MaintenanceRecord) Reset() {
 	*x = MaintenanceRecord{}
-	mi := &file_partner_api_proto_msgTypes[37]
+	mi := &file_partner_partner_api_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2960,7 +2960,7 @@ func (x *MaintenanceRecord) String() string {
 func (*MaintenanceRecord) ProtoMessage() {}
 
 func (x *MaintenanceRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[37]
+	mi := &file_partner_partner_api_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2973,7 +2973,7 @@ func (x *MaintenanceRecord) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MaintenanceRecord.ProtoReflect.Descriptor instead.
 func (*MaintenanceRecord) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{37}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *MaintenanceRecord) GetMaintenanceId() string {
@@ -3041,7 +3041,7 @@ type VehicleMetrics struct {
 
 func (x *VehicleMetrics) Reset() {
 	*x = VehicleMetrics{}
-	mi := &file_partner_api_proto_msgTypes[38]
+	mi := &file_partner_partner_api_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3053,7 +3053,7 @@ func (x *VehicleMetrics) String() string {
 func (*VehicleMetrics) ProtoMessage() {}
 
 func (x *VehicleMetrics) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[38]
+	mi := &file_partner_partner_api_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3066,7 +3066,7 @@ func (x *VehicleMetrics) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VehicleMetrics.ProtoReflect.Descriptor instead.
 func (*VehicleMetrics) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{38}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *VehicleMetrics) GetAverageFuelEfficiency() float64 {
@@ -3135,7 +3135,7 @@ type FuelStreamRequest struct {
 
 func (x *FuelStreamRequest) Reset() {
 	*x = FuelStreamRequest{}
-	mi := &file_partner_api_proto_msgTypes[39]
+	mi := &file_partner_partner_api_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3147,7 +3147,7 @@ func (x *FuelStreamRequest) String() string {
 func (*FuelStreamRequest) ProtoMessage() {}
 
 func (x *FuelStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[39]
+	mi := &file_partner_partner_api_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3160,7 +3160,7 @@ func (x *FuelStreamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FuelStreamRequest.ProtoReflect.Descriptor instead.
 func (*FuelStreamRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{39}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *FuelStreamRequest) GetPartnerId() string {
@@ -3195,7 +3195,7 @@ type FuelEvent struct {
 
 func (x *FuelEvent) Reset() {
 	*x = FuelEvent{}
-	mi := &file_partner_api_proto_msgTypes[40]
+	mi := &file_partner_partner_api_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3207,7 +3207,7 @@ func (x *FuelEvent) String() string {
 func (*FuelEvent) ProtoMessage() {}
 
 func (x *FuelEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[40]
+	mi := &file_partner_partner_api_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3220,7 +3220,7 @@ func (x *FuelEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FuelEvent.ProtoReflect.Descriptor instead.
 func (*FuelEvent) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{40}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *FuelEvent) GetEventId() string {
@@ -3305,7 +3305,7 @@ type TripDetailsRequest struct {
 
 func (x *TripDetailsRequest) Reset() {
 	*x = TripDetailsRequest{}
-	mi := &file_partner_api_proto_msgTypes[41]
+	mi := &file_partner_partner_api_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3317,7 +3317,7 @@ func (x *TripDetailsRequest) String() string {
 func (*TripDetailsRequest) ProtoMessage() {}
 
 func (x *TripDetailsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[41]
+	mi := &file_partner_partner_api_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3330,7 +3330,7 @@ func (x *TripDetailsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TripDetailsRequest.ProtoReflect.Descriptor instead.
 func (*TripDetailsRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{41}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *TripDetailsRequest) GetTripId() string {
@@ -3366,7 +3366,7 @@ type TripDetails struct {
 
 func (x *TripDetails) Reset() {
 	*x = TripDetails{}
-	mi := &file_partner_api_proto_msgTypes[42]
+	mi := &file_partner_partner_api_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3378,7 +3378,7 @@ func (x *TripDetails) String() string {
 func (*TripDetails) ProtoMessage() {}
 
 func (x *TripDetails) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[42]
+	mi := &file_partner_partner_api_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3391,7 +3391,7 @@ func (x *TripDetails) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TripDetails.ProtoReflect.Descriptor instead.
 func (*TripDetails) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{42}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *TripDetails) GetTrip() *Trip {
@@ -3436,7 +3436,7 @@ type DriverPerformanceMetrics struct {
 
 func (x *DriverPerformanceMetrics) Reset() {
 	*x = DriverPerformanceMetrics{}
-	mi := &file_partner_api_proto_msgTypes[43]
+	mi := &file_partner_partner_api_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3448,7 +3448,7 @@ func (x *DriverPerformanceMetrics) String() string {
 func (*DriverPerformanceMetrics) ProtoMessage() {}
 
 func (x *DriverPerformanceMetrics) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[43]
+	mi := &file_partner_partner_api_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3461,7 +3461,7 @@ func (x *DriverPerformanceMetrics) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DriverPerformanceMetrics.ProtoReflect.Descriptor instead.
 func (*DriverPerformanceMetrics) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{43}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *DriverPerformanceMetrics) GetAverageSpeed() float64 {
@@ -3518,7 +3518,7 @@ type UpdateTripStatusRequest struct {
 
 func (x *UpdateTripStatusRequest) Reset() {
 	*x = UpdateTripStatusRequest{}
-	mi := &file_partner_api_proto_msgTypes[44]
+	mi := &file_partner_partner_api_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3530,7 +3530,7 @@ func (x *UpdateTripStatusRequest) String() string {
 func (*UpdateTripStatusRequest) ProtoMessage() {}
 
 func (x *UpdateTripStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[44]
+	mi := &file_partner_partner_api_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3543,7 +3543,7 @@ func (x *UpdateTripStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTripStatusRequest.ProtoReflect.Descriptor instead.
 func (*UpdateTripStatusRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{44}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *UpdateTripStatusRequest) GetTripId() string {
@@ -3584,7 +3584,7 @@ type CancelTripRequest struct {
 
 func (x *CancelTripRequest) Reset() {
 	*x = CancelTripRequest{}
-	mi := &file_partner_api_proto_msgTypes[45]
+	mi := &file_partner_partner_api_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3596,7 +3596,7 @@ func (x *CancelTripRequest) String() string {
 func (*CancelTripRequest) ProtoMessage() {}
 
 func (x *CancelTripRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[45]
+	mi := &file_partner_partner_api_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3609,7 +3609,7 @@ func (x *CancelTripRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelTripRequest.ProtoReflect.Descriptor instead.
 func (*CancelTripRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{45}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *CancelTripRequest) GetTripId() string {
@@ -3642,7 +3642,7 @@ type TripHistoryRequest struct {
 
 func (x *TripHistoryRequest) Reset() {
 	*x = TripHistoryRequest{}
-	mi := &file_partner_api_proto_msgTypes[46]
+	mi := &file_partner_partner_api_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3654,7 +3654,7 @@ func (x *TripHistoryRequest) String() string {
 func (*TripHistoryRequest) ProtoMessage() {}
 
 func (x *TripHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[46]
+	mi := &file_partner_partner_api_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3667,7 +3667,7 @@ func (x *TripHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TripHistoryRequest.ProtoReflect.Descriptor instead.
 func (*TripHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{46}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *TripHistoryRequest) GetPartnerId() string {
@@ -3731,7 +3731,7 @@ type TripHistoryResponse struct {
 
 func (x *TripHistoryResponse) Reset() {
 	*x = TripHistoryResponse{}
-	mi := &file_partner_api_proto_msgTypes[47]
+	mi := &file_partner_partner_api_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3743,7 +3743,7 @@ func (x *TripHistoryResponse) String() string {
 func (*TripHistoryResponse) ProtoMessage() {}
 
 func (x *TripHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[47]
+	mi := &file_partner_partner_api_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3756,7 +3756,7 @@ func (x *TripHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TripHistoryResponse.ProtoReflect.Descriptor instead.
 func (*TripHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{47}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *TripHistoryResponse) GetTrips() []*Trip {
@@ -3799,7 +3799,7 @@ type FuelHistoryRequest struct {
 
 func (x *FuelHistoryRequest) Reset() {
 	*x = FuelHistoryRequest{}
-	mi := &file_partner_api_proto_msgTypes[48]
+	mi := &file_partner_partner_api_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3811,7 +3811,7 @@ func (x *FuelHistoryRequest) String() string {
 func (*FuelHistoryRequest) ProtoMessage() {}
 
 func (x *FuelHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[48]
+	mi := &file_partner_partner_api_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3824,7 +3824,7 @@ func (x *FuelHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FuelHistoryRequest.ProtoReflect.Descriptor instead.
 func (*FuelHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{48}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *FuelHistoryRequest) GetPartnerId() string {
@@ -3867,7 +3867,7 @@ type FuelHistoryResponse struct {
 
 func (x *FuelHistoryResponse) Reset() {
 	*x = FuelHistoryResponse{}
-	mi := &file_partner_api_proto_msgTypes[49]
+	mi := &file_partner_partner_api_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3879,7 +3879,7 @@ func (x *FuelHistoryResponse) String() string {
 func (*FuelHistoryResponse) ProtoMessage() {}
 
 func (x *FuelHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[49]
+	mi := &file_partner_partner_api_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3892,7 +3892,7 @@ func (x *FuelHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FuelHistoryResponse.ProtoReflect.Descriptor instead.
 func (*FuelHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{49}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *FuelHistoryResponse) GetFuelEvents() []*FuelEvent {
@@ -3935,7 +3935,7 @@ type DriverPerformanceRequest struct {
 
 func (x *DriverPerformanceRequest) Reset() {
 	*x = DriverPerformanceRequest{}
-	mi := &file_partner_api_proto_msgTypes[50]
+	mi := &file_partner_partner_api_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3947,7 +3947,7 @@ func (x *DriverPerformanceRequest) String() string {
 func (*DriverPerformanceRequest) ProtoMessage() {}
 
 func (x *DriverPerformanceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[50]
+	mi := &file_partner_partner_api_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3960,7 +3960,7 @@ func (x *DriverPerformanceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DriverPerformanceRequest.ProtoReflect.Descriptor instead.
 func (*DriverPerformanceRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{50}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *DriverPerformanceRequest) GetPartnerId() string {
@@ -4002,7 +4002,7 @@ type DriverPerformanceResponse struct {
 
 func (x *DriverPerformanceResponse) Reset() {
 	*x = DriverPerformanceResponse{}
-	mi := &file_partner_api_proto_msgTypes[51]
+	mi := &file_partner_partner_api_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4014,7 +4014,7 @@ func (x *DriverPerformanceResponse) String() string {
 func (*DriverPerformanceResponse) ProtoMessage() {}
 
 func (x *DriverPerformanceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[51]
+	mi := &file_partner_partner_api_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4027,7 +4027,7 @@ func (x *DriverPerformanceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DriverPerformanceResponse.ProtoReflect.Descriptor instead.
 func (*DriverPerformanceResponse) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{51}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *DriverPerformanceResponse) GetDriverId() string {
@@ -4064,7 +4064,7 @@ type DailyPerformance struct {
 
 func (x *DailyPerformance) Reset() {
 	*x = DailyPerformance{}
-	mi := &file_partner_api_proto_msgTypes[52]
+	mi := &file_partner_partner_api_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4076,7 +4076,7 @@ func (x *DailyPerformance) String() string {
 func (*DailyPerformance) ProtoMessage() {}
 
 func (x *DailyPerformance) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[52]
+	mi := &file_partner_partner_api_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4089,7 +4089,7 @@ func (x *DailyPerformance) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DailyPerformance.ProtoReflect.Descriptor instead.
 func (*DailyPerformance) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{52}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *DailyPerformance) GetDate() *timestamppb.Timestamp {
@@ -4139,7 +4139,7 @@ type FuelEfficiencyRequest struct {
 
 func (x *FuelEfficiencyRequest) Reset() {
 	*x = FuelEfficiencyRequest{}
-	mi := &file_partner_api_proto_msgTypes[53]
+	mi := &file_partner_partner_api_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4151,7 +4151,7 @@ func (x *FuelEfficiencyRequest) String() string {
 func (*FuelEfficiencyRequest) ProtoMessage() {}
 
 func (x *FuelEfficiencyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[53]
+	mi := &file_partner_partner_api_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4164,7 +4164,7 @@ func (x *FuelEfficiencyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FuelEfficiencyRequest.ProtoReflect.Descriptor instead.
 func (*FuelEfficiencyRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{53}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *FuelEfficiencyRequest) GetPartnerId() string {
@@ -4207,7 +4207,7 @@ type FuelEfficiencyReport struct {
 
 func (x *FuelEfficiencyReport) Reset() {
 	*x = FuelEfficiencyReport{}
-	mi := &file_partner_api_proto_msgTypes[54]
+	mi := &file_partner_partner_api_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4219,7 +4219,7 @@ func (x *FuelEfficiencyReport) String() string {
 func (*FuelEfficiencyReport) ProtoMessage() {}
 
 func (x *FuelEfficiencyReport) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[54]
+	mi := &file_partner_partner_api_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4232,7 +4232,7 @@ func (x *FuelEfficiencyReport) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FuelEfficiencyReport.ProtoReflect.Descriptor instead.
 func (*FuelEfficiencyReport) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{54}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *FuelEfficiencyReport) GetFleetAverageEfficiency() float64 {
@@ -4275,7 +4275,7 @@ type VehicleFuelEfficiency struct {
 
 func (x *VehicleFuelEfficiency) Reset() {
 	*x = VehicleFuelEfficiency{}
-	mi := &file_partner_api_proto_msgTypes[55]
+	mi := &file_partner_partner_api_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4287,7 +4287,7 @@ func (x *VehicleFuelEfficiency) String() string {
 func (*VehicleFuelEfficiency) ProtoMessage() {}
 
 func (x *VehicleFuelEfficiency) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[55]
+	mi := &file_partner_partner_api_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4300,7 +4300,7 @@ func (x *VehicleFuelEfficiency) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VehicleFuelEfficiency.ProtoReflect.Descriptor instead.
 func (*VehicleFuelEfficiency) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{55}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *VehicleFuelEfficiency) GetVehicleId() string {
@@ -4342,7 +4342,7 @@ type MaintenanceRequest struct {
 
 func (x *MaintenanceRequest) Reset() {
 	*x = MaintenanceRequest{}
-	mi := &file_partner_api_proto_msgTypes[56]
+	mi := &file_partner_partner_api_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4354,7 +4354,7 @@ func (x *MaintenanceRequest) String() string {
 func (*MaintenanceRequest) ProtoMessage() {}
 
 func (x *MaintenanceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[56]
+	mi := &file_partner_partner_api_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4367,7 +4367,7 @@ func (x *MaintenanceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MaintenanceRequest.ProtoReflect.Descriptor instead.
 func (*MaintenanceRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{56}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *MaintenanceRequest) GetPartnerId() string {
@@ -4402,7 +4402,7 @@ type MaintenanceSchedule struct {
 
 func (x *MaintenanceSchedule) Reset() {
 	*x = MaintenanceSchedule{}
-	mi := &file_partner_api_proto_msgTypes[57]
+	mi := &file_partner_partner_api_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4414,7 +4414,7 @@ func (x *MaintenanceSchedule) String() string {
 func (*MaintenanceSchedule) ProtoMessage() {}
 
 func (x *MaintenanceSchedule) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[57]
+	mi := &file_partner_partner_api_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4427,7 +4427,7 @@ func (x *MaintenanceSchedule) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MaintenanceSchedule.ProtoReflect.Descriptor instead.
 func (*MaintenanceSchedule) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{57}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *MaintenanceSchedule) GetVehicles() []*VehicleMaintenanceStatus {
@@ -4463,7 +4463,7 @@ type VehicleMaintenanceStatus struct {
 
 func (x *VehicleMaintenanceStatus) Reset() {
 	*x = VehicleMaintenanceStatus{}
-	mi := &file_partner_api_proto_msgTypes[58]
+	mi := &file_partner_partner_api_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4475,7 +4475,7 @@ func (x *VehicleMaintenanceStatus) String() string {
 func (*VehicleMaintenanceStatus) ProtoMessage() {}
 
 func (x *VehicleMaintenanceStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[58]
+	mi := &file_partner_partner_api_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4488,7 +4488,7 @@ func (x *VehicleMaintenanceStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VehicleMaintenanceStatus.ProtoReflect.Descriptor instead.
 func (*VehicleMaintenanceStatus) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{58}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *VehicleMaintenanceStatus) GetVehicleId() string {
@@ -4532,7 +4532,7 @@ type ScheduledMaintenance struct {
 
 func (x *ScheduledMaintenance) Reset() {
 	*x = ScheduledMaintenance{}
-	mi := &file_partner_api_proto_msgTypes[59]
+	mi := &file_partner_partner_api_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4544,7 +4544,7 @@ func (x *ScheduledMaintenance) String() string {
 func (*ScheduledMaintenance) ProtoMessage() {}
 
 func (x *ScheduledMaintenance) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[59]
+	mi := &file_partner_partner_api_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4557,7 +4557,7 @@ func (x *ScheduledMaintenance) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ScheduledMaintenance.ProtoReflect.Descriptor instead.
 func (*ScheduledMaintenance) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{59}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *ScheduledMaintenance) GetMaintenanceType() string {
@@ -4606,7 +4606,7 @@ type ComplianceRequest struct {
 
 func (x *ComplianceRequest) Reset() {
 	*x = ComplianceRequest{}
-	mi := &file_partner_api_proto_msgTypes[60]
+	mi := &file_partner_partner_api_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4618,7 +4618,7 @@ func (x *ComplianceRequest) String() string {
 func (*ComplianceRequest) ProtoMessage() {}
 
 func (x *ComplianceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[60]
+	mi := &file_partner_partner_api_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4631,7 +4631,7 @@ func (x *ComplianceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ComplianceRequest.ProtoReflect.Descriptor instead.
 func (*ComplianceRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{60}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *ComplianceRequest) GetPartnerId() string {
@@ -4667,7 +4667,7 @@ type ComplianceReport struct {
 
 func (x *ComplianceReport) Reset() {
 	*x = ComplianceReport{}
-	mi := &file_partner_api_proto_msgTypes[61]
+	mi := &file_partner_partner_api_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4679,7 +4679,7 @@ func (x *ComplianceReport) String() string {
 func (*ComplianceReport) ProtoMessage() {}
 
 func (x *ComplianceReport) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[61]
+	mi := &file_partner_partner_api_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4692,7 +4692,7 @@ func (x *ComplianceReport) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ComplianceReport.ProtoReflect.Descriptor instead.
 func (*ComplianceReport) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{61}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *ComplianceReport) GetVehicles() []*VehicleCompliance {
@@ -4734,7 +4734,7 @@ type VehicleCompliance struct {
 
 func (x *VehicleCompliance) Reset() {
 	*x = VehicleCompliance{}
-	mi := &file_partner_api_proto_msgTypes[62]
+	mi := &file_partner_partner_api_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4746,7 +4746,7 @@ func (x *VehicleCompliance) String() string {
 func (*VehicleCompliance) ProtoMessage() {}
 
 func (x *VehicleCompliance) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[62]
+	mi := &file_partner_partner_api_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4759,7 +4759,7 @@ func (x *VehicleCompliance) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VehicleCompliance.ProtoReflect.Descriptor instead.
 func (*VehicleCompliance) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{62}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *VehicleCompliance) GetVehicleId() string {
@@ -4795,7 +4795,7 @@ type ComplianceStatus struct {
 
 func (x *ComplianceStatus) Reset() {
 	*x = ComplianceStatus{}
-	mi := &file_partner_api_proto_msgTypes[63]
+	mi := &file_partner_partner_api_proto_msgTypes[63]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4807,7 +4807,7 @@ func (x *ComplianceStatus) String() string {
 func (*ComplianceStatus) ProtoMessage() {}
 
 func (x *ComplianceStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[63]
+	mi := &file_partner_partner_api_proto_msgTypes[63]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4820,7 +4820,7 @@ func (x *ComplianceStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ComplianceStatus.ProtoReflect.Descriptor instead.
 func (*ComplianceStatus) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{63}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *ComplianceStatus) GetComplianceType() string {
@@ -4860,7 +4860,7 @@ type ListSubscriptionsRequest struct {
 
 func (x *ListSubscriptionsRequest) Reset() {
 	*x = ListSubscriptionsRequest{}
-	mi := &file_partner_api_proto_msgTypes[64]
+	mi := &file_partner_partner_api_proto_msgTypes[64]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4872,7 +4872,7 @@ func (x *ListSubscriptionsRequest) String() string {
 func (*ListSubscriptionsRequest) ProtoMessage() {}
 
 func (x *ListSubscriptionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[64]
+	mi := &file_partner_partner_api_proto_msgTypes[64]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4885,7 +4885,7 @@ func (x *ListSubscriptionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSubscriptionsRequest.ProtoReflect.Descriptor instead.
 func (*ListSubscriptionsRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{64}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *ListSubscriptionsRequest) GetPartnerId() string {
@@ -4904,7 +4904,7 @@ type SubscriptionListResponse struct {
 
 func (x *SubscriptionListResponse) Reset() {
 	*x = SubscriptionListResponse{}
-	mi := &file_partner_api_proto_msgTypes[65]
+	mi := &file_partner_partner_api_proto_msgTypes[65]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4916,7 +4916,7 @@ func (x *SubscriptionListResponse) String() string {
 func (*SubscriptionListResponse) ProtoMessage() {}
 
 func (x *SubscriptionListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[65]
+	mi := &file_partner_partner_api_proto_msgTypes[65]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4929,7 +4929,7 @@ func (x *SubscriptionListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscriptionListResponse.ProtoReflect.Descriptor instead.
 func (*SubscriptionListResponse) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{65}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *SubscriptionListResponse) GetSubscriptions() []*EventSubscription {
@@ -4953,7 +4953,7 @@ type EventSubscription struct {
 
 func (x *EventSubscription) Reset() {
 	*x = EventSubscription{}
-	mi := &file_partner_api_proto_msgTypes[66]
+	mi := &file_partner_partner_api_proto_msgTypes[66]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4965,7 +4965,7 @@ func (x *EventSubscription) String() string {
 func (*EventSubscription) ProtoMessage() {}
 
 func (x *EventSubscription) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[66]
+	mi := &file_partner_partner_api_proto_msgTypes[66]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4978,7 +4978,7 @@ func (x *EventSubscription) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventSubscription.ProtoReflect.Descriptor instead.
 func (*EventSubscription) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{66}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *EventSubscription) GetSubscriptionId() string {
@@ -5032,7 +5032,7 @@ type EventUnsubscriptionRequest struct {
 
 func (x *EventUnsubscriptionRequest) Reset() {
 	*x = EventUnsubscriptionRequest{}
-	mi := &file_partner_api_proto_msgTypes[67]
+	mi := &file_partner_partner_api_proto_msgTypes[67]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5044,7 +5044,7 @@ func (x *EventUnsubscriptionRequest) String() string {
 func (*EventUnsubscriptionRequest) ProtoMessage() {}
 
 func (x *EventUnsubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_partner_api_proto_msgTypes[67]
+	mi := &file_partner_partner_api_proto_msgTypes[67]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5057,7 +5057,7 @@ func (x *EventUnsubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventUnsubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*EventUnsubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_partner_api_proto_rawDescGZIP(), []int{67}
+	return file_partner_partner_api_proto_rawDescGZIP(), []int{67}
 }
 
 func (x *EventUnsubscriptionRequest) GetSubscriptionId() string {
@@ -5067,11 +5067,11 @@ func (x *EventUnsubscriptionRequest) GetSubscriptionId() string {
 	return ""
 }
 
-var File_partner_api_proto protoreflect.FileDescriptor
+var File_partner_partner_api_proto protoreflect.FileDescriptor
 
-const file_partner_api_proto_rawDesc = "" +
+const file_partner_partner_api_proto_rawDesc = "" +
 	"\n" +
-	"\x11partner_api.proto\x12\x14fleetflow.partner.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\"c\n" +
+	"\x19partner/partner_api.proto\x12\x14fleetflow.partner.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\"c\n" +
 	"\vAuthRequest\x12\x17\n" +
 	"\aapi_key\x18\x01 \x01(\tR\x06apiKey\x12\x1d\n" +
 	"\n" +
@@ -5588,22 +5588,22 @@ const file_partner_api_proto_rawDesc = "" +
 	"\x13GetComplianceStatus\x12'.fleetflow.partner.v1.ComplianceRequest\x1a&.fleetflow.partner.v1.ComplianceReport\x12o\n" +
 	"\x11SubscribeToEvents\x12..fleetflow.partner.v1.EventSubscriptionRequest\x1a*.fleetflow.partner.v1.SubscriptionResponse\x12u\n" +
 	"\x15UnsubscribeFromEvents\x120.fleetflow.partner.v1.EventUnsubscriptionRequest\x1a*.fleetflow.partner.v1.SubscriptionResponse\x12s\n" +
-	"\x11ListSubscriptions\x12..fleetflow.partner.v1.ListSubscriptionsRequest\x1a..fleetflow.partner.v1.SubscriptionListResponseB,Z*github.com/fleetflow/backend/proto/partnerb\x06proto3"
+	"\x11ListSubscriptions\x12..fleetflow.partner.v1.ListSubscriptionsRequest\x1a..fleetflow.partner.v1.SubscriptionListResponseB0Z.github.com/fleetflow/backend/proto/gen/partnerb\x06proto3"
 
 var (
-	file_partner_api_proto_rawDescOnce sync.Once
-	file_partner_api_proto_rawDescData []byte
+	file_partner_partner_api_proto_rawDescOnce sync.Once
+	file_partner_partner_api_proto_rawDescData []byte
 )
 
-func file_partner_api_proto_rawDescGZIP() []byte {
-	file_partner_api_proto_rawDescOnce.Do(func() {
-		file_partner_api_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_partner_api_proto_rawDesc), len(file_partner_api_proto_rawDesc)))
+func file_partner_partner_api_proto_rawDescGZIP() []byte {
+	file_partner_partner_api_proto_rawDescOnce.Do(func() {
+		file_partner_partner_api_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_partner_partner_api_proto_rawDesc), len(file_partner_partner_api_proto_rawDesc)))
 	})
-	return file_partner_api_proto_rawDescData
+	return file_partner_partner_api_proto_rawDescData
 }
 
-var file_partner_api_proto_msgTypes = make([]protoimpl.MessageInfo, 72)
-var file_partner_api_proto_goTypes = []any{
+var file_partner_partner_api_proto_msgTypes = make([]protoimpl.MessageInfo, 72)
+var file_partner_partner_api_proto_goTypes = []any{
 	(*AuthRequest)(nil),                // 0: fleetflow.partner.v1.AuthRequest
 	(*AuthResponse)(nil),               // 1: fleetflow.partner.v1.AuthResponse
 	(*RefreshTokenRequest)(nil),        // 2: fleetflow.partner.v1.RefreshTokenRequest
@@ -5679,7 +5679,7 @@ var file_partner_api_proto_goTypes = []any{
 	(*timestamppb.Timestamp)(nil),      // 72: google.protobuf.Timestamp
 	(*durationpb.Duration)(nil),        // 73: google.protobuf.Duration
 }
-var file_partner_api_proto_depIdxs = []int32{
+var file_partner_partner_api_proto_depIdxs = []int32{
 	72,  // 0: fleetflow.partner.v1.AuthResponse.expires_at:type_name -> google.protobuf.Timestamp
 	5,   // 1: fleetflow.partner.v1.FleetOverview.fleets:type_name -> fleetflow.partner.v1.FleetSummary
 	8,   // 2: fleetflow.partner.v1.VehicleListResponse.vehicles:type_name -> fleetflow.partner.v1.VehicleSummary
@@ -5824,26 +5824,26 @@ var file_partner_api_proto_depIdxs = []int32{
 	0,   // [0:85] is the sub-list for field type_name
 }
 
-func init() { file_partner_api_proto_init() }
-func file_partner_api_proto_init() {
-	if File_partner_api_proto != nil {
+func init() { file_partner_partner_api_proto_init() }
+func file_partner_partner_api_proto_init() {
+	if File_partner_partner_api_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_partner_api_proto_rawDesc), len(file_partner_api_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_partner_partner_api_proto_rawDesc), len(file_partner_partner_api_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   72,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_partner_api_proto_goTypes,
-		DependencyIndexes: file_partner_api_proto_depIdxs,
-		MessageInfos:      file_partner_api_proto_msgTypes,
+		GoTypes:           file_partner_partner_api_proto_goTypes,
+		DependencyIndexes: file_partner_partner_api_proto_depIdxs,
+		MessageInfos:      file_partner_partner_api_proto_msgTypes,
 	}.Build()
-	File_partner_api_proto = out.File
-	file_partner_api_proto_goTypes = nil
-	file_partner_api_proto_depIdxs = nil
+	File_partner_partner_api_proto = out.File
+	file_partner_partner_api_proto_goTypes = nil
+	file_partner_partner_api_proto_depIdxs = nil
 }
