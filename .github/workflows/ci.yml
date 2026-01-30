@@ -32,8 +32,7 @@ jobs:
       - name: 🔧 Generate Proto & Build
         run: |
           cd backend
-          # Ensure tools are in PATH
-          export PATH=$PATH:$(go env GOPATH)/bin
+          make install-tools
           make gen-proto
           make build
 
