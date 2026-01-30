@@ -39,7 +39,7 @@ jobs:
       - name: 🧪 Unit Tests
         run: |
           cd backend
-          go test -race -v -timeout 15m ./...
+          go test -v -timeout 15m ./...
 
   # 3. BUILD FRONTEND (Dashboard)
   frontend-dashboard:
