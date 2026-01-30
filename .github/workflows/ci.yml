@@ -51,18 +51,21 @@ jobs:
       - name: 🏗️ Build Dashboard
         run: |
           cd frontend/dashboard
-          npm install
+          npm ci --prefer-offline
           npm run build
 
   # 4. BUILD FRONTEND (Portal)
   frontend-portal:
     needs: security-and-lint
     runs-on: self-hosted
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      NODE_OPTIONS: "--max-old-space-size=4096"
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
       - name: 🏗️ Build Portal
         run: |
           cd frontend/portal
-          npm install
+          npm ci --prefer-offline
           npm run build
