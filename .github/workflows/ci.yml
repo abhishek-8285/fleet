@@ -8,31 +8,20 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      # 1. SECRET SCANNING (Smarter Check)
-      - name: 🕵️ Check for Secrets
+      # 1. SECURITY SCAN (Trivy - Professional Grade)
+      - name: 🛡️ Security & Secret Scan
         run: |
-          echo "Scanning for hardcoded credentials (excluding placeholders)..."
-          # 1. Exclude .github and look for keys longer than 15 chars that aren't variables
-          # This looks for KEY=VALUE where VALUE is not starting with $ and is long
-          # Note: [A-Za-z0-9/+=]{20,} is a common pattern for AWS/Base64 keys
-          LEAKS=$(grep -rE "(=|\"|')[A-Za-z0-9/+=]{20,}(\"|')?" . \
-            --exclude-dir=.git \
-            --exclude-dir=.github \
-            --exclude=package-lock.json \
-            | grep -vE "your_aws_access_key|your_aws_key" || true)
-
-          if [ ! -z "$LEAKS" ]; then
-            echo "❌ CRITICAL: Potential Secrets found in code:"
-            echo "$LEAKS"
-            exit 1
-          else
-            echo "✅ No obvious secrets found."
-          fi
-
-      # 2. VULNERABILITY SCAN (Trivy)
-      - name: 🛡️ Security Scan (Trivy)
-        run: |
+          echo "Installing/Updating Trivy Security Scanner..."
           if ! command -v trivy &> /dev/null; then
              curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
           fi
-          trivy fs . --scanners vuln,secret,config --exit-code 1 --severity CRITICAL
+          
+          echo "Running Security Audit (Detecting real secrets and CVEs)..."
+          # We use Trivy's built-in 'secret' scanner which is much smarter than grep.
+          # It ignores binary files and common false positives automatically.
+          trivy fs . \
+            --scanners vuln,secret \
+            --exit-code 1 \
+            --severity CRITICAL,HIGH \
+            --hide-progress \
+            --format table
