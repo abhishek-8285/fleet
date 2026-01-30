@@ -75,8 +75,6 @@ func (s *IngestionService) processBuffer() {
 		if len(batch) > 0 {
 			if err := s.bulkInsert(batch); err != nil {
 				log.Printf("❌ Failed to flush batch of %d records: %v", len(batch), err)
-			} else {
-				// log.Printf("💾 Flushed batch of %d location records", len(batch))
 			}
 			// Reset batch (keep capacity)
 			batch = batch[:0]

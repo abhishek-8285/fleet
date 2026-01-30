@@ -689,102 +689,23 @@ func convertSystemSettingsToProto(settings *models.SystemSettings) *pb.SystemSet
 	}
 }
 
+/*
 func convertProtoToSystemSettings(pbSettings *pb.SystemSettings) *models.SystemSettings {
-	settings := &models.SystemSettings{}
-
-	// Extract values from the Settings map
-	if pbSettings.Settings != nil {
-		if val, ok := pbSettings.Settings["company_name"]; ok {
-			settings.CompanyName = val
-		}
-		if val, ok := pbSettings.Settings["company_address"]; ok {
-			settings.CompanyAddress = val
-		}
-		if val, ok := pbSettings.Settings["company_phone"]; ok {
-			settings.CompanyPhone = val
-		}
-		if val, ok := pbSettings.Settings["company_email"]; ok {
-			settings.CompanyEmail = val
-		}
-		if val, ok := pbSettings.Settings["time_zone"]; ok {
-			settings.TimeZone = val
-		}
-		if val, ok := pbSettings.Settings["currency"]; ok {
-			settings.Currency = val
-		}
-		if val, ok := pbSettings.Settings["date_format"]; ok {
-			settings.DateFormat = val
-		}
-		if val, ok := pbSettings.Settings["distance_unit"]; ok {
-			settings.DistanceUnit = val
-		}
-		if val, ok := pbSettings.Settings["fuel_unit"]; ok {
-			settings.FuelUnit = val
-		}
-		if val, ok := pbSettings.Settings["default_language"]; ok {
-			settings.DefaultLanguage = val
-		}
-	}
-
-	return settings
+...
 }
+*/
 
+/*
 func convertAuditLogToProto(log *models.AuditLog) *pb.AuditLog {
-	pbLog := &pb.AuditLog{
-		Id:          uint32(log.ID),
-		Action:      string(log.Action),   // Convert enum to string
-		Severity:    string(log.Severity), // Convert enum to string
-		Description: log.Description,
-		TableName:   log.TableName,
-		OldValues:   log.OldValues,
-		NewValues:   log.NewValues,
-		IpAddress:   log.IPAddress,
-		UserAgent:   log.UserAgent,
-		CreatedAt:   timestamppb.New(log.CreatedAt),
-	}
-
-	// Handle nullable fields
-	if log.UserID != nil {
-		pbLog.UserId = uint32(*log.UserID)
-	}
-	if log.DriverID != nil {
-		pbLog.DriverId = uint32(*log.DriverID)
-	}
-	if log.VehicleID != nil {
-		pbLog.VehicleId = uint32(*log.VehicleID)
-	}
-	if log.TripID != nil {
-		pbLog.TripId = uint32(*log.TripID)
-	}
-	if log.RecordID != nil {
-		pbLog.RecordId = uint32(*log.RecordID)
-	}
-
-	return pbLog
+...
 }
+*/
 
+/*
 func convertSecurityEventToProto(event *models.SecurityEvent) *pb.SecurityEvent {
-	pbEvent := &pb.SecurityEvent{
-		Id:          uint32(event.ID),
-		EventType:   event.EventType,
-		Status:      event.Status,
-		Severity:    string(event.Severity), // Convert enum to string
-		Description: event.Description,
-		IpAddress:   event.IPAddress,
-		UserAgent:   event.UserAgent,
-		Location:    event.Location,
-		RiskScore:   event.RiskScore,
-		IsBlocked:   event.IsBlocked,
-		CreatedAt:   timestamppb.New(event.CreatedAt),
-	}
-
-	// Handle nullable fields
-	if event.UserID != nil {
-		pbEvent.UserId = uint32(*event.UserID)
-	}
-
-	return pbEvent
+...
 }
+*/
 
 // TODO: Add these helper functions when protobuf definitions are updated
 /*

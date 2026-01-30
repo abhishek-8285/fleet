@@ -35,19 +35,17 @@ func (s *Simulator) Start() {
 	defer ticker.Stop()
 
 	for s.running {
-		select {
-		case <-ticker.C:
-			for _, v := range s.vehicles {
-				v.Update(1.0) // 1 second delta
-				s.mqtt.PublishTelemetry(v.ID, v.Telemetry)
+		<-ticker.C
+		for _, v := range s.vehicles {
+			v.Update(1.0) // 1 second delta
+			s.mqtt.PublishTelemetry(v.ID, v.Telemetry)
 
-				log.Printf("📡 [%s] Lat: %.4f, Lon: %.4f, Speed: %.0f km/h, Fuel: %.1f%%",
-					v.ID, v.Telemetry.Latitude, v.Telemetry.Longitude, v.Telemetry.Speed, v.Telemetry.FuelLevel)
+			log.Printf("📡 [%s] Lat: %.4f, Lon: %.4f, Speed: %.0f km/h, Fuel: %.1f%%",
+				v.ID, v.Telemetry.Latitude, v.Telemetry.Longitude, v.Telemetry.Speed, v.Telemetry.FuelLevel)
 
-				if len(v.Telemetry.Events) > 0 {
-					for _, e := range v.Telemetry.Events {
-						log.Printf("⚠️ [%s] EVENT: %s (Severity: %s)", v.ID, e.Type, e.Severity)
-					}
+			if len(v.Telemetry.Events) > 0 {
+				for _, e := range v.Telemetry.Events {
+					log.Printf("⚠️ [%s] EVENT: %s (Severity: %s)", v.ID, e.Type, e.Severity)
 				}
 			}
 		}

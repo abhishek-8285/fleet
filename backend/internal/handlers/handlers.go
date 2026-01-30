@@ -297,13 +297,13 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	if req.RefreshToken != "" {
 		err := h.services.JWTService.RevokeRefreshToken(req.RefreshToken)
 		if err != nil {
-			// Don't fail logout if specific token revocation fails
+			log.Printf("⚠️ Failed to revoke specific refresh token: %v", err)
 		}
 	} else {
 		// Revoke all user tokens
 		err := h.services.JWTService.RevokeAllUserTokens(userID)
 		if err != nil {
-			// Don't fail logout if token revocation fails
+			log.Printf("⚠️ Failed to revoke all user tokens: %v", err)
 		}
 	}
 

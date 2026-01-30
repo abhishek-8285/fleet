@@ -9,6 +9,9 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // ComplianceDocument represents various compliance documents
@@ -424,7 +427,7 @@ func (cs *ComplianceService) generateComplianceAlerts(documents []ComplianceDocu
 				ID:          fmt.Sprintf("EXP_%s_%d", doc.Type, time.Now().Unix()),
 				Type:        "expiry",
 				Severity:    severity,
-				Title:       fmt.Sprintf("%s Expiring Soon", strings.Title(doc.Type)),
+				Title:       fmt.Sprintf("%s Expiring Soon", cases.Title(language.Und).String(doc.Type)),
 				Description: fmt.Sprintf("%s (No: %s) expires on %s", doc.Type, doc.DocumentNo, doc.ExpiryDate.Format("02-Jan-2006")),
 				DueDate:     doc.ExpiryDate,
 				DocumentID:  doc.ID,
@@ -471,7 +474,7 @@ func (cs *ComplianceService) generateDriverAlerts(documents []ComplianceDocument
 				ID:          fmt.Sprintf("DRV_EXP_%s_%d", doc.Type, time.Now().Unix()),
 				Type:        "expiry",
 				Severity:    severity,
-				Title:       fmt.Sprintf("Driver %s Expiring", strings.Title(doc.Type)),
+				Title:       fmt.Sprintf("Driver %s Expiring", cases.Title(language.Und).String(doc.Type)),
 				Description: fmt.Sprintf("%s expires on %s", doc.Type, doc.ExpiryDate.Format("02-Jan-2006")),
 				DueDate:     doc.ExpiryDate,
 				DocumentID:  doc.ID,

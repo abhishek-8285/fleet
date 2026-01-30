@@ -462,23 +462,8 @@ func convertTripStatus(status string) pb.TripStatus {
 	}
 }
 
+/*
 func convertPBTripStatus(status pb.TripStatus) string {
-	switch status {
-	case pb.TripStatus_TRIP_STATUS_SCHEDULED:
-		return "SCHEDULED"
-	case pb.TripStatus_TRIP_STATUS_ASSIGNED:
-		return "ASSIGNED"
-	case pb.TripStatus_TRIP_STATUS_IN_PROGRESS:
-		return "IN_PROGRESS"
-	case pb.TripStatus_TRIP_STATUS_PAUSED:
-		return "PAUSED"
-	case pb.TripStatus_TRIP_STATUS_COMPLETED:
-		return "COMPLETED"
-	case pb.TripStatus_TRIP_STATUS_CANCELLED:
-		return "CANCELLED"
-	case pb.TripStatus_TRIP_STATUS_DELAYED:
-		return "DELAYED"
-	default:
-		return "CREATED"
-	}
+...
 }
+*/

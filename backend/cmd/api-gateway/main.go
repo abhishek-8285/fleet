@@ -55,8 +55,7 @@ func main() {
 
 	// Create a client connection to the gRPC server
 	// TODO: Add OTel gRPC interceptor here
-	conn, err := grpc.DialContext(
-		ctx,
+	conn, err := grpc.NewClient(
 		grpcServerAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)

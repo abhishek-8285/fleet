@@ -1,17 +1,14 @@
 package server
 
 import (
-	"fmt"
+
 	// "io"
 	"log"
 
-	"github.com/fleetflow/backend/internal/models"
 	"github.com/fleetflow/backend/internal/services"
 	pb "github.com/fleetflow/backend/proto/gen"
-
 	// "google.golang.org/grpc/codes"
 	// "google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // UploadServer implements the UploadService gRPC service
@@ -94,94 +91,29 @@ func (s *UploadServer) StreamOCRResults(req *pb.StreamOCRResultsRequest, stream 
 
 // Helper functions
 
+/*
 func convertUploadToProto(upload *models.Upload) *pb.Upload {
-	pbUpload := &pb.Upload{
-		Id:           uint32(upload.ID),
-		FileName:     upload.FileName,
-		OriginalName: upload.OriginalName,
-		ContentType:  upload.ContentType,
-		FileSize:     upload.FileSize,
-		FilePath:     upload.FilePath,
-		PublicUrl:    upload.PublicURL,
-		UploadType:   convertFileTypeToUploadType(string(upload.UploadType)),
-		Status:       convertUploadStatus(string(upload.Status)),
-		FileHash:     upload.FileHash,
-		CreatedAt:    timestamppb.New(upload.CreatedAt),
-		UpdatedAt:    timestamppb.New(upload.UpdatedAt),
-	}
-
-	// Handle nullable fields
-	if upload.ProcessedAt != nil {
-		pbUpload.ProcessedAt = timestamppb.New(*upload.ProcessedAt)
-	}
-	if upload.ThumbnailURL != "" {
-		pbUpload.ThumbnailUrl = upload.ThumbnailURL
-	}
-	if upload.ExtractedText != "" {
-		pbUpload.ExtractedText = upload.ExtractedText
-	}
-	if upload.ProcessingLogs != "" {
-		pbUpload.ProcessingLogs = upload.ProcessingLogs
-	}
-	if upload.ErrorMessage != "" {
-		pbUpload.ErrorMessage = upload.ErrorMessage
-	}
-
-	return pbUpload
+...
 }
+*/
 
+/*
 // Convert file type to upload type
 func convertFileTypeToUploadType(fileType string) pb.UploadType {
-	switch fileType {
-	case "FUEL_RECEIPT":
-		return pb.UploadType_UPLOAD_TYPE_FUEL_RECEIPT
-	case "POD":
-		return pb.UploadType_UPLOAD_TYPE_POD
-	case "SIGNATURE":
-		return pb.UploadType_UPLOAD_TYPE_SIGNATURE
-	case "VEHICLE_PHOTO":
-		return pb.UploadType_UPLOAD_TYPE_VEHICLE_PHOTO
-	case "DRIVER_DOCUMENT":
-		return pb.UploadType_UPLOAD_TYPE_DRIVER_DOCUMENT
-	case "COMPLIANCE":
-		return pb.UploadType_UPLOAD_TYPE_COMPLIANCE
-	case "INCIDENT":
-		return pb.UploadType_UPLOAD_TYPE_INCIDENT
-	default:
-		return pb.UploadType_UPLOAD_TYPE_OTHER
-	}
+...
 }
+*/
 
+/*
 // Convert upload status
 func convertUploadStatus(status string) pb.UploadStatus {
-	switch status {
-	case "PENDING":
-		return pb.UploadStatus_UPLOAD_STATUS_PENDING
-	case "UPLOADING":
-		return pb.UploadStatus_UPLOAD_STATUS_PROCESSING
-	case "PROCESSED":
-		return pb.UploadStatus_UPLOAD_STATUS_PROCESSED
-	case "FAILED":
-		return pb.UploadStatus_UPLOAD_STATUS_FAILED
-	case "REJECTED":
-		return pb.UploadStatus_UPLOAD_STATUS_REJECTED
-	default:
-		return pb.UploadStatus_UPLOAD_STATUS_PENDING
-	}
+...
 }
+*/
 
+/*
 // Get MIME type from filename
 func getMimeType(filename string) string {
-	switch {
-	case fmt.Sprintf("%s", filename)[len(filename)-4:] == ".pdf":
-		return "application/pdf"
-	case fmt.Sprintf("%s", filename)[len(filename)-4:] == ".jpg" || fmt.Sprintf("%s", filename)[len(filename)-5:] == ".jpeg":
-		return "image/jpeg"
-	case fmt.Sprintf("%s", filename)[len(filename)-4:] == ".png":
-		return "image/png"
-	case fmt.Sprintf("%s", filename)[len(filename)-4:] == ".gif":
-		return "image/gif"
-	default:
-		return "application/octet-stream"
-	}
+...
 }
+*/

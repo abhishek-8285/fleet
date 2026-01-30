@@ -280,6 +280,7 @@ func (s *AuthServer) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) 
 
 // Helper functions
 
+/*
 func (s *AuthServer) checkAdminPermissions(ctx context.Context) error {
 	userRole, err := getUserRoleFromContext(ctx)
 	if err != nil {
@@ -292,6 +293,7 @@ func (s *AuthServer) checkAdminPermissions(ctx context.Context) error {
 
 	return nil
 }
+*/
 
 // Convert between internal and protobuf enums
 func convertUserRole(role string) pb.UserRole {
@@ -305,6 +307,7 @@ func convertUserRole(role string) pb.UserRole {
 	}
 }
 
+/*
 func convertPBUserRole(role pb.UserRole) string {
 	switch role {
 	case pb.UserRole_USER_ROLE_ADMIN:
@@ -315,6 +318,7 @@ func convertPBUserRole(role pb.UserRole) string {
 		return ""
 	}
 }
+*/
 
 func convertDriverStatus(status string) pb.DriverStatus {
 	switch status {
@@ -344,6 +348,7 @@ func getUserIDFromContext(ctx context.Context) (uint, error) {
 	return 0, errors.New("user ID not found in context")
 }
 
+/*
 func getUserRoleFromContext(ctx context.Context) (string, error) {
 	// This would be set by the auth middleware after validating JWT
 	if userRole := ctx.Value("user_role"); userRole != nil {
@@ -353,3 +358,4 @@ func getUserRoleFromContext(ctx context.Context) (string, error) {
 	}
 	return "", errors.New("user role not found in context")
 }
+*/

@@ -209,13 +209,12 @@ func TestServicesCoverage(t *testing.T) {
 
 	t.Run("Auth Service Coverage", func(t *testing.T) {
 		// Test OTP generation - using proper method signature
-		_, err := tf.Services.AuthService.SendOTP("+919999888890", "", "")
+		_, _ = tf.Services.AuthService.SendOTP("+919999888890", "", "")
 		// Should handle (may or may not error)
 
 		// Test OTP verification - using proper method signature
-		_, err = tf.Services.AuthService.VerifyOTP("+919999888890", "123456", "", "")
+		_, _ = tf.Services.AuthService.VerifyOTP("+919999888890", "123456", "", "")
 		// Should handle (may or may not succeed)
-		_ = err // Use the error variable
 	})
 
 	t.Run("JWT Service Coverage", func(t *testing.T) {

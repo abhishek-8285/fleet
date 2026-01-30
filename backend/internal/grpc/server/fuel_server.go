@@ -588,21 +588,8 @@ func convertPBFuelEventStatus(status pb.FuelEventStatus) string {
 	}
 }
 
+/*
 func convertFuelAlertType(alertType string) pb.FuelAlertType {
-	switch alertType {
-	case "theft_suspected":
-		return pb.FuelAlertType_FUEL_ALERT_TYPE_THEFT_SUSPECTED
-	case "unauthorized_stop":
-		return pb.FuelAlertType_FUEL_ALERT_TYPE_UNAUTHORIZED_STOP
-	case "excess_consumption":
-		return pb.FuelAlertType_FUEL_ALERT_TYPE_EXCESS_CONSUMPTION
-	case "geofence_violation":
-		return pb.FuelAlertType_FUEL_ALERT_TYPE_GEOFENCE_VIOLATION
-	case "efficiency_drop":
-		return pb.FuelAlertType_FUEL_ALERT_TYPE_EFFICIENCY_DROP
-	case "refuel_frequency":
-		return pb.FuelAlertType_FUEL_ALERT_TYPE_REFUEL_FREQUENCY
-	default:
-		return pb.FuelAlertType_FUEL_ALERT_TYPE_UNSPECIFIED
-	}
+...
 }
+*/

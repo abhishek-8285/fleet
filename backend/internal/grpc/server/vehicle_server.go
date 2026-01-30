@@ -356,15 +356,19 @@ func convertUpdateProtoToVehicle(req *pb.UpdateVehicleRequest) *models.Vehicle {
 }
 
 // Enum converter functions
+/*
 func convertVehicleType(vType string) string {
 	// TODO: Add VehicleType enum to common.proto, for now return string directly
 	return vType
 }
+*/
 
+/*
 func convertPBVehicleType(vType string) string {
 	// TODO: Add VehicleType enum to common.proto, for now return string directly
 	return vType
 }
+*/
 
 func convertVehicleStatus(status string) pb.VehicleStatus {
 	switch status {
@@ -381,6 +385,7 @@ func convertVehicleStatus(status string) pb.VehicleStatus {
 	}
 }
 
+/*
 func convertPBVehicleStatus(status pb.VehicleStatus) string {
 	switch status {
 	case pb.VehicleStatus_VEHICLE_STATUS_ACTIVE:
@@ -395,12 +400,17 @@ func convertPBVehicleStatus(status pb.VehicleStatus) string {
 		return "ACTIVE"
 	}
 }
+*/
 
 // TODO: Replace with proper protobuf enum when available
+/*
 func convertFuelType(fType string) string {
 	return fType // Return string directly until protobuf enum is added
 }
+*/
 
+/*
 func convertPBFuelType(fType string) string {
 	return fType // Return string directly until protobuf enum is added
 }
+*/

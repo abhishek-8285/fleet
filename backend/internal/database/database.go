@@ -122,12 +122,14 @@ func Initialize(databaseURL string) (*gorm.DB, error) {
 	return db, nil
 }
 
+/*
 // tableExists checks if a table exists in the database
 func tableExists(db *gorm.DB, tableName string) bool {
 	var count int64
 	db.Raw("SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = ?", tableName).Scan(&count)
 	return count > 0
 }
+*/
 
 // Health checks database connection
 func Health(db *gorm.DB) error {
