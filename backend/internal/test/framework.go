@@ -29,43 +29,48 @@ type TestFramework struct {
 	Config   *config.Config
 }
 
+var (
+	sharedDB    *gorm.DB
+	hasMigrated bool
+)
+
 // NewTestFramework creates a new test framework with in-memory database
 func NewTestFramework() (*TestFramework, error) {
-	// Use a temporary file for SQLite to ensure all connections share the same data and schema
-	// This avoids the isolation issues common with SQLite :memory: in concurrent tests
-	dbPath := fmt.Sprintf("/tmp/fleetflow_test_%d.db", time.Now().UnixNano())
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
-	if err != nil {
-		return nil, err
-	}
-	// db = db.Debug() // Disabled debug logging
-
-	// Auto-migrate all models
-	err = db.AutoMigrate(
-		&models.UserAccount{},
-		&models.Driver{},
-		&models.Vehicle{},
-		&models.Trip{},
-		&models.LocationPing{},
-		&models.Geofence{},
-		&models.FuelEvent{},
-		&models.FuelAlert{},
-		&models.RefreshToken{},
-		&models.OTPVerification{},
-		&models.Upload{},
-		&models.AuditLog{},
-	)
-	if err != nil {
-		log.Printf("❌ AutoMigrate failed: %v\n", err)
-		return nil, err
+	var err error
+	if sharedDB == nil {
+		// Use a temporary file for SQLite to ensure all connections share the same data and schema
+		dbPath := fmt.Sprintf("/tmp/fleetflow_test.db") // Single file for entire run
+		sharedDB, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	// Verify table existence
-	if !db.Migrator().HasTable(&models.Geofence{}) {
-		log.Println("❌ Geofence table does NOT exist after migration!")
-		return nil, fmt.Errorf("Geofence table migration failed")
+	if !hasMigrated {
+		// Auto-migrate all models ONCE per test run
+		err = sharedDB.AutoMigrate(
+			&models.UserAccount{},
+			&models.Driver{},
+			&models.Vehicle{},
+			&models.Trip{},
+			&models.LocationPing{},
+			&models.Geofence{},
+			&models.FuelEvent{},
+			&models.FuelAlert{},
+			&models.RefreshToken{},
+			&models.OTPVerification{},
+			&models.Upload{},
+			&models.AuditLog{},
+		)
+		if err != nil {
+			log.Printf("❌ AutoMigrate failed: %v\n", err)
+			return nil, err
+		}
+		hasMigrated = true
+		log.Println("✅ Shared test database migrated")
 	}
-	log.Println("✅ Geofence table exists after migration")
+
+	db := sharedDB
 
 	// Create test configuration
 	cfg := &config.Config{
