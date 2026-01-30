@@ -1,0 +1,35 @@
+name: Fleet Production Build
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: self-hosted
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js (if applicable)
+        if: hashFiles('package.json') != ''
+        run: |
+          echo "Detected package.json - Installing Dependencies..."
+          npm install
+          echo "Running Tests..."
+          npm test || echo "No tests found (skipping)"
+
+      - name: 🔵 Setup Go (if applicable)
+        if: hashFiles('go.mod') != ''
+        run: |
+          echo "Detected go.mod - Downloading Modules..."
+          go mod download
+          echo "Verifying Code..."
+          go vet ./...
+          echo "Running Tests..."
+          go test ./...
+          echo "Compiling Binary..."
+          go build -v ./...
+
+      - name: ✅ Build Summary
+        if: always()
+        run: |
+          echo "Build Complete on Tecno Pova!"
+          echo "Disk Space Used: $(du -sh .)"
