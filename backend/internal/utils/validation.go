@@ -64,6 +64,47 @@ func ContainsSQLInjection(input string) bool {
 	return false
 }
 
+// ContainsCommandInjection checks for shell command injection patterns
+func ContainsCommandInjection(input string) bool {
+	commandPatterns := []string{
+		"; rm ",
+		"&& rm ",
+		"| rm ",
+		"; cat ",
+		"&& cat ",
+		"| cat ",
+		"; ls ",
+		"; echo ",
+		"$( ",
+		"` ",
+	}
+
+	inputLower := strings.ToLower(input)
+	for _, pattern := range commandPatterns {
+		if strings.Contains(inputLower, pattern) {
+			return true
+		}
+	}
+	return false
+}
+
+// ContainsPathTraversal checks for path traversal patterns
+func ContainsPathTraversal(input string) bool {
+	patterns := []string{
+		"../",
+		"..\\",
+		"/etc/passwd",
+		"c:\\windows",
+	}
+
+	for _, pattern := range patterns {
+		if strings.Contains(input, pattern) {
+			return true
+		}
+	}
+	return false
+}
+
 // IsValidLicenseNumber validates Indian driving license format
 func IsValidLicenseNumber(license string) bool {
 	// Indian license format: State(2-3 chars) + numbers

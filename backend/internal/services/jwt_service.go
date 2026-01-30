@@ -1,11 +1,13 @@
 package services
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/fleetflow/backend/internal/config"
 	"github.com/fleetflow/backend/internal/models"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -53,11 +55,12 @@ func (j *JWTService) GenerateToken(user *models.UserAccount) (string, error) {
 
 // GenerateRefreshToken generates a refresh token
 func (j *JWTService) GenerateRefreshToken(userID uint) (*models.RefreshToken, error) {
-	// Generate a random token
+	// Generate a random token with UUID for entropy to prevent UNIQUE constraints in fast tests
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.config.RefreshTokenExpiry)),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		Issuer:    "fleetflow-refresh",
+		ID:        uuid.New().String(), // Add unique ID to claims
 	})
 
 	tokenString, err := token.SignedString([]byte(j.config.JWTSecret))
@@ -102,12 +105,12 @@ func (j *JWTService) RefreshToken(refreshTokenString string) (string, *models.Re
 	// Find refresh token in database
 	var refreshToken models.RefreshToken
 	if err := j.db.Where("token = ? AND revoked = false", refreshTokenString).First(&refreshToken).Error; err != nil {
-		return "", nil, err
+		return "", nil, fmt.Errorf("refresh token not found or revoked: %w", err)
 	}
 
 	// Check if refresh token is expired
 	if time.Now().After(refreshToken.ExpiresAt) {
-		return "", nil, jwt.ErrTokenExpired
+		return "", nil, fmt.Errorf("refresh token expired at %v (current time %v)", refreshToken.ExpiresAt, time.Now())
 	}
 
 	// Get user

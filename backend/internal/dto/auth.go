@@ -65,8 +65,8 @@ type DriverInfo struct {
 
 // UpdateProfileRequest represents the request to update user profile
 type UpdateProfileRequest struct {
-	// Currently, phone-based auth doesn't have much to update
-	// This is for future extensions
+	Name  string `json:"name,omitempty" example:"राहुल शर्मा"`
+	Email string `json:"email,omitempty" example:"rahul@example.com"`
 }
 
 // LogoutRequest represents the logout request

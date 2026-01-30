@@ -31,11 +31,14 @@ type TestFramework struct {
 
 // NewTestFramework creates a new test framework with in-memory database
 func NewTestFramework() (*TestFramework, error) {
-	// Use SQLite in-memory database for tests
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	// Use a temporary file for SQLite to ensure all connections share the same data and schema
+	// This avoids the isolation issues common with SQLite :memory: in concurrent tests
+	dbPath := fmt.Sprintf("/tmp/fleetflow_test_%d.db", time.Now().UnixNano())
+	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
+	// db = db.Debug() // Disabled debug logging
 
 	// Auto-migrate all models
 	err = db.AutoMigrate(
@@ -57,49 +60,21 @@ func NewTestFramework() (*TestFramework, error) {
 		return nil, err
 	}
 
-	// Manually create geofences table to debug
-	err = db.Exec(`CREATE TABLE IF NOT EXISTS geofences (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT,
-		type TEXT,
-		radius REAL,
-		coordinates TEXT,
-		is_active BOOLEAN DEFAULT 1,
-		alert_on_enter BOOLEAN DEFAULT 0,
-		alert_on_exit BOOLEAN DEFAULT 0,
-		created_at DATETIME,
-		updated_at DATETIME,
-		deleted_at DATETIME
-	)`).Error
-	if err != nil {
-		log.Printf("❌ Manual table creation failed: %v", err)
-		panic(fmt.Sprintf("Manual table creation failed: %v", err))
-	} else {
-		log.Println("✅ Manual table creation succeeded")
-	}
-
-	// List all tables to debug
-	var tables []string
-	db.Raw("SELECT name FROM sqlite_master WHERE type='table'").Scan(&tables)
-	log.Printf("📊 Tables created: %v", tables)
-
 	// Verify table existence
 	if !db.Migrator().HasTable(&models.Geofence{}) {
 		log.Println("❌ Geofence table does NOT exist after migration!")
-		panic("Geofence table does NOT exist after migration!")
-	} else {
-		log.Println("✅ Geofence table exists after migration")
+		return nil, fmt.Errorf("Geofence table migration failed")
 	}
-
-	// Force panic removed
+	log.Println("✅ Geofence table exists after migration")
 
 	// Create test configuration
 	cfg := &config.Config{
-		Environment:       "test",
-		Port:              "8080",
-		JWTSecret:         "test-jwt-secret-key-for-testing-only",
-		JWTExpirationTime: 24 * 60 * 60 * time.Second, // 24 hours for tests
-		DatabaseURL:       ":memory:",
+		Environment:        "test",
+		Port:               "8080",
+		JWTSecret:          "test-secret",
+		JWTExpirationTime:  24 * 60 * 60 * time.Second, // 24 hours for tests
+		RefreshTokenExpiry: 7 * 24 * time.Hour,
+		DatabaseURL:        ":memory:",
 	}
 
 	// Initialize services
@@ -113,6 +88,11 @@ func NewTestFramework() (*TestFramework, error) {
 	apiV1 := router.Group("/api/v1")
 	routes.RegisterRoutes(apiV1, serviceContainer)
 
+	// Add health endpoint for simple_api_test compatibility
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "healthy", "service": "fleetflow-backend"})
+	})
+
 	return &TestFramework{
 		Router:   router,
 		DB:       db,
@@ -123,15 +103,17 @@ func NewTestFramework() (*TestFramework, error) {
 
 // APITestCase represents a single API test case
 type APITestCase struct {
-	Name           string
-	Method         string
-	URL            string
-	Headers        map[string]string
-	RequestBody    interface{}
-	ExpectedStatus int
-	ExpectedBody   map[string]interface{}
-	Setup          func(*TestFramework)
-	Cleanup        func(*TestFramework)
+	Name            string
+	Method          string
+	URL             string
+	Headers         map[string]string
+	RequestBody     interface{}
+	HeadersFunc     func(*TestFramework) map[string]string
+	RequestBodyFunc func(*TestFramework) interface{}
+	ExpectedStatus  int
+	ExpectedBody    map[string]interface{}
+	Setup           func(*TestFramework)
+	Cleanup         func(*TestFramework)
 }
 
 // RunAPITest executes a single API test case
@@ -146,23 +128,34 @@ func (tf *TestFramework) RunAPITest(t *testing.T, testCase APITestCase) {
 		defer testCase.Cleanup(tf)
 	}
 
+	// Evaluate dynamic headers and body if functions are provided
+	headers := testCase.Headers
+	if testCase.HeadersFunc != nil {
+		headers = testCase.HeadersFunc(tf)
+	}
+
+	body := testCase.RequestBody
+	if testCase.RequestBodyFunc != nil {
+		body = testCase.RequestBodyFunc(tf)
+	}
+
 	// Prepare request body
-	var requestBody *bytes.Buffer
-	if testCase.RequestBody != nil {
-		bodyBytes, err := json.Marshal(testCase.RequestBody)
+	var bodyBuffer *bytes.Buffer
+	if body != nil {
+		bodyBytes, err := json.Marshal(body)
 		require.NoError(t, err, "Failed to marshal request body")
-		requestBody = bytes.NewBuffer(bodyBytes)
+		bodyBuffer = bytes.NewBuffer(bodyBytes)
 	} else {
-		requestBody = bytes.NewBuffer([]byte{})
+		bodyBuffer = bytes.NewBuffer([]byte{})
 	}
 
 	// Create request
-	req, err := http.NewRequest(testCase.Method, testCase.URL, requestBody)
+	req, err := http.NewRequest(testCase.Method, testCase.URL, bodyBuffer)
 	require.NoError(t, err, "Failed to create request")
 
 	// Add headers
 	req.Header.Set("Content-Type", "application/json")
-	for key, value := range testCase.Headers {
+	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
 
@@ -257,7 +250,6 @@ func (tf *TestFramework) GenerateJWTToken(user *models.UserAccount) (string, err
 	return tf.Services.JWTService.GenerateToken(user)
 }
 
-// CleanDatabase clears all test data
 func (tf *TestFramework) CleanDatabase() {
 	// Delete all records from all tables
 	tf.DB.Exec("DELETE FROM audit_logs")
@@ -271,6 +263,8 @@ func (tf *TestFramework) CleanDatabase() {
 	tf.DB.Exec("DELETE FROM vehicles")
 	tf.DB.Exec("DELETE FROM drivers")
 	tf.DB.Exec("DELETE FROM user_accounts")
+	tf.DB.Exec("DELETE FROM fleets")
+	tf.DB.Exec("DELETE FROM organizations")
 }
 
 // AssertError checks that response contains expected error

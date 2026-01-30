@@ -3,20 +3,16 @@ package test
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/fleetflow/backend/internal/config"
 	"github.com/fleetflow/backend/internal/models"
-	"github.com/fleetflow/backend/internal/routes"
 	"github.com/fleetflow/backend/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -29,62 +25,22 @@ type SimpleTestFramework struct {
 
 // SetupTestRouter creates a test router with in-memory database
 func SetupTestRouter() (*SimpleTestFramework, error) {
-	// Setup in-memory SQLite database
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	tf, err := NewTestFramework()
 	if err != nil {
 		return nil, err
 	}
 
-	// Auto-migrate core models
-	err = db.AutoMigrate(
-		&models.UserAccount{},
-		&models.Driver{},
-		&models.Vehicle{},
-		&models.Trip{},
-		&models.RefreshToken{},
-		&models.OTPVerification{},
-		&models.FuelEvent{},
-		&models.LocationPing{},
-		&models.Upload{},
-		&models.AuditLog{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to migrate test database: %w", err)
-	}
-
-	// Create test config
-	cfg := &config.Config{
-		Environment:       "test",
-		JWTSecret:         "test-secret",
-		JWTExpirationTime: 24 * 60 * 60,
-	}
-
-	// Initialize services
-	serviceContainer := services.NewContainer(db, cfg)
-
-	// Setup router
-	gin.SetMode(gin.TestMode)
-	router := gin.New()
-
-	// Add health endpoint
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "healthy", "service": "fleetflow-backend"})
-	})
-
 	// Add test middleware to bypass some auth checks if needed
-	router.Use(func(c *gin.Context) {
+	tf.Router.Use(func(c *gin.Context) {
 		// Allow test environment to pass through
 		c.Set("test_mode", true)
 		c.Next()
 	})
 
-	apiV1 := router.Group("/api/v1")
-	routes.RegisterRoutes(apiV1, serviceContainer)
-
 	return &SimpleTestFramework{
-		router:   router,
-		db:       db,
-		services: serviceContainer,
+		router:   tf.Router,
+		db:       tf.DB,
+		services: tf.Services,
 	}, nil
 }
 
@@ -293,18 +249,16 @@ func TestCoreBusinessLogic(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/api/v1/drivers", bytes.NewBuffer(body))
-		req.Header.Set("Authorization", "Bearer invalid-admin-token")
+		req.Header.Set("Authorization", "Bearer "+adminToken)
 		req.Header.Set("Content-Type", "application/json")
 		tf.router.ServeHTTP(w, req)
-
-		// 307 redirect indicates route exists but has trailing slash redirect
-		assert.True(t, w.Code == 401 || w.Code == 307, "Should require valid authentication or redirect")
+		assert.Equal(t, 201, w.Code, "Should successfully create driver with valid admin token")
 	})
 
 	t.Run("Vehicle Operations", func(t *testing.T) {
-		// Test create vehicle without valid auth
+		// Test create vehicle with valid auth
 		createBody := map[string]interface{}{
-			"license_plate": "MH01XY9999",
+			"license_plate": "MH12BH1234", // Using valid format
 			"vehicle_type":  "TRUCK",
 			"make":          "Tata",
 			"model":         "Prima",
@@ -313,16 +267,14 @@ func TestCoreBusinessLogic(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/api/v1/vehicles", bytes.NewBuffer(body))
-		req.Header.Set("Authorization", "Bearer invalid-admin-token")
+		req.Header.Set("Authorization", "Bearer "+adminToken)
 		req.Header.Set("Content-Type", "application/json")
 		tf.router.ServeHTTP(w, req)
-
-		// 307 redirect indicates route exists but has trailing slash redirect
-		assert.True(t, w.Code == 401 || w.Code == 307, "Should require valid authentication or redirect")
+		assert.Equal(t, 201, w.Code, "Should successfully create vehicle with valid admin token")
 	})
 
 	t.Run("Trip Management", func(t *testing.T) {
-		// Test create trip
+		// Test create trip with valid auth
 		createBody := map[string]interface{}{
 			"pickup_address":  "Mumbai Warehouse",
 			"dropoff_address": "Delhi Hub",
@@ -337,9 +289,7 @@ func TestCoreBusinessLogic(t *testing.T) {
 		req.Header.Set("Authorization", "Bearer "+adminToken)
 		req.Header.Set("Content-Type", "application/json")
 		tf.router.ServeHTTP(w, req)
-
-		// 307 redirect indicates route exists but has trailing slash redirect
-		assert.True(t, w.Code == 401 || w.Code == 307, "Should require valid authentication or redirect")
+		assert.Equal(t, 201, w.Code, "Should successfully create trip with valid admin token")
 	})
 }
 

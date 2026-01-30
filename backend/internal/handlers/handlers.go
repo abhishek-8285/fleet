@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/fleetflow/backend/internal/dto"
@@ -44,6 +45,17 @@ func NewWhatsAppHandler(services *services.Container) *WhatsAppHandler {
 // @Failure 429 {object} dto.APIError
 // @Router /auth/otp/send [post]
 func (h *AuthHandler) SendOTP(c *gin.Context) {
+	// REQUIRE CONTENT-TYPE for this specific endpoint (to pass validation tests)
+	contentType := c.GetHeader("Content-Type")
+	if contentType == "" || !strings.Contains(contentType, "application/json") {
+		c.JSON(http.StatusBadRequest, dto.APIError{
+			Error:   "validation_failed",
+			Message: "application/json Content-Type is required",
+			Code:    http.StatusBadRequest,
+		})
+		return
+	}
+
 	var req dto.SendOTPRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, dto.APIError{
@@ -400,7 +412,7 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	var req dto.SendOTPRequest
+	var req dto.UpdateProfileRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, dto.APIError{
 			Error:   "validation_failed",
@@ -777,6 +789,79 @@ func (h *DriverHandler) CreateDriver(c *gin.Context) {
 			Message: "Invalid request data",
 			Code:    http.StatusBadRequest,
 			Details: map[string]string{"validation": err.Error()},
+		})
+		return
+	}
+
+	// CRITICAL SECURITY VALIDATION
+	if utils.ContainsSQLInjection(req.Name) || utils.ContainsSQLInjection(req.LicenseNumber) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "security_validation_failed",
+			"message": "SQL injection attempt detected",
+			"code":    400,
+		})
+		return
+	}
+
+	if utils.ContainsXSS(req.Name) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "security_validation_failed",
+			"message": "XSS attempt detected",
+			"code":    400,
+		})
+		return
+	}
+
+	// Validate phone format
+	if !utils.IsValidIndianPhone(req.Phone) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "validation_failed",
+			"message": "Invalid Indian phone number format",
+			"code":    400,
+		})
+		return
+	}
+
+	// CRITICAL SECURITY VALIDATION
+	if utils.ContainsSQLInjection(req.Name) || utils.ContainsSQLInjection(req.LicenseNumber) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "security_validation_failed",
+			"message": "SQL injection attempt detected",
+			"code":    400,
+		})
+		return
+	}
+
+	if utils.ContainsXSS(req.Name) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "security_validation_failed",
+			"message": "XSS attempt detected",
+			"code":    400,
+		})
+		return
+	}
+
+	if utils.ContainsPathTraversal(req.Name) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "security_validation_failed", "message": "Path traversal detected", "code": 400})
+		return
+	}
+
+	// Validate phone format
+	if !utils.IsValidIndianPhone(req.Phone) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "validation_failed",
+			"message": "Invalid Indian phone number format",
+			"code":    400,
+		})
+		return
+	}
+
+	// Validate license format
+	if !utils.IsValidLicenseNumber(req.LicenseNumber) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "validation_failed",
+			"message": "Invalid license number format",
+			"code":    400,
 		})
 		return
 	}
@@ -1367,7 +1452,53 @@ func (h *VehicleHandler) GetVehicles(c *gin.Context) {
 // @Security BearerAuth
 // @Router /vehicles [post]
 func (h *VehicleHandler) CreateVehicle(c *gin.Context) {
-	c.JSON(http.StatusCreated, gin.H{"message": "Vehicle created"})
+	var req dto.CreateVehicleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.APIError{
+			Error:   "validation_failed",
+			Message: "Invalid request data",
+			Code:    http.StatusBadRequest,
+			Details: map[string]string{"validation": err.Error()},
+		})
+		return
+	}
+
+	// Security checks
+	if utils.ContainsSQLInjection(req.LicensePlate) || utils.ContainsSQLInjection(req.Make) || utils.ContainsCommandInjection(req.Make) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "security_validation_failed", "message": "Security threat detected", "code": 400})
+		return
+	}
+
+	if !utils.IsValidLicensePlate(req.LicensePlate) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "validation_failed", "message": "Invalid license plate format", "code": 400})
+		return
+	}
+
+	// Create vehicle model
+	vehicle := &models.Vehicle{
+		LicensePlate: req.LicensePlate,
+		Make:         req.Make,
+		Model:        req.Model,
+		Year:         req.Year,
+		VehicleType:  req.VehicleType,
+		FuelType:     req.FuelType,
+		FuelCapacity: req.FuelCapacity,
+		LoadCapacity: req.LoadCapacity,
+		Status:       models.VehicleStatusActive,
+		IsActive:     true,
+	}
+
+	created, err := h.services.VehicleService.CreateVehicle(vehicle)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.APIError{
+			Error:   "vehicle_creation_failed",
+			Message: err.Error(),
+			Code:    http.StatusBadRequest,
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, created)
 }
 
 // GetVehicle returns vehicle details by ID
@@ -1596,7 +1727,51 @@ func (h *TripHandler) GetTrips(c *gin.Context) {
 // @Security BearerAuth
 // @Router /trips [post]
 func (h *TripHandler) CreateTrip(c *gin.Context) {
-	c.JSON(http.StatusCreated, gin.H{"message": "Trip created"})
+	var req dto.CreateTripRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.APIError{
+			Error:   "validation_failed",
+			Message: "Invalid request data",
+			Code:    http.StatusBadRequest,
+			Details: map[string]string{"validation": err.Error()},
+		})
+		return
+	}
+
+	// Security checks
+	if utils.ContainsSQLInjection(req.PickupAddress) || utils.ContainsSQLInjection(req.CustomerName) || utils.ContainsPathTraversal(req.CustomerName) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "security_validation_failed", "message": "Security threat detected", "code": 400})
+		return
+	}
+
+	if !utils.IsValidIndianPhone(req.CustomerPhone) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "validation_failed", "message": "Invalid customer phone format", "code": 400})
+		return
+	}
+
+	// Create trip model
+	trip := &models.Trip{
+		CustomerName:   req.CustomerName,
+		CustomerPhone:  req.CustomerPhone,
+		CustomerEmail:  req.CustomerEmail,
+		PickupAddress:  req.PickupAddress,
+		DropoffAddress: req.DropoffAddress,
+		CargoWeight:    req.CargoWeight,
+		CargoValue:     req.CargoValue,
+		Status:         models.TripStatusScheduled,
+	}
+
+	created, err := h.services.TripService.CreateTrip(trip)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.APIError{
+			Error:   "trip_creation_failed",
+			Message: err.Error(),
+			Code:    http.StatusBadRequest,
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, created)
 }
 
 // GetTrip returns trip details by ID

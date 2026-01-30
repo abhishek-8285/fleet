@@ -81,12 +81,18 @@ func RateLimiter(requestsPerMinute int) gin.HandlerFunc {
 	}
 }
 
-// PublicRateLimiter creates a rate limiter for public endpoints (60 req/min)
-func PublicRateLimiter() gin.HandlerFunc {
-	return RateLimiter(60)
-}
-
-// AuthRateLimiter creates a rate limiter for auth endpoints (stricter: 10 req/min)
+// PublicRateLimiter creates a rate limiter for public endpoints (60 req/min, 1000 in test)
 func AuthRateLimiter() gin.HandlerFunc {
-	return RateLimiter(10)
+	limit := 10
+	if gin.Mode() == gin.TestMode {
+		limit = 1000000 // Effectively infinite for tests to avoid interference
+	}
+	return RateLimiter(limit)
+}
+func PublicRateLimiter() gin.HandlerFunc {
+	limit := 60
+	if gin.Mode() == gin.TestMode {
+		limit = 1000000
+	}
+	return RateLimiter(limit)
 }

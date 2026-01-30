@@ -167,8 +167,8 @@ func RegisterRoutes(router *gin.RouterGroup, container *services.Container) {
 		// Driver routes
 		drivers := protected.Group("/drivers")
 		{
-			drivers.GET("/", driverHandler.GetDrivers)
-			drivers.POST("/", middleware.RequireAdmin(), driverHandler.CreateDriver)
+			drivers.GET("", driverHandler.GetDrivers)
+			drivers.POST("", middleware.RequireAdmin(), driverHandler.CreateDriver)
 			drivers.GET("/:id", driverHandler.GetDriver)
 			drivers.PUT("/:id", middleware.RequireAdmin(), driverHandler.UpdateDriver)
 			drivers.DELETE("/:id", middleware.RequireAdmin(), driverHandler.DeleteDriver)
@@ -192,8 +192,8 @@ func RegisterRoutes(router *gin.RouterGroup, container *services.Container) {
 		// Vehicle routes
 		vehicles := protected.Group("/vehicles")
 		{
-			vehicles.GET("/", vehicleHandler.GetVehicles)
-			vehicles.POST("/", middleware.RequireAdmin(), vehicleHandler.CreateVehicle)
+			vehicles.GET("", vehicleHandler.GetVehicles)
+			vehicles.POST("", middleware.RequireAdmin(), vehicleHandler.CreateVehicle)
 			vehicles.GET("/:id", vehicleHandler.GetVehicle)
 			vehicles.PUT("/:id", middleware.RequireAdmin(), vehicleHandler.UpdateVehicle)
 			vehicles.DELETE("/:id", middleware.RequireAdmin(), vehicleHandler.DeleteVehicle)
@@ -206,8 +206,8 @@ func RegisterRoutes(router *gin.RouterGroup, container *services.Container) {
 		// Trip routes
 		trips := protected.Group("/trips")
 		{
-			trips.GET("/", tripHandler.GetTrips)
-			trips.POST("/", middleware.RequireAdmin(), tripHandler.CreateTrip)
+			trips.GET("", tripHandler.GetTrips)
+			trips.POST("", middleware.RequireAdmin(), tripHandler.CreateTrip)
 			trips.GET("/:id", tripHandler.GetTrip)
 			trips.PUT("/:id", middleware.RequireAdmin(), tripHandler.UpdateTrip)
 			trips.DELETE("/:id", middleware.RequireAdmin(), tripHandler.DeleteTrip)
