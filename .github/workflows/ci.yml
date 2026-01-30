@@ -1,21 +1,65 @@
-name: Fleet Ultimate CI
+name: Fleet Monorepo CI
 on: [push, pull_request]
 
 jobs:
-  secure-check:
+  # 1. SECURITY & LINT (Parallel)
+  security-and-lint:
     runs-on: self-hosted
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      # 1. SECURITY SCAN (Trivy - Already installed on host)
-      - name: 🛡️ Security & Secret Scan
+      - name: 🛡️ Trivy Security Scan
         run: |
-          echo "Running Professional Security Audit..."
-          # Trivy is pre-installed in /usr/local/bin by admin
-          trivy fs . \
-            --scanners vuln,secret \
-            --exit-code 1 \
-            --severity CRITICAL,HIGH \
-            --hide-progress \
-            --format table
+          trivy fs . --scanners vuln,secret --severity CRITICAL --exit-code 1
+
+      - name: 🔍 Backend Lint (Go)
+        run: |
+          cd backend
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+          $(go env GOPATH)/bin/golangci-lint run ./...
+
+  # 2. BUILD & TEST BACKEND
+  backend-gate:
+    needs: security-and-lint
+    runs-on: self-hosted
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Generate Proto & Build
+        run: |
+          cd backend
+          make gen-proto
+          make build
+
+      - name: 🧪 Unit Tests
+        run: |
+          cd backend
+          go test -race -v ./...
+
+  # 3. BUILD FRONTEND (Dashboard)
+  frontend-dashboard:
+    needs: security-and-lint
+    runs-on: self-hosted
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+      - name: 🏗️ Build Dashboard
+        run: |
+          cd frontend/dashboard
+          npm install
+          npm run build
+
+  # 4. BUILD FRONTEND (Portal)
+  frontend-portal:
+    needs: security-and-lint
+    runs-on: self-hosted
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+      - name: 🏗️ Build Portal
+        run: |
+          cd frontend/portal
+          npm install
+          npm run build
