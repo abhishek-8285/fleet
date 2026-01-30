@@ -4,6 +4,9 @@ on:
     branches:
       - master
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: self-hosted
@@ -48,7 +51,5 @@ jobs:
         with:
           tag_name: ${{ steps.tagger.outputs.new_tag }}
           body_path: CHANGELOG.md
-          files: |
-            fleet-server
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
