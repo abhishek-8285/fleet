@@ -36,10 +36,19 @@ jobs:
           make gen-proto
           make build
 
-      - name: 🧪 Unit Tests
+      - name: 🧪 Unit Tests & Coverage
         run: |
           cd backend
-          go test -v -timeout 15m ./...
+          # Run tests with cross-package coverage for core internal logic
+          go test -v -coverpkg=./internal/handlers/...,./internal/services/... -coverprofile=coverage.out -timeout 15m ./...
+          
+          # Enforce 10% initial threshold (increase this as you add tests!)
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Core Logic Coverage: $COVERAGE%"
+          
+          # Robust threshold check using awk
+          awk -v cov="$COVERAGE" 'BEGIN { if (cov < 10) { print "❌ Coverage " cov "% is below required 10% threshold!"; exit 1 } }'
+          echo "✅ Coverage check passed"
 
   # 3. BUILD FRONTEND (Dashboard)
   frontend-dashboard:
