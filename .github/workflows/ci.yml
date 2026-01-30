@@ -28,6 +28,8 @@ jobs:
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: 🔧 Generate Proto & Build
         run: |
@@ -42,13 +44,46 @@ jobs:
           # Run tests with cross-package coverage for core internal logic
           go test -v -coverpkg=./internal/handlers/...,./internal/services/... -coverprofile=coverage.out -timeout 15m ./...
           
-          # Enforce 10% initial threshold (increase this as you add tests!)
-          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
-          echo "Core Logic Coverage: $COVERAGE%"
+          # 1. GLOBAL COVERAGE GATE (Core Logic)
+          GLOBAL_COV=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Global Core Logic Coverage: $GLOBAL_COV%"
+          awk -v cov="$GLOBAL_COV" 'BEGIN { if (cov < 10) { print "❌ Global coverage " cov "% is below 10%"; exit 1 } }'
           
-          # Robust threshold check using awk
-          awk -v cov="$COVERAGE" 'BEGIN { if (cov < 10) { print "❌ Coverage " cov "% is below required 10% threshold!"; exit 1 } }'
-          echo "✅ Coverage check passed"
+          # 2. INCREMENTAL (PR) COVERAGE GATE
+          # Compare against master to find changed Go files in backend/
+          # Ensure origin/master is fetched if not already
+          git fetch origin master --quiet
+          CHANGED_FILES=$(git diff --name-only origin/master...HEAD | grep '^backend/.*\.go$' | sed 's|^backend/||' || true)
+          
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "Modified Go files in this PR:"
+            echo "$CHANGED_FILES"
+            
+            TOTAL_PATCH_COV=0
+            PATCH_FILE_COUNT=0
+            
+            for FILE in $CHANGED_FILES; do
+              [ ! -f "$FILE" ] && continue # Skip deleted files
+              
+              FILE_COV=$(go tool cover -func=coverage.out | grep "$FILE" | awk '{print $3}' | sed 's/%//' || echo "")
+              if [ -n "$FILE_COV" ]; then
+                echo "Coverage for $FILE: $FILE_COV%"
+                TOTAL_PATCH_COV=$(awk "BEGIN {print $TOTAL_PATCH_COV + $FILE_COV}")
+                PATCH_FILE_COUNT=$((PATCH_FILE_COUNT + 1))
+              fi
+            done
+            
+            if [ "$PATCH_FILE_COUNT" -gt 0 ]; then
+              AVG_PATCH_COV=$(awk -v t="$TOTAL_PATCH_COV" -v c="$PATCH_FILE_COUNT" 'BEGIN { print t / c }')
+              echo "Average Incremental Coverage: $AVG_PATCH_COV%"
+              
+              # Require 80% for modified code
+              awk -v cov="$AVG_PATCH_COV" 'BEGIN { if (cov < 80) { print "❌ PR Incremental Coverage " cov "% is below 80%"; exit 1 } }'
+            fi
+          else
+            echo "No Go files modified in this PR. Skipping incremental check."
+          fi
+          echo "✅ All coverage gates passed"
 
   # 3. BUILD FRONTEND (Dashboard)
   frontend-dashboard:
