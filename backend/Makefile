@@ -16,12 +16,12 @@ all: clean gen-proto build
 # Install required tools
 .PHONY: install-tools
 install-tools:
-	@echo "Installing gRPC tools..."
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
-	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
-	@echo "✅ Tools installed successfully"
+	@echo "🔧 Checking gRPC tools..."
+	@command -v protoc-gen-go >/dev/null 2>&1 || (echo "Installing protoc-gen-go..." && go install google.golang.org/protobuf/cmd/protoc-gen-go@latest)
+	@command -v protoc-gen-go-grpc >/dev/null 2>&1 || (echo "Installing protoc-gen-go-grpc..." && go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest)
+	@command -v protoc-gen-grpc-gateway >/dev/null 2>&1 || (echo "Installing protoc-gen-grpc-gateway..." && go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest)
+	@command -v protoc-gen-openapiv2 >/dev/null 2>&1 || (echo "Installing protoc-gen-openapiv2..." && go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest)
+	@echo "✅ Tools check/installation complete"
 
 # Check if protoc is installed
 .PHONY: check-protoc
